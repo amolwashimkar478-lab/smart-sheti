@@ -2,10 +2,123 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
-<title>Smart Sheti</title>
+<title>Smart Sheti - AI Chat</title>
+<style>
+body{
+  font-family: Arial;
+  background: #e8f5e9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+h2{
+  color:#2e7d32;
+  margin-bottom:10px;
+}
+#chatBox{
+  width: 100%;
+  max-width: 400px;
+  height: 400px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  overflow-y: scroll;
+  border:1px solid #ccc;
+}
+.user, .ai{
+  padding: 8px 12px;
+  margin:6px 0;
+  border-radius:10px;
+  max-width: 80%;
+}
+.user{
+  background: #c8e6c9;
+  align-self: flex-end;
+}
+.ai{
+  background: #e0f2f1;
+  align-self: flex-start;
+}
+#inputBox{
+  margin-top:10px;
+  display:flex;
+  width: 100%;
+  max-width:400px;
+}
+#userInput{
+  flex:1;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+#sendBtn{
+  padding:10px 15px;
+  margin-left:5px;
+  border:none;
+  background:#2e7d32;
+  color:#fff;
+  border-radius:8px;
+  cursor:pointer;
+}
+#sendBtn:hover{
+  background:#1b5e20;
+}
+</style>
 </head>
-<body style="background:#e8f5e9;font-family:Arial;text-align:center">
-<h2>🌱 स्वागत आहे!</h2>
-<p>Smart Sheti अ‍ॅप मध्ये आपले स्वागत आहे</p>
+<body>
+
+<h2>🌱 शेतकरी AI मित्र</h2>
+
+<select id="lang">
+  <option value="mr">मराठी</option>
+  <option value="en">English</option>
+</select>
+
+<div id="chatBox"></div>
+
+<div id="inputBox">
+  <input type="text" id="userInput" placeholder="तुमचा प्रश्न येथे लिहा...">
+  <button id="sendBtn">Send</button>
+</div>
+
+<script>
+const chatBox = document.getElementById('chatBox');
+const input = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const lang = document.getElementById('lang');
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keypress', e => { if(e.key==='Enter') sendMessage() });
+
+function addMessage(text, sender){
+  const div = document.createElement('div');
+  div.className = sender;
+  div.innerText = text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage(){
+  const userText = input.value.trim();
+  if(!userText) return;
+  addMessage(userText,'user');
+  input.value = '';
+
+  // 🌾 AI call
+  const response = await fetch('YOUR_BACKEND_ENDPOINT', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      prompt:userText,
+      language: lang.value
+    })
+  });
+
+  const data = await response.json();
+  addMessage(data.reply,'ai');
+}
+</script>
+
 </body>
 </html>
