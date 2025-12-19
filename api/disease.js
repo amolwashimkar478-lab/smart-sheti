@@ -1,13 +1,7 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
-  }
-
-  try {
-    const { imageBase64 } = req.body;
-
+// ... आधीचा कोड ...
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      // इथे नाव बदलले आहे: NEXT_PUBLIC_GEMINI_API_KEY
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -18,7 +12,7 @@ export default async function handler(req, res) {
               {
                 inline_data: {
                   mime_type: "image/jpeg",
-                  data: imageBase64
+                  data: cleanBase64 // मघाशी सांगितल्याप्रमाणे क्लीन बेस६४ वापरा
                 }
               }
             ]
@@ -26,11 +20,5 @@ export default async function handler(req, res) {
         })
       }
     );
+// ... पुढचा कोड ...
 
-    const data = await response.json();
-    res.status(200).json(data);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
