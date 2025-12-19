@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<title>Smart Sheti - Sign Up</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:Arial;
+  background:linear-gradient(#e8f5e9,#a5d6a7);
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.box{
+  background:#fff;
+  width:340px;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 4px 15px rgba(0,0,0,.3);
+  text-align:center;
+}
+h2{color:#2e7d32;margin-bottom:15px;}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:6px;
+  font-size:15px;
+}
+input{border:1px solid #ccc;}
+button{
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:hover{background:#1b5e20;}
+.link{
+  margin-top:10px;
+  color:#2e7d32;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🌾 Smart Sheti</h2>
+
+  <input type="text" id="fname" placeholder="नाव">
+  <input type="text" id="lname" placeholder="आडनाव">
+  <input type="email" id="email" placeholder="Gmail">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="signup()">Sign Up</button>
+
+  <div class="link" onclick="goLogin()">Already account? Login</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+  authDomain: "smart-sheti-6512e.firebaseapp.com",
+  projectId: "smart-sheti-6512e",
+  storageBucket: "smart-sheti-6512e.firebasestorage.app",
+  messagingSenderId: "1086459599128",
+  appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.signup = () => {
+  const fname = document.getElementById("fname").value;
+  const lname = document.getElementById("lname").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!fname || !lname || !email || !password){
+    alert("सर्व माहिती भरा");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(userCred => {
+      updateProfile(userCred.user, {
+        displayName: fname + " " + lname
+      });
+      alert("Account तयार झाला ✅");
+      window.location.href = "index.html"; // login page
+    })
+    .catch(err => alert(err.message));
+};
+
+window.goLogin = () => {
+  window.location.href = "index.html";
+};
+</script>
+
+</body>
+</html>
