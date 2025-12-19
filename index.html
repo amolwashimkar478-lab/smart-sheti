@@ -5,7 +5,6 @@
 <title>Smart Sheti - Login</title>
 
 <style>
-/* 🔧 GLOBAL FIX */
 *{
   box-sizing:border-box;
   margin:0;
@@ -35,7 +34,6 @@ h2{
   margin-bottom:15px;
 }
 
-/* ✅ PERFECT CENTER INPUTS */
 input, button{
   width:100%;
   padding:12px;
@@ -70,7 +68,7 @@ button:hover{
   font-size:14px;
   color:#2e7d32;
   cursor:pointer;
-  margin-top:6px;
+  margin-top:8px;
 }
 </style>
 </head>
@@ -84,69 +82,59 @@ button:hover{
   <input id="password" type="password" placeholder="Password">
 
   <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
 
   <div class="link" onclick="forgot()">Forgot Password?</div>
+
+  <!-- 🔹 SIGN UP LINK ADD केले -->
+  <div class="link" onclick="location.href='signup.html'">
+    New user? Sign Up
+  </div>
 
   <hr style="margin:15px 0">
 
   <button class="google" onclick="googleLogin()">Continue with Google</button>
 </div>
 
-<!-- 🔥 Firebase Auth Logic -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    sendPasswordResetEmail
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  // ✅ Firebase Config (तुमचा)
-  const firebaseConfig = {
-    apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-    authDomain: "smart-sheti-6512e.firebaseapp.com",
-    projectId: "smart-sheti-6512e",
-    storageBucket: "smart-sheti-6512e.firebasestorage.app",
-    messagingSenderId: "1086459599128",
-    appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d",
-    measurementId: "G-3BJ7952SWG"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+  authDomain: "smart-sheti-6512e.firebaseapp.com",
+  projectId: "smart-sheti-6512e",
+  storageBucket: "smart-sheti-6512e.firebasestorage.app",
+  messagingSenderId: "1086459599128",
+  appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-  // ✅ Email Login
-  window.login = () => {
-    signInWithEmailAndPassword(auth, email.value, password.value)
-      .then(() => location.href="home.html")
-      .catch(err => alert(err.message));
-  };
+window.login = () => {
+  signInWithEmailAndPassword(auth, email.value, password.value)
+    .then(() => location.href="home.html")
+    .catch(err => alert(err.message));
+};
 
-  // ✅ Register
-  window.register = () => {
-    createUserWithEmailAndPassword(auth, email.value, password.value)
-      .then(() => alert("Account तयार झाला. Login करा"))
-      .catch(err => alert(err.message));
-  };
+window.googleLogin = () => {
+  signInWithPopup(auth, provider)
+    .then(() => location.href="home.html")
+    .catch(err => alert(err.message));
+};
 
-  // ✅ Google Login
-  window.googleLogin = () => {
-    signInWithPopup(auth, provider)
-      .then(() => location.href="home.html")
-      .catch(err => alert(err.message));
-  };
-
-  // ✅ Forgot Password
-  window.forgot = () => {
-    sendPasswordResetEmail(auth, email.value)
-      .then(() => alert("Password reset link Email वर पाठवली आहे"))
-      .catch(err => alert(err.message));
-  };
+window.forgot = () => {
+  sendPasswordResetEmail(auth, email.value)
+    .then(() => alert("Password reset link Email वर पाठवली आहे"))
+    .catch(err => alert(err.message));
+};
 </script>
 
 </body>
