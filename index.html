@@ -2,97 +2,93 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Login</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-body{
-  font-family:Arial, sans-serif;
-  background:linear-gradient(#e8f5e9,#a5d6a7);
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.box{
-  background:#ffffff;
-  width:330px;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.3);
-  text-align:center;
-}
-
-h2{
-  color:#2e7d32;
-  margin-bottom:15px;
-}
-
-input, button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:6px;
-  font-size:15px;
-  display:block;
-}
-
-input{
-  border:1px solid #ccc;
-}
-
-button{
-  background:#2e7d32;
-  color:#ffffff;
-  border:none;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#1b5e20;
-}
-
-.google{
-  background:#ffffff;
-  color:#000;
-  border:1px solid #ccc;
-}
-
-.link{
-  font-size:14px;
-  color:#2e7d32;
-  cursor:pointer;
-  margin-top:8px;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .box {
+    background: #ffffff;
+    width: 350px;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    text-align: center;
+  }
+  h2 { color: #2e7d32; margin-bottom: 20px; font-size: 24px; }
+  input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    outline: none;
+  }
+  input:focus { border-color: #2e7d32; }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn-login { background: #2e7d32; color: white; }
+  .btn-login:hover { background: #1b5e20; }
+  .btn-google {
+    background: white;
+    color: #444;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-google:hover { background: #f5f5f5; }
+  .link {
+    font-size: 14px;
+    color: #2e7d32;
+    cursor: pointer;
+    margin-top: 10px;
+    text-decoration: none;
+    display: inline-block;
+  }
+  hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>🌾 Smart Sheti</h2>
+  <h2>🌱 Smart Sheti</h2>
 
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="email" type="email" placeholder="ईमेल पत्ता">
+  <input id="password" type="password" placeholder="पासवर्ड">
 
-  <button onclick="login()">Login</button>
+  <button class="btn-login" id="loginBtn">लॉगिन करा</button>
 
-  <div class="link" onclick="forgot()">Forgot Password?</div>
+  <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
+  <br>
+  <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
 
-  <!-- 🔹 SIGN UP LINK ADD केले -->
-  <div class="link" onclick="location.href='signup.html'">
-    New user? Sign Up
-  </div>
+  <hr>
 
-  <hr style="margin:15px 0">
-
-  <button class="google" onclick="googleLogin()">Continue with Google</button>
+  <button class="btn-google" id="googleBtn">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+    Google सह पुढे जा
+  </button>
 </div>
 
 <script type="module">
@@ -105,6 +101,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// तुमचे Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
   authDomain: "smart-sheti-6512e.firebaseapp.com",
@@ -118,24 +115,39 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-window.login = () => {
-  signInWithEmailAndPassword(auth, email.value, password.value)
-    .then(() => location.href="home.html")
-    .catch(err => alert(err.message));
+// ईमेल लॉगिन
+document.getElementById('loginBtn').onclick = () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => { window.location.href = "home.html"; })
+    .catch(err => alert("लॉगिन एरर: " + err.message));
 };
 
-window.googleLogin = () => {
+// Google लॉगिन
+document.getElementById('googleBtn').onclick = () => {
   signInWithPopup(auth, provider)
-    .then(() => location.href="home.html")
-    .catch(err => alert(err.message));
+    .then(() => { window.location.href = "home.html"; })
+    .catch(err => {
+      console.error(err);
+      alert("Google लॉगिन अयशस्वी! कृपया Authorized Domains तपासा.");
+    });
 };
 
-window.forgot = () => {
-  sendPasswordResetEmail(auth, email.value)
-    .then(() => alert("Password reset link Email वर पाठवली आहे"))
+// पासवर्ड विसरल्यास
+document.getElementById('forgotBtn').onclick = () => {
+  const email = document.getElementById('email').value;
+  if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
+
+  sendPasswordResetEmail(auth, email)
+    .then(() => alert("पासवर्ड रिसेट लिंक तुमच्या ईमेलवर पाठवली आहे."))
     .catch(err => alert(err.message));
 };
 </script>
 
 </body>
 </html>
+
