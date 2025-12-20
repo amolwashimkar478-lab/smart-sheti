@@ -17,21 +17,21 @@ body{
 
 /* 🌾 Logo */
 .logo{
-  font-size:28px;
+  font-size:30px;
   font-weight:bold;
   color:#2e7d32;
-  margin-bottom:25px;
+  margin-bottom:30px;
 }
 
 /* 📦 Buttons */
 .btn{
   width:100%;
   max-width:320px;
-  padding:18px;
-  margin:12px 0;
+  padding:20px;
+  margin:14px 0;
   font-size:20px;
   border:none;
-  border-radius:14px;
+  border-radius:16px;
   background:#2e7d32;
   color:white;
   cursor:pointer;
@@ -45,16 +45,12 @@ body{
   background:#1b5e20;
 }
 
-/* 🌦 Weather Box */
-#weatherBox{
-  margin-top:20px;
-  background:white;
-  padding:18px;
-  border-radius:14px;
-  width:100%;
-  max-width:320px;
-  font-size:18px;
-  display:none;
+/* 🌦 Weather button different color */
+.weather-btn{
+  background:#1565c0;
+}
+.weather-btn:hover{
+  background:#0d47a1;
 }
 </style>
 </head>
@@ -63,27 +59,20 @@ body{
 
 <div class="logo">🌾 Smart Sheti</div>
 
-<button class="btn" onclick="getWeather()">🌦 आजचं हवामान</button>
-<button class="btn" onclick="location.href='ai.html'">🤖 AI सल्ला</button>
+<!-- 🌦 Weather Redirect -->
+<button class="btn weather-btn" onclick="goToWeather()">
+  🌦 आजचं हवामान
+</button>
 
-<div id="weatherBox"></div>
+<!-- 🤖 AI Chat -->
+<button class="btn" onclick="location.href='ai.html'">
+  🤖 AI सल्ला
+</button>
 
 <script>
-function getWeather(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    fetch(`/api/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
-      .then(res=>res.json())
-      .then(data=>{
-        document.getElementById("weatherBox").style.display="block";
-        document.getElementById("weatherBox").innerHTML = `
-          📍 ${data.name}<br>
-          🌡 तापमान: ${data.main.temp} °C<br>
-          💧 आर्द्रता: ${data.main.humidity}%<br>
-          🌥 हवामान: ${data.weather[0].description}
-        `;
-      })
-      .catch(()=>alert("Weather मिळालं नाही"));
-  });
+function goToWeather(){
+  // Special weather page
+  window.location.href = "weather.html";
 }
 </script>
 
