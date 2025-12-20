@@ -2,86 +2,156 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>हवामान अंदाज</title>
+<title>Smart Sheti | Weather</title>
 
 <style>
 body{
+  margin:0;
   font-family: Arial, sans-serif;
-  background:#e3f2fd;
+  background:#e8f5e9;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   padding:20px;
 }
 
 h2{
-  text-align:center;
-  color:#1565c0;
-  margin-bottom:20px;
+  color:#1b5e20;
+  font-size:26px;
+  margin-bottom:10px;
+}
+
+button{
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  padding:14px 20px;
+  border-radius:10px;
+  font-size:18px;
+  cursor:pointer;
+  margin:8px 0;
+  width:90%;
+  max-width:400px;
+}
+
+button:hover{
+  background:#1b5e20;
 }
 
 .card{
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  margin-bottom:14px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  background:#fff;
+  width:90%;
+  max-width:400px;
+  padding:15px;
+  border-radius:12px;
+  margin:10px 0;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.day{
-  font-size:18px;
+#rainAlert{
+  display:none;
+  background:#ffeb3b;
+  color:#000;
+  padding:15px;
+  border-radius:10px;
   font-weight:bold;
-  margin-bottom:6px;
+  margin:10px 0;
+  text-align:center;
 }
 
-.temp{
-  font-size:16px;
+.forecast{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🌦 ५ दिवसांचा हवामान अंदाज</h2>
+<h2>🌦 आजचं हवामान</h2>
 
-<div id="weather"></div>
+<button onclick="getWeather()">📍 माझ्या ठिकाणचं हवामान</button>
+
+<div id="rainAlert">🌧 पाऊस पडण्याची शक्यता आहे – काळजी घ्या!</div>
+
+<div id="today" class="card"></div>
+
+<div id="forecast" class="card"></div>
+
+<button onclick="goBack()">⬅ AI पेजवर परत जा</button>
 
 <script>
-const API_KEY = "YOUR_OPENWEATHER_API_KEY"; // ⚠️ इथे तुझा key
+const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
 
-navigator.geolocation.getCurrentPosition(pos=>{
-  const lat = pos.coords.latitude;
-  const lon = pos.coords.longitude;
+function goBack(){
+  window.location.href = "home.html";
+}
 
-  fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
-    .then(res=>res.json())
-    .then(data=>{
-      const box = document.getElementById("weather");
-      const days = {};
+function speakMarathi(text){
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "mr-IN";
+  msg.rate = 0.9;
+  speechSynthesis.speak(msg);
+}
 
-      data.list.forEach(item=>{
-        const date = item.dt_txt.split(" ")[0];
-        if(!days[date]){
-          days[date] = item;
-        }
+function getWeather(){
+  if(!navigator.geolocation){
+    alert("Location support नाही");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=mr`)
+      .then(res=>res.json())
+      .then(data=>{
+        showWeather(data);
+      })
+      .catch(()=>{
+        alert("Weather मिळालं नाही");
       });
+  });
+}
 
-      Object.keys(days).slice(0,5).forEach(date=>{
-        const d = days[date];
-        box.innerHTML += `
-          <div class="card">
-            <div class="day">📅 ${date}</div>
-            <div class="temp">
-              🌡 तापमान: ${d.main.temp} °C<br>
-              💧 आर्द्रता: ${d.main.humidity}%<br>
-              🌥 ${d.weather[0].description}
-            </div>
-          </div>
-        `;
-      });
-    })
-    .catch(()=>{
-      alert("हवामान मिळालं नाही");
-    });
-});
+function showWeather(data){
+  const today = data.list[0];
+  const desc = today.weather[0].description;
+  const temp = today.main.temp;
+
+  document.getElementById("today").innerHTML = `
+    <h3>🌤 आज</h3>
+    <p>हवामान: ${desc}</p>
+    <p>तापमान: ${temp} °C</p>
+  `;
+
+  // Rain alert
+  if(desc.includes("पाऊस")){
+    document.getElementById("rainAlert").style.display = "block";
+  }
+
+  // Marathi voice
+  speakMarathi(`आजचं हवामान आहे ${desc}. तापमान आहे ${temp} अंश सेल्सिअस.`);
+
+  // 5 day forecast
+  let html = "<h3>📅 पुढील 5 दिवस</h3>";
+
+  for(let i=8;i<data.list.length;i+=8){
+    const day = data.list[i];
+    html += `
+      <div class="forecast">
+        <span>${new Date(day.dt_txt).toLocaleDateString("mr-IN")}</span>
+        <span>${day.weather[0].description}</span>
+        <span>${day.main.temp}°C</span>
+      </div>
+    `;
+  }
+
+  document.getElementById("forecast").innerHTML = html;
+}
 </script>
 
 </body>
