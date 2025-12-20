@@ -2,11 +2,12 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Home</title>
 
 <style>
 body{
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background:#e8f5e9;
   display:flex;
   flex-direction:column;
@@ -14,32 +15,45 @@ body{
   padding:20px;
 }
 
-h2{ color:#2e7d32; }
+/* 🌾 Logo */
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:#2e7d32;
+  margin-bottom:25px;
+}
 
+/* 📦 Buttons */
 .btn{
   width:100%;
-  max-width:300px;
-  padding:15px;
-  margin:10px 0;
-  font-size:18px;
+  max-width:320px;
+  padding:18px;
+  margin:12px 0;
+  font-size:20px;
   border:none;
-  border-radius:12px;
+  border-radius:14px;
   background:#2e7d32;
   color:white;
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
 }
 
 .btn:hover{
   background:#1b5e20;
 }
 
+/* 🌦 Weather Box */
 #weatherBox{
-  margin-top:15px;
+  margin-top:20px;
   background:white;
-  padding:15px;
-  border-radius:10px;
+  padding:18px;
+  border-radius:14px;
   width:100%;
-  max-width:300px;
+  max-width:320px;
+  font-size:18px;
   display:none;
 }
 </style>
@@ -47,7 +61,7 @@ h2{ color:#2e7d32; }
 
 <body>
 
-<h2>🌾 Smart Sheti</h2>
+<div class="logo">🌾 Smart Sheti</div>
 
 <button class="btn" onclick="getWeather()">🌦 आजचं हवामान</button>
 <button class="btn" onclick="location.href='ai.html'">🤖 AI सल्ला</button>
@@ -63,9 +77,9 @@ function getWeather(){
         document.getElementById("weatherBox").style.display="block";
         document.getElementById("weatherBox").innerHTML = `
           📍 ${data.name}<br>
-          🌡 ${data.main.temp} °C<br>
-          💧 ${data.main.humidity}%<br>
-          🌥 ${data.weather[0].description}
+          🌡 तापमान: ${data.main.temp} °C<br>
+          💧 आर्द्रता: ${data.main.humidity}%<br>
+          🌥 हवामान: ${data.weather[0].description}
         `;
       })
       .catch(()=>alert("Weather मिळालं नाही"));
