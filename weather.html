@@ -15,7 +15,6 @@ body{
   align-items:center;
 }
 
-/* Header */
 .header{
   font-size:26px;
   font-weight:bold;
@@ -23,7 +22,6 @@ body{
   margin-bottom:18px;
 }
 
-/* Card */
 .card{
   width:100%;
   max-width:360px;
@@ -34,13 +32,11 @@ body{
   box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
-/* Title */
 .card h3{
   margin:0 0 10px;
   color:#1b5e20;
 }
 
-/* Forecast row */
 .forecast{
   display:flex;
   justify-content:space-between;
@@ -48,7 +44,6 @@ body{
   margin:6px 0;
 }
 
-/* Buttons */
 .btn{
   width:100%;
   max-width:360px;
@@ -62,16 +57,10 @@ body{
   margin-top:10px;
 }
 
-.btn:hover{
-  background:#1b5e20;
-}
+.btn:hover{ background:#1b5e20; }
 
-.secondary{
-  background:#1565c0;
-}
-.secondary:hover{
-  background:#0d47a1;
-}
+.secondary{ background:#1565c0; }
+.secondary:hover{ background:#0d47a1; }
 </style>
 </head>
 
@@ -79,28 +68,48 @@ body{
 
 <div class="header">🌦 आजचं हवामान</div>
 
-<!-- Today -->
 <div class="card" id="todayCard">
   <h3>⏳ माहिती घेत आहे...</h3>
 </div>
 
-<!-- 5 Day -->
 <div class="card" id="forecastCard" style="display:none">
   <h3>📅 पुढील 5 दिवस</h3>
   <div id="forecastData"></div>
 </div>
 
-<!-- Buttons -->
+<button class="btn" onclick="speakTodayWeather()">🔊 आजचं हवामान ऐका</button>
+<button class="btn" onclick="speakForecast()">🎙️ 5 दिवसांचा forecast ऐका</button>
+
 <button class="btn secondary" onclick="location.href='home.html'">
 🏠 मुख्य पेजवर जा
 </button>
 
-
-
 <script>
 const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
 
-window.onload = getWeather; // 👈 auto load
+let todayVoiceText = "";
+let forecastVoiceText = "";
+
+window.onload = ()=>{
+  askNotificationPermission();
+  getWeather();
+};
+
+// 🔔 Notification Permission
+function askNotificationPermission(){
+  if("Notification" in window){
+    Notification.requestPermission();
+  }
+}
+
+function showRainNotification(){
+  if(Notification.permission === "granted"){
+    new Notification("🚨 पावसाचा इशारा", {
+      body: "आज पावसाची शक्यता आहे. शेतीची काळजी घ्या 🌾",
+      icon: "https://cdn-icons-png.flaticon.com/512/1779/1779940.png"
+    });
+  }
+}
 
 function getWeather(){
   navigator.geolocation.getCurrentPosition(pos=>{
@@ -110,12 +119,24 @@ function getWeather(){
     fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
+        const desc = data.weather[0].description;
+        const temp = data.main.temp;
+
+        todayVoiceText =
+          `आज ${data.name} येथे हवामान ${desc} आहे. तापमान ${temp} अंश सेल्सिअस आहे.`;
+
         document.getElementById("todayCard").innerHTML = `
           <h3>📍 ${data.name}</h3>
-          🌡 तापमान: <b>${data.main.temp}°C</b><br>
+          🌡 तापमान: <b>${temp}°C</b><br>
           💧 आर्द्रता: ${data.main.humidity}%<br>
-          🌥 हवामान: ${data.weather[0].description}
+          🌥 हवामान: ${desc}
         `;
+
+        // 🚨 Rain alert
+        if(desc.includes("पाऊस") || desc.includes("rain")){
+          alert("🚨 आज पावसाची शक्यता आहे");
+          showRainNotification();
+        }
       });
 
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
@@ -128,6 +149,8 @@ function getWeather(){
         });
 
         let html="";
+        forecastVoiceText = "पुढील पाच दिवसांचा हवामान अंदाज. ";
+
         Object.keys(days).slice(1,6).forEach(d=>{
           html += `
             <div class="forecast">
@@ -136,13 +159,32 @@ function getWeather(){
               <span>${days[d].main.temp}°C</span>
             </div>
           `;
+          forecastVoiceText += `${d} रोजी हवामान ${days[d].weather[0].description} आणि तापमान ${days[d].main.temp} अंश. `;
         });
 
         document.getElementById("forecastCard").style.display="block";
         document.getElementById("forecastData").innerHTML = html;
       });
 
-  },()=>alert("Location access द्या"));
+  },()=>alert("📍 Location access द्या"));
+}
+
+// 🔊 Voice functions
+function speak(text){
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "mr-IN";
+  msg.rate = 0.9;
+  speechSynthesis.speak(msg);
+}
+
+function speakTodayWeather(){
+  if(!todayVoiceText) return alert("माहिती मिळत आहे");
+  speak(todayVoiceText);
+}
+
+function speakForecast(){
+  if(!forecastVoiceText) return alert("Forecast मिळत आहे");
+  speak(forecastVoiceText);
 }
 </script>
 
