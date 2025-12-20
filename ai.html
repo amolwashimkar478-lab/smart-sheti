@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<title>Smart Sheti - AI</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#e8f5e9;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+}
+
+#chatBox{
+  width:100%;
+  max-width:400px;
+  height:400px;
+  background:#fff;
+  border-radius:10px;
+  padding:10px;
+  overflow-y:scroll;
+  border:1px solid #ccc;
+}
+
+.user,.ai{
+  padding:8px;
+  margin:6px 0;
+  border-radius:10px;
+}
+
+.user{ background:#c8e6c9; }
+.ai{ background:#e0f2f1; }
+
+#inputBox{
+  display:flex;
+  width:100%;
+  max-width:400px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🤖 शेतकरी AI मित्र</h2>
+
+<div id="chatBox"></div>
+
+<div id="inputBox">
+  <input id="userInput" placeholder="प्रश्न लिहा..." style="flex:1">
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+const chatBox=document.getElementById("chatBox");
+const input=document.getElementById("userInput");
+
+function add(text,cls){
+  const d=document.createElement("div");
+  d.className=cls;
+  d.innerText=text;
+  chatBox.appendChild(d);
+}
+
+async function sendMessage(){
+  const text=input.value.trim();
+  if(!text) return;
+  add(text,"user");
+  input.value="";
+
+  const res=await fetch("/api/chat",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ prompt:text })
+  });
+  const data=await res.json();
+  add(data.reply || "उत्तर मिळालं नाही","ai");
+}
+</script>
+
+</body>
+</html>
