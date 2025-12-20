@@ -7,88 +7,40 @@
 <style>
 body{
   font-family: Arial;
-  background: #e8f5e9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
+  background:#e8f5e9;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
 }
 
-h2{
-  color:#2e7d32;
-  margin-bottom:10px;
-}
+h2{ color:#2e7d32; }
 
-button{
-  padding:10px 15px;
+.btn{
+  width:100%;
+  max-width:300px;
+  padding:15px;
+  margin:10px 0;
+  font-size:18px;
   border:none;
+  border-radius:12px;
   background:#2e7d32;
-  color:#fff;
-  border-radius:8px;
+  color:white;
   cursor:pointer;
-  margin:5px;
 }
 
-button:hover{
+.btn:hover{
   background:#1b5e20;
 }
 
 #weatherBox{
-  background:#ffffff;
+  margin-top:15px;
+  background:white;
+  padding:15px;
   border-radius:10px;
-  padding:10px;
   width:100%;
-  max-width:400px;
-  margin:10px 0;
-  border:1px solid #ccc;
+  max-width:300px;
   display:none;
-}
-
-/* Chat */
-#chatBox{
-  width: 100%;
-  max-width: 400px;
-  height: 350px;
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px;
-  overflow-y: scroll;
-  border:1px solid #ccc;
-}
-
-.user, .ai{
-  padding: 8px 12px;
-  margin:6px 0;
-  border-radius:10px;
-  max-width: 80%;
-}
-
-.user{
-  background: #c8e6c9;
-  align-self: flex-end;
-}
-
-.ai{
-  background: #e0f2f1;
-  align-self: flex-start;
-}
-
-#inputBox{
-  margin-top:10px;
-  display:flex;
-  width: 100%;
-  max-width:400px;
-}
-
-#userInput{
-  flex:1;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-
-#sendBtn{
-  margin-left:5px;
 }
 </style>
 </head>
@@ -97,93 +49,27 @@ button:hover{
 
 <h2>🌾 Smart Sheti</h2>
 
-<!-- 🌦 Weather Button -->
-<button onclick="getWeather()">🌦 आजचं हवामान</button>
+<button class="btn" onclick="getWeather()">🌦 आजचं हवामान</button>
+<button class="btn" onclick="location.href='ai.html'">🤖 AI सल्ला</button>
 
 <div id="weatherBox"></div>
 
-<!-- 🌱 AI Chat -->
-<h2>🤖 शेतकरी AI मित्र</h2>
-
-<select id="lang">
-  <option value="mr">मराठी</option>
-  <option value="en">English</option>
-</select>
-
-<div id="chatBox"></div>
-
-<div id="inputBox">
-  <input type="text" id="userInput" placeholder="तुमचा प्रश्न लिहा...">
-  <button id="sendBtn">Send</button>
-</div>
-
 <script>
-/* ================= WEATHER ================= */
-
 function getWeather(){
-  if(!navigator.geolocation){
-    alert("GPS सपोर्ट नाही");
-    return;
-  }
-
   navigator.geolocation.getCurrentPosition(pos=>{
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-
-    fetch(`/api/weather?lat=${lat}&lon=${lon}`)
+    fetch(`/api/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
       .then(res=>res.json())
       .then(data=>{
         document.getElementById("weatherBox").style.display="block";
         document.getElementById("weatherBox").innerHTML = `
-          <b>📍 ${data.name}</b><br>
-          🌡 तापमान: ${data.main.temp} °C<br>
-          💧 आर्द्रता: ${data.main.humidity}%<br>
-          🌥 हवामान: ${data.weather[0].description}
+          📍 ${data.name}<br>
+          🌡 ${data.main.temp} °C<br>
+          💧 ${data.main.humidity}%<br>
+          🌥 ${data.weather[0].description}
         `;
       })
-      .catch(()=>{
-        alert("Weather मिळालं नाही");
-      });
+      .catch(()=>alert("Weather मिळालं नाही"));
   });
-}
-
-/* ================= AI CHAT ================= */
-
-const chatBox = document.getElementById('chatBox');
-const input = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const lang = document.getElementById('lang');
-
-sendBtn.addEventListener('click', sendMessage);
-input.addEventListener('keypress', e => { if(e.key==='Enter') sendMessage() });
-
-function addMessage(text, sender){
-  const div = document.createElement('div');
-  div.className = sender;
-  div.innerText = text;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function sendMessage(){
-  const userText = input.value.trim();
-  if(!userText) return;
-
-  addMessage(userText,'user');
-  input.value = '';
-
-  // 🔥 Gemini Backend (Vercel API)
-  const response = await fetch('/api/chat', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      prompt:userText,
-      language: lang.value
-    })
-  });
-
-  const data = await response.json();
-  addMessage(data.reply || "उत्तर मिळालं नाही",'ai');
 }
 </script>
 
