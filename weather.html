@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>हवामान अंदाज</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#e3f2fd;
+  padding:20px;
+}
+
+h2{
+  text-align:center;
+  color:#1565c0;
+  margin-bottom:20px;
+}
+
+.card{
+  background:white;
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.day{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:6px;
+}
+
+.temp{
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌦 ५ दिवसांचा हवामान अंदाज</h2>
+
+<div id="weather"></div>
+
+<script>
+const API_KEY = "YOUR_OPENWEATHER_API_KEY"; // ⚠️ इथे तुझा key
+
+navigator.geolocation.getCurrentPosition(pos=>{
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+
+  fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
+    .then(res=>res.json())
+    .then(data=>{
+      const box = document.getElementById("weather");
+      const days = {};
+
+      data.list.forEach(item=>{
+        const date = item.dt_txt.split(" ")[0];
+        if(!days[date]){
+          days[date] = item;
+        }
+      });
+
+      Object.keys(days).slice(0,5).forEach(date=>{
+        const d = days[date];
+        box.innerHTML += `
+          <div class="card">
+            <div class="day">📅 ${date}</div>
+            <div class="temp">
+              🌡 तापमान: ${d.main.temp} °C<br>
+              💧 आर्द्रता: ${d.main.humidity}%<br>
+              🌥 ${d.weather[0].description}
+            </div>
+          </div>
+        `;
+      });
+    })
+    .catch(()=>{
+      alert("हवामान मिळालं नाही");
+    });
+});
+</script>
+
+</body>
+</html>
