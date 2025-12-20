@@ -45,12 +45,24 @@ body{
   background:#1b5e20;
 }
 
-/* 🌦 Weather button different color */
+/* 🌦 Weather button */
 .weather-btn{
   background:#1565c0;
 }
 .weather-btn:hover{
   background:#0d47a1;
+}
+
+/* 🌦 Weather Box */
+#weatherBox{
+  display:none;
+  background:white;
+  margin-top:20px;
+  padding:18px;
+  border-radius:16px;
+  width:100%;
+  max-width:320px;
+  font-size:18px;
 }
 </style>
 </head>
@@ -59,8 +71,8 @@ body{
 
 <div class="logo">🌾 Smart Sheti</div>
 
-<!-- 🌦 Weather Redirect -->
-<button class="btn weather-btn" onclick="goToWeather()">
+<!-- 🌦 Weather Button -->
+<button class="btn weather-btn" onclick="getWeather()">
   🌦 आजचं हवामान
 </button>
 
@@ -69,10 +81,60 @@ body{
   🤖 AI सल्ला
 </button>
 
+<div id="weatherBox"></div>
+
 <script>
-function goToWeather(){
-  // Special weather page
-  window.location.href = "weather.html";
+const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
+
+/* 🔊 मराठी आवाज */
+function speakMarathi(text){
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "mr-IN";
+  msg.rate = 0.9;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(msg);
+}
+
+/* 🌦 Weather + Alert + Voice */
+function getWeather(){
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=mr`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const city = data.name;
+    const temp = data.main.temp;
+    const desc = data.weather[0].description;
+
+    const box = document.getElementById("weatherBox");
+    box.style.display = "block";
+    box.innerHTML = `
+      📍 ${city}<br>
+      🌡 तापमान: ${temp}°C<br>
+      🌧 हवामान: ${desc}
+    `;
+
+    /* 🔊 Voice */
+    speakMarathi(
+      `${city} मध्ये आज हवामान ${desc} आहे. 
+       तापमान ${temp} अंश सेल्सिअस आहे`
+    );
+
+    /* 🚨 Rain Alert */
+    if(desc.includes("पाऊस") || desc.includes("rain")){
+      alert("🚨 पावसाचा इशारा! आज पाऊस पडू शकतो");
+    }
+
+    /* ⏳ Redirect after 2 sec */
+    setTimeout(()=>{
+      window.location.href = "weather.html";
+    },2000);
+  },
+  ()=>alert("Location परवानगी द्या"));
 }
 </script>
 
