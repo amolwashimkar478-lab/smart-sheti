@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 शेती AI सल्ला</title>
+
+<style>
+body{
+  font-family: Arial;
+  background:#e8f5e9;
+  margin:0;
+  padding:0;
+}
+
+/* 🔥 MAIN CONTAINER */
+.container{
+  width:100%;
+  max-width:420px;
+  margin:0 auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* HEADER */
+.header{
+  font-size:26px;
+  color:#2e7d32;
+  margin-bottom:18px;
+  font-weight:bold;
+  text-align:center;
+}
+
+/* CARD */
+.card{
+  background:#fff;
+  width:100%;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* INPUTS */
+input, select{
+  width:100%;
+  box-sizing:border-box;
+  padding:14px;
+  margin:10px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+/* SELECT FIX */
+select{
+  appearance:none;
+  background:#fff;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:16px;
+  margin-top:10px;
+  border-radius:12px;
+  font-size:17px;
+  border:none;
+  cursor:pointer;
+  background:#2e7d32;
+  color:white;
+}
+
+button:hover{ background:#1b5e20; }
+
+/* RESULT */
+.result{
+  background:#f1f8e9;
+  padding:14px;
+  border-radius:12px;
+  margin-top:12px;
+  font-size:16px;
+  line-height:1.5;
+}
+
+/* BACK BUTTON */
+.back-btn{
+  background:#1565c0;
+  margin-top:12px;
+}
+.back-btn:hover{ background:#0d47a1; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">🌾 शेती AI सल्ला</div>
+
+  <div class="card">
+
+    <select id="type">
+      <option value="crop">🌱 पिक निवड सल्ला</option>
+      <option value="fertilizer">💧 खत / फवारणी मार्गदर्शन</option>
+    </select>
+
+    <input id="location" placeholder="गाव / तालुका">
+    <input id="season" placeholder="हंगाम (खरीप / रब्बी)">
+    <input id="crop" placeholder="पीक नाव (असल्यास)">
+    <input id="land" placeholder="जमीन (एकर)">
+    <input id="water" placeholder="पाणी उपलब्धता (कमी / मध्यम / जास्त)">
+
+    <button onclick="getAdvice()">🤖 सल्ला मिळवा</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <button class="back-btn" onclick="goBack()">⬅ मुख्य पेज</button>
+
+</div>
+
+<script>
+let spoken = false;
+
+function goBack(){
+  speechSynthesis.cancel(); // 🔇 आवाज बंद
+  location.href="home.html";
+}
+
+async function getAdvice(){
+  const type = document.getElementById("type").value;
+  const location = document.getElementById("location").value;
+  const season = document.getElementById("season").value;
+  const crop = document.getElementById("crop").value;
+  const land = document.getElementById("land").value;
+  const water = document.getElementById("water").value;
+
+  const prompt = `
+  तू एक शेती तज्ञ आहेस.
+  शेतकऱ्याला मराठीत स्पष्ट सल्ला दे.
+
+  प्रकार: ${type}
+  गाव: ${location}
+  हंगाम: ${season}
+  पीक: ${crop}
+  जमीन: ${land} एकर
+  पाणी: ${water}
+
+  सोप्या मराठीत उत्तर दे.
+  `;
+
+  document.getElementById("result").innerText = "⏳ सल्ला मिळत आहे...";
+
+  const res = await fetch("/api/ai", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await res.json();
+  document.getElementById("result").innerText = data.reply;
+
+  speakOnce(data.reply);
+}
+
+// 🔊 Marathi Voice (once)
+function speakOnce(text){
+  if(spoken) return;
+  spoken = true;
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "mr-IN";
+  msg.rate = 0.9;
+  speechSynthesis.speak(msg);
+}
+</script>
+
+</body>
+</html>
