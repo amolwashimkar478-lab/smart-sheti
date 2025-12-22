@@ -25,12 +25,12 @@ body{
 /* Common button */
 .btn{
   width:100%;
-  max-width:300px;      /* ⬅ थोडा कमी */
-  padding:14px 16px;    /* ⬅ उंची कमी */
+  max-width:300px;
+  padding:14px 16px;
   margin:10px 0;
-  font-size:17px;       /* ⬅ balanced text */
+  font-size:17px;
   border:none;
-  border-radius:12px;   /* ⬅ जास्त rounded नाही */
+  border-radius:12px;
   cursor:pointer;
   display:flex;
   align-items:center;
@@ -41,20 +41,16 @@ body{
 }
 
 /* Weather */
-.weather-btn{
-  background:#1565c0;
-}
-.weather-btn:hover{
-  background:#0d47a1;
-}
+.weather-btn{ background:#1565c0; }
+.weather-btn:hover{ background:#0d47a1; }
 
 /* AI */
-.ai-btn{
-  background:#2e7d32;
-}
-.ai-btn:hover{
-  background:#1b5e20;
-}
+.ai-btn{ background:#2e7d32; }
+.ai-btn:hover{ background:#1b5e20; }
+
+/* Notification */
+.notify-btn{ background:#ef6c00; }
+.notify-btn:hover{ background:#e65100; }
 </style>
 </head>
 
@@ -72,13 +68,40 @@ body{
   🤖 AI सल्ला
 </button>
 
-  <button class="btn ai-btn" onclick="location.href='crop-calendar.html'">
-🌱 Crop Calendar
-  </button>
+<!-- 🌱 Crop Calendar -->
+<button class="btn ai-btn" onclick="location.href='crop-calendar.html'">
+  🌱 Crop Calendar
+</button>
+
+<!-- 🔔 Rain Notification -->
+<button class="btn notify-btn" onclick="enableNotification()">
+  🔔 पावसाचा Alert ON
+</button>
 
 <script>
 function goToWeather(){
   window.location.href = "weather.html";
+}
+
+// 🔔 Notification Permission
+function enableNotification(){
+  if(!("Notification" in window)){
+    alert("तुमच्या browser मध्ये notification support नाही");
+    return;
+  }
+
+  Notification.requestPermission().then(permission=>{
+    if(permission === "granted"){
+      alert("✅ पावसाचा alert चालू झाला");
+
+      // TEST notification (एकदाच)
+      new Notification("🌧️ Smart Sheti", {
+        body: "पावसाचा alert चालू आहे. पाऊस आल्यास सूचना मिळेल 🌾"
+      });
+    }else{
+      alert("❌ Notification allow करा");
+    }
+  });
 }
 </script>
 
