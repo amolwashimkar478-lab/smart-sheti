@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 Crop Calendar</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#e8f5e9;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  font-size:26px;
+  font-weight:bold;
+  color:#2e7d32;
+  margin-bottom:20px;
+}
+
+.card{
+  background:#fff;
+  width:100%;
+  max-width:380px;
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:14px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.08);
+}
+
+select, button{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  background:#2e7d32;
+  color:white;
+  border:none;
+}
+
+button:hover{
+  background:#1b5e20;
+}
+
+.result{
+  background:#f1f8e9;
+  padding:14px;
+  border-radius:10px;
+  margin-top:10px;
+  font-size:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">🌱 Crop Calendar</div>
+
+<div class="card">
+  <select id="crop">
+    <option value="">पीक निवडा</option>
+    <option value="soybean">सोयाबीन</option>
+    <option value="cotton">कापूस</option>
+    <option value="rice">भात</option>
+    <option value="wheat">गहू</option>
+    <option value="gram">हरभरा</option>
+    <option value="onion">कांदा</option>
+    <option value="tur">तूर</option>
+    <option value="maize">मका</option>
+    <option value="sugarcane">ऊस</option>
+  </select>
+
+  <button onclick="showCalendar()">📅 Calendar पाहा</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<button onclick="location.href='index.html'">⬅ मुख्य पेज</button>
+
+<script>
+function showCalendar(){
+  const crop = document.getElementById("crop").value;
+  const result = document.getElementById("result");
+
+  if(!crop){
+    result.innerHTML = "❗ कृपया पीक निवडा";
+    return;
+  }
+
+  const data = {
+    soybean: {
+      sowing: "जून अखेर – जुलै",
+      fertilizer: "20-25 दिवसांनी DAP + Urea",
+      spray: "फुलोरा अवस्थेत कीटकनाशक",
+      harvest: "ऑक्टोबर"
+    },
+    cotton: {
+      sowing: "मे – जून",
+      fertilizer: "30 व 60 दिवसांनी खत",
+      spray: "गुलाबी बोंड अळी नियंत्रण",
+      harvest: "नोव्हेंबर – डिसेंबर"
+    },
+    rice: {
+      sowing: "जून – जुलै",
+      fertilizer: "रोपांतरानंतर 25 दिवस",
+      spray: "ब्लास्ट रोग नियंत्रण",
+      harvest: "ऑक्टोबर"
+    },
+    wheat: {
+      sowing: "ऑक्टोबर",
+      fertilizer: "20 व 45 दिवसांनी",
+      spray: "तुडतुडे नियंत्रण",
+      harvest: "फेब्रुवारी"
+    },
+    gram: {
+      sowing: "ऑक्टोबर",
+      fertilizer: "पेरणीवेळी DAP",
+      spray: "अळी नियंत्रण",
+      harvest: "फेब्रुवारी"
+    },
+    onion: {
+      sowing: "नोव्हेंबर",
+      fertilizer: "दर 20 दिवसांनी",
+      spray: "थ्रिप्स नियंत्रण",
+      harvest: "मार्च"
+    },
+    tur: {
+      sowing: "जून",
+      fertilizer: "30 दिवसांनी",
+      spray: "पाने खाणारी अळी",
+      harvest: "जानेवारी"
+    },
+    maize: {
+      sowing: "जून",
+      fertilizer: "25 दिवसांनी",
+      spray: "लष्करी अळी नियंत्रण",
+      harvest: "सप्टेंबर"
+    },
+    sugarcane: {
+      sowing: "डिसेंबर – जानेवारी",
+      fertilizer: "दर 45 दिवसांनी",
+      spray: "पोक्का बोईंग रोग",
+      harvest: "12 महिने"
+    }
+  };
+
+  const c = data[crop];
+
+  result.innerHTML = `
+    🌱 <b>पेरणी:</b> ${c.sowing}<br><br>
+    💧 <b>खत वेळापत्रक:</b> ${c.fertilizer}<br><br>
+    🚿 <b>फवारणी:</b> ${c.spray}<br><br>
+    🌾 <b>काढणी:</b> ${c.harvest}
+  `;
+}
+</script>
+
+</body>
+</html>
