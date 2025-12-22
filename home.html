@@ -16,28 +16,31 @@ body{
 }
 
 .logo{
-  font-size:30px;
+  font-size:28px;
   font-weight:bold;
   color:#2e7d32;
-  margin-bottom:30px;
+  margin-bottom:25px;
 }
 
+/* Common button */
 .btn{
   width:100%;
-  max-width:320px;
-  padding:20px;
-  margin:14px 0;
-  font-size:20px;
+  max-width:300px;      /* ⬅ थोडा कमी */
+  padding:14px 16px;    /* ⬅ उंची कमी */
+  margin:10px 0;
+  font-size:17px;       /* ⬅ balanced text */
   border:none;
-  border-radius:16px;
+  border-radius:12px;   /* ⬅ जास्त rounded नाही */
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
+  gap:8px;
   color:white;
+  box-shadow:0 4px 8px rgba(0,0,0,0.12);
 }
 
+/* Weather */
 .weather-btn{
   background:#1565c0;
 }
@@ -45,6 +48,7 @@ body{
   background:#0d47a1;
 }
 
+/* AI */
 .ai-btn{
   background:#2e7d32;
 }
@@ -58,19 +62,18 @@ body{
 
 <div class="logo">🌾 Smart Sheti</div>
 
-<!-- 🌦 Weather button (ONLY redirect) -->
+<!-- 🌦 Weather -->
 <button class="btn weather-btn" onclick="goToWeather()">
   🌦 आजचं हवामान
 </button>
 
-<!-- 🤖 AI button -->
+<!-- 🤖 AI -->
 <button class="btn ai-btn" onclick="location.href='ai.html'">
   🤖 AI सल्ला
 </button>
 
 <script>
 function goToWeather(){
-  // थेट special weather page
   window.location.href = "weather.html";
 }
 </script>
