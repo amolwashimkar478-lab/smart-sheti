@@ -54,6 +54,7 @@ button:hover{ background:#1b5e20; }
 <div class="container">
   <h2>📸 पिकाचा फोटो टाका / निवडा</h2>
   <div class="card">
+    <!-- Camera + Gallery -->
     <input type="file" id="image" accept="image/*" capture="environment">
     <button onclick="analyze()">🔍 रोग ओळखा</button>
     <div class="result" id="result"></div>
@@ -68,24 +69,26 @@ function goBack(){
 }
 
 async function analyze(){
-  const file = document.getElementById("image").files[0];
+  const fileInput = document.getElementById("image");
+  const file = fileInput.files[0];
   if(!file) return alert("फोटो टाका किंवा निवडा");
 
-  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
+  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
 
   const form = new FormData();
   form.append("image", file);
 
-  try{
+  try {
+    // 🔗 Gemini Backend API
     const res = await fetch("https://smart-sheti.vercel.app/api/disease", {
       method:"POST",
       body: form
     });
-    const data = await res.json();
 
+    const data = await res.json();
     document.getElementById("result").innerText = data.reply;
 
-    // 🔊 Auto Marathi / Hindi
+    // 🔊 Auto voice (Marathi / Hindi)
     const msg = new SpeechSynthesisUtterance(data.reply);
     msg.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
     msg.rate = 0.9;
@@ -97,7 +100,7 @@ async function analyze(){
     }
 
   } catch(err){
-    console.error("Network Error:", err);
+    console.error(err);
     alert("सर्व्हरशी संपर्क झाला नाही. URL / API Key तपासा.");
   }
 }
