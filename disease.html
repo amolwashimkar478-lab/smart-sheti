@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌿 रोग ओळख - Smart Sheti</title>
+<title>🌿 रोग ओळख</title>
 <style>
 body{
   font-family:Arial;
@@ -25,18 +25,15 @@ body{
   flex-direction:column;
   align-items:center;
 }
-input, button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:10px;
-  border:1px solid #ccc;
-  font-size:16px;
-}
 button{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border:none;
+  border-radius:12px;
   background:#2e7d32;
   color:white;
-  border:none;
+  font-size:16px;
   cursor:pointer;
 }
 button:hover{ background:#1b5e20; }
@@ -46,81 +43,83 @@ button:hover{ background:#1b5e20; }
   padding:12px;
   border-radius:10px;
   width:100%;
+  min-height:50px;
+  text-align:center;
 }
-img#preview{
-  margin-top:10px;
-  max-width:100%;
-  border-radius:12px;
-  border:1px solid #ccc;
-}
+.hiddenInput{ display:none; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>📸 पिकाचा फोटो काढा किंवा गॅलरीतून निवडा</h2>
+  <h2>📸 पिकाचा फोटो टाका</h2>
   <div class="card">
-    <!-- Camera + Gallery -->
-    <input type="file" id="image" accept="image/*" capture="environment">
-    <img id="preview" src="" alt="फोटो preview" style="display:none;">
-    <button onclick="analyze()">🔍 रोग ओळखा</button>
-    <div class="result" id="result"></div>
+    <!-- Camera + Gallery Buttons -->
+    <button onclick="openCamera()">📷 Camera</button>
+    <button onclick="openGallery()">🖼️ Gallery</button>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hiddenInput">
+    <input type="file" id="galleryInput" accept="image/*" class="hiddenInput">
+
+    <div class="result" id="result">⏳ प्रतीक्षा करा...</div>
   </div>
+
   <button onclick="goBack()">⬅ मुख्य पेज</button>
 </div>
 
 <script>
-const preview = document.getElementById("preview");
+// Inputs
+const cameraInput = document.getElementById("cameraInput");
+const galleryInput = document.getElementById("galleryInput");
+let voicePlaying = null;
 
-document.getElementById("image").addEventListener("change", function(){
-  const file = this.files[0];
-  if(file){
-    const reader = new FileReader();
-    reader.onload = function(e){
-      preview.src = e.target.result;
-      preview.style.display = "block";
-    }
-    reader.readAsDataURL(file);
-  }
-});
+// Button functions
+function openCamera(){ cameraInput.click(); }
+function openGallery(){ galleryInput.click(); }
+
+cameraInput.addEventListener("change", handleFile);
+galleryInput.addEventListener("change", handleFile);
 
 function goBack(){
-  speechSynthesis.cancel();
+  if(voicePlaying) speechSynthesis.cancel();
   location.href="home.html";
 }
 
-async function analyze(){
-  const file = document.getElementById("image").files[0];
-  if(!file) return alert("फोटो काढा किंवा निवडा");
+// Handle selected file
+async function handleFile(){
+  const file = this.files[0];
+  if(!file) return;
 
-  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
+  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
 
   const form = new FormData();
   form.append("image", file);
 
-  try {
+  try{
     const res = await fetch("https://smart-sheti.vercel.app/api/disease", {
       method:"POST",
       body: form
     });
     const data = await res.json();
 
+    // Show AI Reply
     document.getElementById("result").innerText = data.reply;
 
-    // 🔊 Auto voice (Marathi / Hindi)
-    const msg = new SpeechSynthesisUtterance(data.reply);
-    msg.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
-    msg.rate = 0.9;
-    speechSynthesis.speak(msg);
+    // 🔊 Auto Voice (Marathi/Hindi)
+    voicePlaying = new SpeechSynthesisUtterance(data.reply);
+    voicePlaying.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
+    voicePlaying.rate = 0.9;
+    speechSynthesis.speak(voicePlaying);
 
-    // 🌧 Rain alert
+    // 🌧 Rain Alert
     if(data.weatherAlert){
       alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
     }
 
   } catch(err){
     console.error(err);
-    alert("सर्व्हरशी संपर्क झाला नाही. URL / API Key तपासा.");
+    alert("सर्व्हरशी संपर्क झाला नाही. URL/ API Key तपासा.");
   }
 }
 </script>
