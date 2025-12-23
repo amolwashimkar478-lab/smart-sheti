@@ -7,7 +7,7 @@
 
 <style>
 body{
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   background:#e8f5e9;
   display:flex;
   flex-direction:column;
@@ -38,19 +38,20 @@ body{
   gap:8px;
   color:white;
   box-shadow:0 4px 8px rgba(0,0,0,0.12);
+  transition: 0.3s;
 }
 
-/* Weather */
+.btn:active { transform: scale(0.98); }
+
+/* Weather & Spray */
 .weather-btn{ background:#1565c0; }
-.weather-btn:hover{ background:#0d47a1; }
+.spray-btn { background:#00796b; } /* नवीन फवारणी बटनसाठी रंग */
 
-/* AI */
+/* AI & Tools */
 .ai-btn{ background:#2e7d32; }
-.ai-btn:hover{ background:#1b5e20; }
 
-/* Notification */
+/* Notification & News */
 .notify-btn{ background:#ef6c00; }
-.notify-btn:hover{ background:#e65100; }
 </style>
 </head>
 
@@ -58,39 +59,68 @@ body{
 
 <div class="logo">🌾 Smart Sheti</div>
 
-<!-- 🌦 Weather -->
 <button class="btn weather-btn" onclick="goToWeather()">
   🌦 आजचं हवामान
 </button>
 
-<!-- 🤖 AI -->
+<button class="btn spray-btn" onclick="checkWeatherForSpray()">
+  🚿 फवारणी सल्ला (पाऊस चेक करा)
+</button>
+
 <button class="btn ai-btn" onclick="location.href='ai.html'">
   🤖 AI सल्ला
 </button>
 
-<!-- 🌱 Crop Calendar -->
-<button class="btn ai-btn" onclick="location.href='crop-calendar.html'">
-  🌱 Crop Calendar
-</button>
-
-<!-- 🔔 Rain Notification -->
-<button class="btn notify-btn" onclick="enableNotification()">
-  🔔 पावसाचा Alert ON
-</button>
-
-<!-- 📸 रोग ओळख -->
 <button class="btn ai-btn" onclick="location.href='disease.html'">
   📸 रोग ओळख (फोटो)
 </button>
 
-  <!-- 📰 District-wise News -->
+<button class="btn ai-btn" onclick="location.href='crop-calendar.html'">
+  🌱 Crop Calendar
+</button>
+
 <button class="btn notify-btn" onclick="location.href='news.html'">
   📰 शेती बातम्या
+</button>
+
+<button class="btn notify-btn" onclick="enableNotification()">
+  🔔 पावसाचा Alert ON
 </button>
 
 <script>
 function goToWeather(){
   window.location.href = "weather.html";
+}
+
+// --- 🌧️ फवारणी आणि हवामान सल्ला (तुमचा कोड इथे जोडला आहे) ---
+function checkWeatherForSpray() {
+  if (!navigator.geolocation) {
+    alert("तुमच्या ब्राउझरमध्ये लोकेशन सपोर्ट नाही.");
+    return;
+  }
+
+  alert("हवामान तपासत आहे, कृपया थोडा वेळ थांबा...");
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+
+    try {
+      // तुमच्या बॅकएंड API ला कॉल (pages/api/weather.js)
+      const res = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);
+      const data = await res.json();
+
+      if (data.isRaining) {
+        alert("🌧️ पाऊस सुरू आहे किंवा पावसाची शक्यता आहे. फवारणी पुढे ढकला! ❌");
+      } else {
+        alert("✅ सध्या हवामान साफ आहे. तुम्ही फवारणीचे नियोजन करू शकता. 🌿");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("हवामान माहिती मिळवण्यात अडचण आली. कृपया तुमची API Key तपासा.");
+    }
+  }, (error) => {
+    alert("लोकेशन ॲक्सेस नाकारला. कृपया GPS चालू करा.");
+  });
 }
 
 // 🔔 Notification Permission
@@ -103,13 +133,11 @@ function enableNotification(){
   Notification.requestPermission().then(permission=>{
     if(permission === "granted"){
       alert("✅ पावसाचा alert चालू झाला");
-
-      // Example test notification
       new Notification("🌧️ Smart Sheti", {
         body: "पावसाचा alert चालू आहे. पाऊस आल्यास सूचना मिळेल 🌾"
       });
     }else{
-      alert("❌ Notification allow करा");
+      alert("❌ Notification परवानगी नाकारली");
     }
   });
 }
@@ -121,34 +149,23 @@ async function checkDailyNews(district){
     const data = await res.json();
     if(data.articles && data.articles.length > 0){
       const article = data.articles[0];
-      new Notification(`📰 ${district} शेती बातम्या`, {
-        body: article.title,
-        icon: "https://cdn-icons-png.flaticon.com/512/1779/1779940.png"
-      }).onclick = () => window.open(article.url, "_blank");
+      if(Notification.permission === "granted"){
+        new Notification(`📰 ${district} शेती बातम्या`, {
+          body: article.title,
+        }).onclick = () => window.open(article.url, "_blank");
+      }
     }
   } catch(err){
     console.error("News fetch error:", err);
   }
 }
 
-// Schedule daily news at 7AM
-function scheduleDailyNews(district){
-  const now = new Date();
-  const target = new Date();
-  target.setHours(7,0,0,0); // 7 AM
-  if(now > target) target.setDate(target.getDate() + 1);
-  const timeout = target - now;
-
-  setTimeout(()=>{
-    checkDailyNews(district);
-    setInterval(()=>checkDailyNews(district), 24*60*60*1000); // 24h interval
-  }, timeout);
-}
-
 // 🌞 Auto-run on page load
 window.onload = () => {
-  const userDistrict = "Pune"; // user district dynamic ठेवता येईल
-  if(Notification.permission === "granted") scheduleDailyNews(userDistrict);
+  const userDistrict = "Maharashtra"; 
+  if(Notification.permission === "granted") {
+    checkDailyNews(userDistrict);
+  }
 };
 </script>
 
