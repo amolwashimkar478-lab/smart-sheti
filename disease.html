@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌿 रोग ओळख</title>
+<title>🌿 रोग ओळख - Smart Sheti</title>
 <style>
 body{
   font-family:Arial;
@@ -47,15 +47,22 @@ button:hover{ background:#1b5e20; }
   border-radius:10px;
   width:100%;
 }
+img#preview{
+  margin-top:10px;
+  max-width:100%;
+  border-radius:12px;
+  border:1px solid #ccc;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>📸 पिकाचा फोटो टाका / निवडा</h2>
+  <h2>📸 पिकाचा फोटो काढा किंवा गॅलरीतून निवडा</h2>
   <div class="card">
     <!-- Camera + Gallery -->
     <input type="file" id="image" accept="image/*" capture="environment">
+    <img id="preview" src="" alt="फोटो preview" style="display:none;">
     <button onclick="analyze()">🔍 रोग ओळखा</button>
     <div class="result" id="result"></div>
   </div>
@@ -63,29 +70,41 @@ button:hover{ background:#1b5e20; }
 </div>
 
 <script>
+const preview = document.getElementById("preview");
+
+document.getElementById("image").addEventListener("change", function(){
+  const file = this.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      preview.src = e.target.result;
+      preview.style.display = "block";
+    }
+    reader.readAsDataURL(file);
+  }
+});
+
 function goBack(){
   speechSynthesis.cancel();
   location.href="home.html";
 }
 
 async function analyze(){
-  const fileInput = document.getElementById("image");
-  const file = fileInput.files[0];
-  if(!file) return alert("फोटो टाका किंवा निवडा");
+  const file = document.getElementById("image").files[0];
+  if(!file) return alert("फोटो काढा किंवा निवडा");
 
-  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
+  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
 
   const form = new FormData();
   form.append("image", file);
 
   try {
-    // 🔗 Gemini Backend API
     const res = await fetch("https://smart-sheti.vercel.app/api/disease", {
       method:"POST",
       body: form
     });
-
     const data = await res.json();
+
     document.getElementById("result").innerText = data.reply;
 
     // 🔊 Auto voice (Marathi / Hindi)
