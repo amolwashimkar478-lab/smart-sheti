@@ -4,122 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌿 रोग ओळख</title>
+
 <style>
 body{
-  font-family:Arial;
+  font-family: Arial;
   background:#e8f5e9;
   padding:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+  text-align:center;
 }
 .container{
-  max-width:400px;
-  width:100%;
+  max-width:420px;
+  margin:auto;
 }
 .card{
   background:#fff;
-  padding:16px;
-  border-radius:14px;
+  padding:20px;
+  border-radius:18px;
+}
+h2{
+  color:#2e7d32;
+}
+.btn-row{
   display:flex;
-  flex-direction:column;
-  align-items:center;
+  gap:10px;
+  margin:15px 0;
 }
 button{
-  width:100%;
+  flex:1;
   padding:14px;
-  margin:8px 0;
   border:none;
-  border-radius:12px;
-  background:#2e7d32;
-  color:white;
+  border-radius:14px;
   font-size:16px;
-  cursor:pointer;
+  color:white;
 }
-button:hover{ background:#1b5e20; }
+.camera{ background:#2e7d32; }
+.gallery{ background:#1565c0; }
+.detect{ background:#388e3c; width:100%; margin-top:10px; }
+.back{ background:#1976d2; width:100%; margin-top:15px; }
+
 .result{
   margin-top:12px;
   background:#f1f8e9;
   padding:12px;
   border-radius:10px;
-  width:100%;
-  min-height:50px;
-  text-align:center;
+  text-align:left;
 }
-.hiddenInput{ display:none; }
+
+/* 🔥 FILE INPUT पूर्णपणे HIDE */
+input[type=file]{
+  display:none;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <h2>📸 पिकाचा फोटो टाका</h2>
+
   <div class="card">
-    <!-- Camera + Gallery Buttons -->
-    <button onclick="openCamera()">📷 Camera</button>
-    <button onclick="openGallery()">🖼️ Gallery</button>
 
     <!-- Hidden Inputs -->
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hiddenInput">
-    <input type="file" id="galleryInput" accept="image/*" class="hiddenInput">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment">
+    <input type="file" id="galleryInput" accept="image/*">
 
-    <div class="result" id="result">⏳ प्रतीक्षा करा...</div>
+    <div class="btn-row">
+      <button class="camera" onclick="openCamera()">📷 कॅमेऱ्याने फोटो</button>
+      <button class="gallery" onclick="openGallery()">🖼️ गॅलरीतून फोटो</button>
+    </div>
+
+    <button class="detect" onclick="analyze()">🔍 रोग ओळखा</button>
+
+    <div class="result" id="result"></div>
   </div>
 
-  <button onclick="goBack()">⬅ मुख्य पेज</button>
+  <button class="back" onclick="goBack()">⬅ मुख्य पेज</button>
 </div>
 
 <script>
-// Inputs
-const cameraInput = document.getElementById("cameraInput");
-const galleryInput = document.getElementById("galleryInput");
-let voicePlaying = null;
+let selectedFile = null;
 
-// Button functions
-function openCamera(){ cameraInput.click(); }
-function openGallery(){ galleryInput.click(); }
+function openCamera(){
+  document.getElementById("cameraInput").click();
+}
 
-cameraInput.addEventListener("change", handleFile);
-galleryInput.addEventListener("change", handleFile);
+function openGallery(){
+  document.getElementById("galleryInput").click();
+}
+
+document.getElementById("cameraInput").onchange = e => {
+  selectedFile = e.target.files[0];
+  document.getElementById("result").innerText = "📸 फोटो निवडला आहे";
+};
+
+document.getElementById("galleryInput").onchange = e => {
+  selectedFile = e.target.files[0];
+  document.getElementById("result").innerText = "🖼️ फोटो निवडला आहे";
+};
 
 function goBack(){
-  if(voicePlaying) speechSynthesis.cancel();
+  speechSynthesis.cancel();
   location.href="home.html";
 }
 
-// Handle selected file
-async function handleFile(){
-  const file = this.files[0];
-  if(!file) return;
+async function analyze(){
+  if(!selectedFile){
+    alert("आधी फोटो निवडा");
+    return;
+  }
 
-  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
+  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
 
   const form = new FormData();
-  form.append("image", file);
+  form.append("image", selectedFile);
 
   try{
-    const res = await fetch("https://smart-sheti.vercel.app/api/disease", {
+    const res = await fetch("/api/disease", {
       method:"POST",
       body: form
     });
-    const data = await res.json();
 
-    // Show AI Reply
+    const data = await res.json();
     document.getElementById("result").innerText = data.reply;
 
-    // 🔊 Auto Voice (Marathi/Hindi)
-    voicePlaying = new SpeechSynthesisUtterance(data.reply);
-    voicePlaying.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
-    voicePlaying.rate = 0.9;
-    speechSynthesis.speak(voicePlaying);
+    // 🔊 Auto Marathi / Hindi voice
+    const msg = new SpeechSynthesisUtterance(data.reply);
+    msg.lang = /[अ-ह]/.test(data.reply) ? "mr-IN" : "hi-IN";
+    msg.rate = 0.9;
+    speechSynthesis.speak(msg);
 
-    // 🌧 Rain Alert
     if(data.weatherAlert){
-      alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
+      alert("🌧️ पावसामुळे फवारणी टाळा");
     }
 
-  } catch(err){
-    console.error(err);
-    alert("सर्व्हरशी संपर्क झाला नाही. URL/ API Key तपासा.");
+  }catch(e){
+    alert("सर्व्हरशी संपर्क झाला नाही");
   }
 }
 </script>
