@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌾 जिल्हा आधारित शेती बातम्या</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #e8f5e9;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  font-size: 26px;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+select, button {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1b5e20;
+}
+
+.news-container {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.news-card {
+  background: #fff;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.news-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #1b5e20;
+}
+
+.news-card p {
+  font-size: 15px;
+  margin: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="header">🌾 महाराष्ट्र जिल्हा आधारित शेती बातम्या</div>
+
+<select id="district">
+  <option value="">-- जिल्हा निवडा --</option>
+  <option value="अहमदनगर">अहमदनगर</option>
+  <option value="अकोला">अकोला</option>
+  <option value="अमरावती">अमरावती</option>
+  <option value="बीड">बीड</option>
+  <option value="बुलढाणा">बुलढाणा</option>
+  <option value="चंद्रपूर">चंद्रपूर</option>
+  <option value="धुळे">धुळे</option>
+  <option value="गडचिरोली">गडचिरोली</option>
+  <option value="गोंदिया">गोंदिया</option>
+  <option value="हिंगोली">हिंगोली</option>
+  <option value="जळगाव">जळगाव</option>
+  <option value="जालना">जालना</option>
+  <option value="कोल्हापूर">कोल्हापूर</option>
+  <option value="लातूर">लातूर</option>
+  <option value="मुंबई शहर">मुंबई शहर</option>
+  <option value="मुंबई उपनगर">मुंबई उपनगर</option>
+  <option value="नागपूर">नागपूर</option>
+  <option value="नंदुरबार">नंदुरबार</option>
+  <option value="नाशिक">नाशिक</option>
+  <option value="पारभणी">पारभणी</option>
+  <option value="पुणे">पुणे</option>
+  <option value="रत्नागिरी">रत्नागिरी</option>
+  <option value="सांगली">सांगली</option>
+  <option value="सातारा">सातारा</option>
+  <option value="सिंधुदुर्ग">सिंधुदुर्ग</option>
+  <option value="सोलापूर">सोलापूर</option>
+  <option value="ठाणे">ठाणे</option>
+  <option value="वर्धा">वर्धा</option>
+  <option value="वाशिम">वाशिम</option>
+  <option value="यवतमाळ">यवतमाळ</option>
+</select>
+
+<button onclick="fetchNews()">🔍 बातम्या दाखवा</button>
+
+<div class="news-container" id="newsContainer"></div>
+
+<script>
+const API_KEY = "00d47c00261f47be850253577e6ee131";
+
+async function fetchNews() {
+  const district = document.getElementById("district").value;
+  if (!district) {
+    alert("कृपया जिल्हा निवडा");
+    return;
+  }
+
+  document.getElementById("newsContainer").innerHTML = "<p>⏳ बातम्या लोड होत आहेत...</p>";
+
+  try {
+    const res = await fetch(`https://newsapi.org/v2/everything?q=${district}+कृषि&language=mr&sortBy=publishedAt&pageSize=10&apiKey=${API_KEY}`);
+    const data = await res.json();
+
+    if(data.articles.length === 0){
+      document.getElementById("newsContainer").innerHTML = "<p>बातम्या सापडल्या नाहीत</p>";
+      return;
+    }
+
+    let html = "";
+    data.articles.forEach(article => {
+      html += `
+        <div class="news-card">
+          <h3>${article.title}</h3>
+          <p>${article.description || ""}</p>
+          <a href="${article.url}" target="_blank">📰 पूर्ण वाचा</a>
+        </div>
+      `;
+    });
+
+    document.getElementById("newsContainer").innerHTML = html;
+
+  } catch(err) {
+    console.error(err);
+    document.getElementById("newsContainer").innerHTML = "<p>सर्व्हरशी संपर्क झाला नाही किंवा API key चुकली आहे</p>";
+  }
+}
+</script>
+
+</body>
+</html>
