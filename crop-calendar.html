@@ -7,161 +7,103 @@
 
 <style>
 body{
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background:#e8f5e9;
   padding:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
 }
-
-.header{
-  font-size:26px;
-  font-weight:bold;
-  color:#2e7d32;
-  margin-bottom:20px;
+.container{
+  max-width:420px;
+  margin:auto;
 }
-
 .card{
   background:#fff;
-  width:100%;
-  max-width:380px;
   padding:16px;
   border-radius:14px;
-  margin-bottom:14px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.08);
+  margin-bottom:12px;
 }
-
 select, button{
   width:100%;
   padding:12px;
-  font-size:16px;
-  margin:8px 0;
-  border-radius:8px;
+  margin-top:10px;
+  border-radius:10px;
   border:1px solid #ccc;
+  font-size:16px;
 }
-
 button{
   background:#2e7d32;
   color:white;
   border:none;
 }
-
-button:hover{
-  background:#1b5e20;
-}
-
-.result{
-  background:#f1f8e9;
-  padding:14px;
+.alert{
+  background:#fff3cd;
+  padding:12px;
   border-radius:10px;
   margin-top:10px;
-  font-size:15px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🌱 Crop Calendar</div>
+<div class="container">
+<h2>🌱 Crop Calendar (Premium)</h2>
 
 <div class="card">
+  <label>पीक निवडा</label>
   <select id="crop">
-    <option value="">पीक निवडा</option>
-    <option value="soybean">सोयाबीन</option>
     <option value="cotton">कापूस</option>
-    <option value="rice">भात</option>
+    <option value="soybean">सोयाबीन</option>
     <option value="wheat">गहू</option>
-    <option value="gram">हरभरा</option>
-    <option value="onion">कांदा</option>
-    <option value="tur">तूर</option>
-    <option value="maize">मका</option>
-    <option value="sugarcane">ऊस</option>
+    <option value="rice">भात</option>
   </select>
 
   <button onclick="showCalendar()">📅 Calendar पाहा</button>
-
-  <div class="result" id="result"></div>
 </div>
 
+<div class="card" id="result" style="display:none"></div>
+
 <button onclick="location.href='home.html'">⬅ मुख्य पेज</button>
+</div>
+
 <script>
+const calendarData = {
+  cotton:{
+    sowing:"15 जून – 15 जुलै",
+    fertilizer:"पेरणीनंतर 25 दिवस",
+    spray:"कोरडं हवामान (पाऊस नसेल तेव्हा)"
+  },
+  soybean:{
+    sowing:"20 जून – 10 जुलै",
+    fertilizer:"20 दिवसांनी",
+    spray:"हलका वारा + पाऊस नाही"
+  },
+  wheat:{
+    sowing:"15 ऑक्टोबर – 15 नोव्हेंबर",
+    fertilizer:"30 दिवसांनी",
+    spray:"थंड व कोरडं हवामान"
+  },
+  rice:{
+    sowing:"जून – जुलै",
+    fertilizer:"पेरणीनंतर 20 दिवस",
+    spray:"पाऊस थांबल्यावर"
+  }
+};
+
 function showCalendar(){
   const crop = document.getElementById("crop").value;
-  const result = document.getElementById("result");
+  const data = calendarData[crop];
 
-  if(!crop){
-    result.innerHTML = "❗ कृपया पीक निवडा";
-    return;
-  }
-
-  const data = {
-    soybean: {
-      sowing: "जून अखेर – जुलै",
-      fertilizer: "20-25 दिवसांनी DAP + Urea",
-      spray: "फुलोरा अवस्थेत कीटकनाशक",
-      harvest: "ऑक्टोबर"
-    },
-    cotton: {
-      sowing: "मे – जून",
-      fertilizer: "30 व 60 दिवसांनी खत",
-      spray: "गुलाबी बोंड अळी नियंत्रण",
-      harvest: "नोव्हेंबर – डिसेंबर"
-    },
-    rice: {
-      sowing: "जून – जुलै",
-      fertilizer: "रोपांतरानंतर 25 दिवस",
-      spray: "ब्लास्ट रोग नियंत्रण",
-      harvest: "ऑक्टोबर"
-    },
-    wheat: {
-      sowing: "ऑक्टोबर",
-      fertilizer: "20 व 45 दिवसांनी",
-      spray: "तुडतुडे नियंत्रण",
-      harvest: "फेब्रुवारी"
-    },
-    gram: {
-      sowing: "ऑक्टोबर",
-      fertilizer: "पेरणीवेळी DAP",
-      spray: "अळी नियंत्रण",
-      harvest: "फेब्रुवारी"
-    },
-    onion: {
-      sowing: "नोव्हेंबर",
-      fertilizer: "दर 20 दिवसांनी",
-      spray: "थ्रिप्स नियंत्रण",
-      harvest: "मार्च"
-    },
-    tur: {
-      sowing: "जून",
-      fertilizer: "30 दिवसांनी",
-      spray: "पाने खाणारी अळी",
-      harvest: "जानेवारी"
-    },
-    maize: {
-      sowing: "जून",
-      fertilizer: "25 दिवसांनी",
-      spray: "लष्करी अळी नियंत्रण",
-      harvest: "सप्टेंबर"
-    },
-    sugarcane: {
-      sowing: "डिसेंबर – जानेवारी",
-      fertilizer: "दर 45 दिवसांनी",
-      spray: "पोक्का बोईंग रोग",
-      harvest: "12 महिने"
-    }
-  };
-
-  const c = data[crop];
-
-  result.innerHTML = `
-    🌱 <b>पेरणी:</b> ${c.sowing}<br><br>
-    💧 <b>खत वेळापत्रक:</b> ${c.fertilizer}<br><br>
-    🚿 <b>फवारणी:</b> ${c.spray}<br><br>
-    🌾 <b>काढणी:</b> ${c.harvest}
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").innerHTML = `
+    <b>🌾 पेरणी वेळ:</b> ${data.sowing}<br><br>
+    <b>💧 खत वेळ:</b> ${data.fertilizer}<br><br>
+    <b>🚜 फवारणी:</b> ${data.spray}
   `;
+
+  checkWeatherAlert(data.spray);
 }
 </script>
 
+<script src="weather-alert.js"></script>
 </body>
 </html>
