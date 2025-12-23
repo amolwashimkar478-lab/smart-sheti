@@ -52,8 +52,9 @@ button:hover{ background:#1b5e20; }
 <body>
 
 <div class="container">
-  <h2>📸 पिकाचा फोटो टाका</h2>
+  <h2>📸 पिकाचा फोटो टाका / निवडा</h2>
   <div class="card">
+    <!-- Camera + Gallery दोन्ही -->
     <input type="file" id="image" accept="image/*" capture="environment">
     <button onclick="analyze()">🔍 रोग ओळखा</button>
     <div class="result" id="result"></div>
@@ -69,7 +70,7 @@ function goBack(){
 
 async function analyze(){
   const file = document.getElementById("image").files[0];
-  if(!file) return alert("फोटो टाका");
+  if(!file) return alert("कृपया फोटो टाका किंवा निवडा");
 
   document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
 
@@ -77,7 +78,8 @@ async function analyze(){
   form.append("image", file);
 
   try{
-    const res = await fetch("https://तुमचा-vercel-project.vercel.app/api/disease", {
+    // ✅ Full Vercel API URL
+    const res = await fetch("https://smart-sheti.vercel.app/api/disease", {
       method:"POST",
       body: form
     });
@@ -85,7 +87,7 @@ async function analyze(){
 
     document.getElementById("result").innerText = data.reply;
 
-    // 🔊 Auto voice
+    // 🔊 Marathi / Hindi voice
     const msg = new SpeechSynthesisUtterance(data.reply);
     msg.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
     msg.rate = 0.9;
