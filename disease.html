@@ -20,6 +20,10 @@ body{
   padding:16px;
   border-radius:14px;
 }
+input[type=file]{
+  width:100%;
+  padding:10px;
+}
 button{
   width:100%;
   padding:14px;
@@ -29,12 +33,14 @@ button{
   background:#2e7d32;
   color:white;
   font-size:16px;
+  cursor:pointer;
 }
 .result{
   margin-top:12px;
   background:#f1f8e9;
   padding:12px;
   border-radius:10px;
+  font-size:15px;
 }
 </style>
 </head>
@@ -45,8 +51,11 @@ button{
   <h2>📸 पिकाचा फोटो टाका</h2>
 
   <div class="card">
-    <input type="file" id="image" accept="image/*" capture="camera">
+    <!-- ✅ Camera + Gallery -->
+    <input type="file" id="image" accept="image/*">
+
     <button onclick="analyze()">🔍 रोग ओळखा</button>
+
     <div class="result" id="result"></div>
   </div>
 
@@ -55,15 +64,18 @@ button{
 
 <script>
 function goBack(){
-  speechSynthesis.cancel();
+  speechSynthesis.cancel(); // 🔇 आवाज बंद
   location.href="home.html";
 }
 
 async function analyze(){
   const file = document.getElementById("image").files[0];
-  if(!file) return alert("फोटो टाका");
+  if(!file){
+    alert("📸 फोटो काढा किंवा गॅलरीतून निवडा");
+    return;
+  }
 
-  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
+  document.getElementById("result").innerText="⏳ रोग ओळख चालू आहे...";
 
   const form = new FormData();
   form.append("image", file);
@@ -78,16 +90,21 @@ async function analyze(){
 
   speakAuto(data.reply);
 
+  // 🌧️ Weather based alert
   if(data.weatherAlert){
-    alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
+    alert("🌧️ पावसामुळे फवारणी करताना काळजी घ्या");
   }
 }
 
-// 🔊 Auto Marathi / Hindi
+// 🔊 Auto Marathi / Hindi Voice
 function speakAuto(text){
   const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = text.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
+
+  // Marathi / Hindi auto detect
+  msg.lang = /[अ-ह]/.test(text) ? "mr-IN" : "hi-IN";
   msg.rate = 0.9;
+
+  speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
 </script>
