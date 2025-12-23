@@ -7,22 +7,18 @@
 
 <style>
 body{
-  font-family: Arial, sans-serif;
+  font-family:Arial;
   background:#e8f5e9;
   padding:20px;
 }
-
 .container{
   max-width:420px;
   margin:auto;
 }
-
 h2{
   text-align:center;
   color:#2e7d32;
-  margin-bottom:15px;
 }
-
 .card{
   background:#fff;
   padding:16px;
@@ -30,65 +26,46 @@ h2{
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* hidden input */
+.row{
+  display:flex;
+  gap:10px;
+}
+
 input[type=file]{
   display:none;
 }
 
-/* button row */
-.btn-row{
-  display:flex;
-  gap:10px;
-  margin-bottom:12px;
-}
-
 .btn{
   flex:1;
-  padding:12px;
+  padding:14px;
   border:none;
   border-radius:12px;
-  font-size:15px;
-  color:#fff;
+  font-size:16px;
+  color:white;
   cursor:pointer;
 }
 
-/* camera */
-.camera-btn{
-  background:#2e7d32;
-}
+.camera{ background:#2e7d32; }
+.gallery{ background:#1565c0; }
 
-/* gallery */
-.gallery-btn{
-  background:#1565c0;
-}
-
-/* analyze */
-.analyze-btn{
+.analyze{
   width:100%;
+  margin-top:12px;
   background:#388e3c;
-  padding:14px;
-  font-size:16px;
-  margin-top:6px;
-}
-
-/* back */
-.back-btn{
-  width:100%;
-  background:#1976d2;
-  padding:14px;
-  margin-top:16px;
-  border-radius:12px;
-  color:white;
-  border:none;
-  font-size:16px;
 }
 
 .result{
   margin-top:12px;
   background:#f1f8e9;
   padding:12px;
-  border-radius:12px;
-  font-size:15px;
+  border-radius:10px;
+  min-height:40px;
+}
+
+.back{
+  margin-top:16px;
+  background:#1976d2;
+  width:100%;
 }
 </style>
 </head>
@@ -104,18 +81,17 @@ input[type=file]{
     <input type="file" id="cameraInput" accept="image/*" capture="environment">
     <input type="file" id="galleryInput" accept="image/*">
 
-    <!-- buttons -->
-    <div class="btn-row">
-      <button class="btn camera-btn" onclick="openCamera()">📷 कॅमेऱ्याने फोटो</button>
-      <button class="btn gallery-btn" onclick="openGallery()">🖼️ गॅलरीतून फोटो</button>
+    <div class="row">
+      <button class="btn camera" onclick="openCamera()">📷 कॅमेऱ्याने फोटो</button>
+      <button class="btn gallery" onclick="openGallery()">🖼️ गॅलरीतून फोटो</button>
     </div>
 
-    <button class="btn analyze-btn" onclick="analyze()">🔍 रोग ओळखा</button>
+    <button class="btn analyze" onclick="analyze()">🔍 रोग ओळखा</button>
 
     <div class="result" id="result"></div>
   </div>
 
-  <button class="back-btn" onclick="goBack()">⬅ मुख्य पेज</button>
+  <button class="btn back" onclick="goBack()">⬅ मुख्य पेज</button>
 </div>
 
 <script>
@@ -129,51 +105,62 @@ function openGallery(){
   document.getElementById("galleryInput").click();
 }
 
-document.getElementById("cameraInput").onchange = (e)=>{
+document.getElementById("cameraInput").onchange = e => {
   selectedFile = e.target.files[0];
 };
 
-document.getElementById("galleryInput").onchange = (e)=>{
+document.getElementById("galleryInput").onchange = e => {
   selectedFile = e.target.files[0];
 };
-
-function goBack(){
-  speechSynthesis.cancel();
-  location.href="index.html"; // home page
-}
 
 async function analyze(){
   if(!selectedFile){
-    alert("फोटो निवडा किंवा काढा");
+    alert("कृपया फोटो निवडा");
     return;
   }
 
-  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
+  const resultBox = document.getElementById("result");
+  resultBox.innerText = "⏳ तपासणी चालू आहे...";
 
-  const form = new FormData();
-  form.append("image", selectedFile);
+  try{
+    const form = new FormData();
+    form.append("image", selectedFile);
 
-  const res = await fetch("/api/disease", {
-    method:"POST",
-    body: form
-  });
+    const res = await fetch("/api/disease", {
+      method:"POST",
+      body: form
+    });
 
-  const data = await res.json();
-  document.getElementById("result").innerText = data.reply;
+    if(!res.ok){
+      throw new Error("API error");
+    }
 
-  speakAuto(data.reply);
+    const data = await res.json();
+    resultBox.innerText = data.reply || "काही उत्तर मिळाले नाही";
 
-  if(data.weatherAlert){
-    alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
+    speakAuto(data.reply || "");
+
+    if(data.weatherAlert){
+      alert("🌧️ पावसाची शक्यता – फवारणी टाळा");
+    }
+
+  }catch(err){
+    resultBox.innerText = "❌ सर्व्हरशी संपर्क झाला नाही";
+    console.error(err);
   }
 }
 
-// 🔊 Marathi / Hindi auto voice
 function speakAuto(text){
+  if(!text) return;
   const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = text.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
+  msg.lang = /[अ-ह]/.test(text) ? "mr-IN" : "hi-IN";
   msg.rate = 0.9;
   speechSynthesis.speak(msg);
+}
+
+function goBack(){
+  speechSynthesis.cancel();
+  location.href="home.html";
 }
 </script>
 
