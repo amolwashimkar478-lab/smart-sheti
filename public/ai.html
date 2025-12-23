@@ -66,19 +66,30 @@ function add(text,cls){
 }
 
 async function sendMessage(){
-  const text=input.value.trim();
+  const text = input.value.trim();
   if(!text) return;
-  add(text,"user");
-  input.value="";
+  add(text, "user");
+  input.value = "";
 
-  const res=await fetch("/api/chat",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ prompt:text })
-  });
-  const data=await res.json();
-  add(data.reply || "उत्तर मिळालं नाही","ai");
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: text })
+    });
+    
+    const data = await res.json();
+    
+    if (data.error) {
+      add("एरर: " + data.error, "ai");
+    } else {
+      add(data.reply, "ai");
+    }
+  } catch (e) {
+    add("कनेक्शन एरर: " + e.message, "ai");
+  }
 }
+  
 </script>
 
 </body>
