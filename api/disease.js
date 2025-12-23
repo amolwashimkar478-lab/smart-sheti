@@ -7,8 +7,10 @@ export const config = {
 };
 
 export default async function handler(req, res){
-  const form = formidable();
+  const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files)=>{
+    if(err) return res.status(500).json({reply:"Form parse error"});
+
     const imageBase64 = fs.readFileSync(files.image.filepath, {encoding:"base64"});
 
     const prompt = `
@@ -19,28 +21,34 @@ export default async function handler(req, res){
     3) मराठी किंवा हिंदी मध्ये उत्तर दे
     `;
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key="+process.env.GEMINI_API_KEY,
-      {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          contents:[{
-            parts:[
-              {text: prompt},
-              {inlineData:{mimeType:"image/jpeg", data:imageBase64}}
-            ]
-          }]
-        })
-      }
-    );
+    try{
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key="+process.env.GEMINI_API_KEY,
+        {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            contents:[{
+              parts:[
+                {text: prompt},
+                {inlineData:{mimeType:"image/jpeg", data:imageBase64}}
+              ]
+            }]
+          })
+        }
+      );
 
-    const json = await response.json();
-    const reply = json.candidates[0].content.parts[0].text;
+      const json = await response.json();
+      const reply = json.candidates[0].content.parts[0].text;
 
-    res.json({
-      reply,
-      weatherAlert: reply.includes("पाऊस") || reply.includes("बारिश")
-    });
+      res.json({
+        reply,
+        weatherAlert: reply.includes("पाऊस") || reply.includes("बारिश")
+      });
+
+    } catch(e){
+      console.error(e);
+      res.status(500).json({reply:"Server Error"});
+    }
   });
 }
