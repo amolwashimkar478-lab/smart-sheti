@@ -1,13 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  rewrites: async () => {
-    return [
-      {
-        source: '/:path*',
-        destination: '/:path*.html',
-      },
-    ];
-  },
-};
+  // हे रिकामे ठेवले तरी चालेल जर फाईल्स 'public' फोल्डरमध्ये असतील
+}
+module.exports = nextConfig
 
-module.exports = nextConfig;
