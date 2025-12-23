@@ -2,46 +2,81 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Sign Up</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
 body{
   font-family:Arial;
   background:linear-gradient(#e8f5e9,#a5d6a7);
-  height:100vh;
+  min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:center;
+  align-items:flex-start;
+  padding:20px;
 }
+
+/* 🔥 Responsive card */
 .box{
   background:#fff;
-  width:340px;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 4px 15px rgba(0,0,0,.3);
+  width:100%;
+  max-width:420px;   /* desktop limit */
+  padding:28px;
+  margin-top:40px;
+  border-radius:18px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);
   text-align:center;
 }
-h2{color:#2e7d32;margin-bottom:15px;}
-input,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:6px;
-  font-size:15px;
+
+h2{
+  color:#2e7d32;
+  margin-bottom:20px;
+  font-size:22px;
 }
-input{border:1px solid #ccc;}
+
+input, button{
+  width:100%;
+  padding:14px;
+  margin:10px 0;
+  border-radius:10px;
+  font-size:16px;
+}
+
+input{
+  border:1px solid #ccc;
+}
+
 button{
   background:#2e7d32;
   color:#fff;
   border:none;
   cursor:pointer;
+  font-weight:bold;
 }
-button:hover{background:#1b5e20;}
+
+button:hover{
+  background:#1b5e20;
+}
+
 .link{
-  margin-top:10px;
+  margin-top:14px;
   color:#2e7d32;
+  font-size:15px;
   cursor:pointer;
+}
+
+/* 🔹 Extra spacing on small phones */
+@media (max-width:480px){
+  .box{
+    margin-top:20px;
+    padding:24px;
+  }
 }
 </style>
 </head>
@@ -98,7 +133,7 @@ window.signup = () => {
         displayName: fname + " " + lname
       });
       alert("Account तयार झाला ✅");
-      window.location.href = "index.html"; // login page
+      window.location.href = "index.html";
     })
     .catch(err => alert(err.message));
 };
