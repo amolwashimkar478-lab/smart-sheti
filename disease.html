@@ -4,163 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌿 रोग ओळख</title>
-
 <style>
 body{
   font-family:Arial;
   background:#e8f5e9;
   padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 .container{
-  max-width:420px;
-  margin:auto;
-}
-h2{
-  text-align:center;
-  color:#2e7d32;
+  max-width:400px;
+  width:100%;
 }
 .card{
   background:#fff;
   padding:16px;
-  border-radius:16px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-.row{
+  border-radius:14px;
   display:flex;
-  gap:10px;
+  flex-direction:column;
+  align-items:center;
 }
-
-input[type=file]{
-  display:none;
-}
-
-.btn{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:12px;
+input, button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
   font-size:16px;
+}
+button{
+  background:#2e7d32;
   color:white;
+  border:none;
   cursor:pointer;
 }
-
-.camera{ background:#2e7d32; }
-.gallery{ background:#1565c0; }
-
-.analyze{
-  width:100%;
-  margin-top:12px;
-  background:#388e3c;
-}
-
+button:hover{ background:#1b5e20; }
 .result{
   margin-top:12px;
   background:#f1f8e9;
   padding:12px;
   border-radius:10px;
-  min-height:40px;
-}
-
-.back{
-  margin-top:16px;
-  background:#1976d2;
   width:100%;
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
   <h2>📸 पिकाचा फोटो टाका</h2>
-
   <div class="card">
-
-    <!-- hidden inputs -->
-    <input type="file" id="cameraInput" accept="image/*" capture="environment">
-    <input type="file" id="galleryInput" accept="image/*">
-
-    <div class="row">
-      <button class="btn camera" onclick="openCamera()">📷 कॅमेऱ्याने फोटो</button>
-      <button class="btn gallery" onclick="openGallery()">🖼️ गॅलरीतून फोटो</button>
-    </div>
-
-    <button class="btn analyze" onclick="analyze()">🔍 रोग ओळखा</button>
-
+    <input type="file" id="image" accept="image/*" capture="environment">
+    <button onclick="analyze()">🔍 रोग ओळखा</button>
     <div class="result" id="result"></div>
   </div>
-
-  <button class="btn back" onclick="goBack()">⬅ मुख्य पेज</button>
+  <button onclick="goBack()">⬅ मुख्य पेज</button>
 </div>
 
 <script>
-let selectedFile = null;
-
-function openCamera(){
-  document.getElementById("cameraInput").click();
-}
-
-function openGallery(){
-  document.getElementById("galleryInput").click();
-}
-
-document.getElementById("cameraInput").onchange = e => {
-  selectedFile = e.target.files[0];
-};
-
-document.getElementById("galleryInput").onchange = e => {
-  selectedFile = e.target.files[0];
-};
-
-async function analyze(){
-  if(!selectedFile){
-    alert("कृपया फोटो निवडा");
-    return;
-  }
-
-  const resultBox = document.getElementById("result");
-  resultBox.innerText = "⏳ तपासणी चालू आहे...";
-
-  try{
-    const form = new FormData();
-    form.append("image", selectedFile);
-
-    const res = await fetch("/api/disease", {
-      method:"POST",
-      body: form
-    });
-
-    if(!res.ok){
-      throw new Error("API error");
-    }
-
-    const data = await res.json();
-    resultBox.innerText = data.reply || "काही उत्तर मिळाले नाही";
-
-    speakAuto(data.reply || "");
-
-    if(data.weatherAlert){
-      alert("🌧️ पावसाची शक्यता – फवारणी टाळा");
-    }
-
-  }catch(err){
-    resultBox.innerText = "❌ सर्व्हरशी संपर्क झाला नाही";
-    console.error(err);
-  }
-}
-
-function speakAuto(text){
-  if(!text) return;
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = /[अ-ह]/.test(text) ? "mr-IN" : "hi-IN";
-  msg.rate = 0.9;
-  speechSynthesis.speak(msg);
-}
-
 function goBack(){
   speechSynthesis.cancel();
   location.href="home.html";
+}
+
+async function analyze(){
+  const file = document.getElementById("image").files[0];
+  if(!file) return alert("फोटो टाका");
+
+  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
+
+  const form = new FormData();
+  form.append("image", file);
+
+  try{
+    const res = await fetch("https://तुमचा-vercel-project.vercel.app/api/disease", {
+      method:"POST",
+      body: form
+    });
+    const data = await res.json();
+
+    document.getElementById("result").innerText = data.reply;
+
+    // 🔊 Auto voice
+    const msg = new SpeechSynthesisUtterance(data.reply);
+    msg.lang = data.reply.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
+    msg.rate = 0.9;
+    speechSynthesis.speak(msg);
+
+    // 🌧 Rain alert
+    if(data.weatherAlert){
+      alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
+    }
+
+  } catch(err){
+    console.error("Network Error:", err);
+    alert("सर्व्हरशी संपर्क झाला नाही. URL / API Key तपासा.");
+  }
 }
 </script>
 
