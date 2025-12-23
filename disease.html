@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 रोग ओळख</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#e8f5e9;
+  padding:20px;
+}
+.container{
+  max-width:400px;
+  margin:auto;
+}
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:14px;
+}
+button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  background:#2e7d32;
+  color:white;
+  font-size:16px;
+}
+.result{
+  margin-top:12px;
+  background:#f1f8e9;
+  padding:12px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📸 पिकाचा फोटो टाका</h2>
+
+  <div class="card">
+    <input type="file" id="image" accept="image/*" capture="camera">
+    <button onclick="analyze()">🔍 रोग ओळखा</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <button onclick="goBack()">⬅ मुख्य पेज</button>
+</div>
+
+<script>
+function goBack(){
+  speechSynthesis.cancel();
+  location.href="home.html";
+}
+
+async function analyze(){
+  const file = document.getElementById("image").files[0];
+  if(!file) return alert("फोटो टाका");
+
+  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
+
+  const form = new FormData();
+  form.append("image", file);
+
+  const res = await fetch("/api/disease", {
+    method:"POST",
+    body: form
+  });
+
+  const data = await res.json();
+  document.getElementById("result").innerText = data.reply;
+
+  speakAuto(data.reply);
+
+  if(data.weatherAlert){
+    alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
+  }
+}
+
+// 🔊 Auto Marathi / Hindi
+function speakAuto(text){
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = text.match(/[अ-ह]/) ? "mr-IN" : "hi-IN";
+  msg.rate = 0.9;
+  speechSynthesis.speak(msg);
+}
+</script>
+
+</body>
+</html>
