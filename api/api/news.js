@@ -1,37 +1,37 @@
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
+  const district = req.query.district || "Pune"; // default district
+
+  const NEWS_API_KEY = process.env.NEWS_API_KEY;
+  if (!NEWS_API_KEY) {
+    return res.status(500).json({ error: "API Key not set" });
+  }
+
   try {
-    const { district } = req.query;
-
-    if (!district) {
-      return res.status(400).json({ error: "कृपया जिल्हा निवडा" });
-    }
-
-    const API_KEY = "00d47c00261f47be850253577e6ee131";
-    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(district + " कृषि")} 
-                 &language=mr&sortBy=publishedAt&pageSize=10&apiKey=${API_KEY}`;
+    // NewsAPI: q=district+agriculture
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(
+      district + " कृषि OR शेती"
+    )}&language=mr&sortBy=publishedAt&pageSize=5&apiKey=${NEWS_API_KEY}`;
 
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!data.articles) {
-      return res.status(500).json({ error: "बातम्या मिळाल्या नाहीत" });
+    if (data.status !== "ok") {
+      return res.status(500).json({ error: data.message || "News fetch error" });
     }
 
-    // फक्त आवश्यक fields पाठवतो
+    // required fields
     const articles = data.articles.map(a => ({
       title: a.title,
       description: a.description,
       url: a.url,
-      publishedAt: a.publishedAt,
-      source: a.source.name
+      publishedAt: a.publishedAt
     }));
 
-    res.status(200).json({ articles });
-
+    res.json({ articles });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "सर्व्हर एरर" });
+    res.status(500).json({ error: "Server error" });
   }
 }
