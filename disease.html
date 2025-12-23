@@ -20,11 +20,17 @@ body{
   padding:16px;
   border-radius:14px;
 }
-input[type=file]{
-  width:100%;
-  padding:10px;
+h2{
+  text-align:center;
+  color:#2e7d32;
 }
-button{
+
+/* Hide file input */
+input[type=file]{
+  display:none;
+}
+
+.btn{
   width:100%;
   padding:14px;
   margin-top:10px;
@@ -35,6 +41,11 @@ button{
   font-size:16px;
   cursor:pointer;
 }
+
+.secondary{
+  background:#1565c0;
+}
+
 .result{
   margin-top:12px;
   background:#f1f8e9;
@@ -51,34 +62,55 @@ button{
   <h2>📸 पिकाचा फोटो टाका</h2>
 
   <div class="card">
-    <!-- ✅ Camera + Gallery -->
-    <input type="file" id="image" accept="image/*">
 
-    <button onclick="analyze()">🔍 रोग ओळखा</button>
+    <!-- 📸 CAMERA -->
+    <label class="btn">
+      📷 कॅमेऱ्याने फोटो काढा
+      <input type="file" id="cameraInput" accept="image/*" capture>
+    </label>
+
+    <!-- 🖼️ GALLERY -->
+    <label class="btn secondary">
+      🖼️ गॅलरीतून फोटो निवडा
+      <input type="file" id="galleryInput" accept="image/*">
+    </label>
+
+    <button class="btn" onclick="analyze()">🔍 रोग ओळखा</button>
 
     <div class="result" id="result"></div>
   </div>
 
-  <button onclick="goBack()">⬅ मुख्य पेज</button>
+  <button class="btn secondary" onclick="goBack()">⬅ मुख्य पेज</button>
 </div>
 
 <script>
+let selectedFile = null;
+
+// Camera
+document.getElementById("cameraInput").addEventListener("change", e=>{
+  selectedFile = e.target.files[0];
+});
+
+// Gallery
+document.getElementById("galleryInput").addEventListener("change", e=>{
+  selectedFile = e.target.files[0];
+});
+
 function goBack(){
-  speechSynthesis.cancel(); // 🔇 आवाज बंद
+  speechSynthesis.cancel();
   location.href="home.html";
 }
 
 async function analyze(){
-  const file = document.getElementById("image").files[0];
-  if(!file){
-    alert("📸 फोटो काढा किंवा गॅलरीतून निवडा");
+  if(!selectedFile){
+    alert("📸 फोटो निवडा किंवा काढा");
     return;
   }
 
-  document.getElementById("result").innerText="⏳ रोग ओळख चालू आहे...";
+  document.getElementById("result").innerText="⏳ तपासणी चालू आहे...";
 
   const form = new FormData();
-  form.append("image", file);
+  form.append("image", selectedFile);
 
   const res = await fetch("/api/disease", {
     method:"POST",
@@ -86,25 +118,21 @@ async function analyze(){
   });
 
   const data = await res.json();
+
   document.getElementById("result").innerText = data.reply;
 
   speakAuto(data.reply);
 
-  // 🌧️ Weather based alert
   if(data.weatherAlert){
-    alert("🌧️ पावसामुळे फवारणी करताना काळजी घ्या");
+    alert("🌧️ पावसामुळे फवारणीची काळजी घ्या");
   }
 }
 
-// 🔊 Auto Marathi / Hindi Voice
+// 🔊 Marathi / Hindi auto voice
 function speakAuto(text){
   const msg = new SpeechSynthesisUtterance(text);
-
-  // Marathi / Hindi auto detect
   msg.lang = /[अ-ह]/.test(text) ? "mr-IN" : "hi-IN";
   msg.rate = 0.9;
-
-  speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
 </script>
