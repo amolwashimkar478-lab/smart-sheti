@@ -5,9 +5,9 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   try {
-    // आपण आता 'gemini-1.5-flash-latest' वापरत आहोत जे नवीन Keys वर नक्की चालते
+    // आपण आता 'v1' ही लिंक वापरत आहोत
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
