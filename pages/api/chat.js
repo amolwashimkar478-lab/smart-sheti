@@ -4,14 +4,10 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // जर की सापडली नाही तर हे दिसेल
-  if (!apiKey) {
-    return res.status(200).json({ reply: "त्रुटी: Vercel Settings मध्ये API Key सापडली नाही!" });
-  }
-
   try {
+    // आपण आता 'gemini-1.5-flash-latest' वापरत आहोत जे नवीन Keys वर नक्की चालते
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "Google Error: " + data.error.message });
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "क्षमस्व, उत्तर मिळाले नाही.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "उत्तर मिळाले नाही.";
     res.status(200).json({ reply: reply });
 
   } catch (err) {
