@@ -1,32 +1,46 @@
 export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+
   const { prompt } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
-  try {
-    // आपण आता थेट 'gemini-1.5-flash' न वापरता फक्त 'gemini-pro' वापरून पाहूया
-    // जे बहुतेक सर्व जुन्या-नवीन की ला सपोर्ट करते
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+  // आपण क्रमाने ही मॉडेल्स ट्राय करणार आहोत
+  const models = [
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-1.0-pro"
+  ];
+
+  for (const modelName of models) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      // जर हा प्रयत्न यशस्वी झाला, तर उत्तर पाठवा
+      if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+        return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
       }
-    );
-
-    const data = await response.json();
-    
-    if (data.error) {
-      // जर इथेही एरर आला, तर आपण 'v1' आणि 'gemini-1.5-flash' वापरू
-      return res.status(200).json({ reply: "गूगल कडून अजूनही एरर येत आहे: " + data.error.message });
+      
+      // जर हा मॉडेल नसेल तर पुढच्या मॉडेलवर जा (Loop continue)
+      console.log(`Model ${modelName} failed, trying next...`);
+      
+    } catch (err) {
+      continue;
     }
-
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "उत्तर मिळाले नाही.";
-    res.status(200).json({ reply: reply });
-
-  } catch (err) {
-    res.status(500).json({ reply: "Server Error: " + err.message });
   }
+
+  // जर काहीच चालले नाही तर हा मेसेज दाखवा
+  res.status(500).json({ 
+    reply: "Google कडून सध्या प्रतिसाद मिळत नाहीये. कृपया Google AI Studio मध्ये जाऊन एक नवीन 'API Key' तयार करा आणि Vercel मध्ये अपडेट करा." 
+  });
 }
