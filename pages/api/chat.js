@@ -5,9 +5,9 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   try {
-    // आपण इथे v1beta च्या जागी v1 करत आहोत, जेणेकरून एरर येणार नाही
+    // v1 ऐवजी v1beta वापरल्याने 'Model not found' एरर जाणार
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,4 +30,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "सर्व्हर एरर: " + err.message });
   }
 }
-
