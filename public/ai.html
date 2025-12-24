@@ -2,56 +2,108 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Smart Sheti - AI</title>
 
 <style>
+*{box-sizing:border-box;}
 body{
-  font-family:Arial;
+  margin:0;
+  font-family:Arial, sans-serif;
   background:#e8f5e9;
+  height:100vh;
   display:flex;
   flex-direction:column;
-  align-items:center;
-  padding:20px;
 }
 
+/* Header */
+header{
+  background:#2e7d32;
+  color:#fff;
+  padding:14px;
+  text-align:center;
+  font-size:18px;
+}
+
+/* Chat area */
 #chatBox{
-  width:100%;
-  max-width:400px;
-  height:400px;
-  background:#fff;
-  border-radius:10px;
-  padding:10px;
-  overflow-y:scroll;
-  border:1px solid #ccc;
+  flex:1;
+  padding:12px;
+  overflow-y:auto;
 }
 
 .user,.ai{
-  padding:8px;
+  max-width:85%;
+  padding:10px 12px;
   margin:6px 0;
-  border-radius:10px;
+  border-radius:14px;
+  font-size:15px;
+  line-height:1.4;
 }
 
-.user{ background:#c8e6c9; }
-.ai{ background:#e0f2f1; }
+.user{
+  background:#c8e6c9;
+  margin-left:auto;
+}
 
-#inputBox{
+.ai{
+  background:#ffffff;
+  border:1px solid #ddd;
+}
+
+/* Bottom input bar */
+#inputBar{
   display:flex;
-  width:100%;
-  max-width:400px;
-  margin-top:10px;
+  align-items:center;
+  gap:6px;
+  padding:8px;
+  background:#fff;
+  border-top:1px solid #ccc;
+}
+
+#inputBar input{
+  flex:1;
+  padding:10px;
+  border-radius:20px;
+  border:1px solid #ccc;
+  font-size:15px;
+}
+
+.iconBtn{
+  background:#2e7d32;
+  border:none;
+  color:#fff;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.sendBtn{
+  background:#1565c0;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🤖 शेतकरी AI मित्र</h2>
+<header>🤖 शेतकरी AI मित्र</header>
 
 <div id="chatBox"></div>
 
-<div id="inputBox">
-  <input id="userInput" placeholder="प्रश्न लिहा..." style="flex:1">
-  <button onclick="sendMessage()">Send</button>
+<!-- Bottom Input -->
+<div id="inputBar">
+  <button class="iconBtn" onclick="openCamera()">📷</button>
+  <button class="iconBtn" onclick="openGallery()">🖼️</button>
+
+  <input id="userInput" placeholder="प्रश्न लिहा...">
+  <button class="iconBtn sendBtn" onclick="sendMessage()">➤</button>
+
+  <!-- hidden file inputs -->
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+  <input type="file" id="galleryInput" accept="image/*" hidden>
 </div>
 
 <script>
@@ -63,33 +115,38 @@ function add(text,cls){
   d.className=cls;
   d.innerText=text;
   chatBox.appendChild(d);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 async function sendMessage(){
-  const text = input.value.trim();
+  const text=input.value.trim();
   if(!text) return;
-  add(text, "user");
-  input.value = "";
 
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: text })
+  add(text,"user");
+  input.value="";
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({prompt:text})
     });
-    
-    const data = await res.json();
-    
-    if (data.error) {
-      add("एरर: " + data.error, "ai");
-    } else {
-      add(data.reply, "ai");
-    }
-  } catch (e) {
-    add("कनेक्शन एरर: " + e.message, "ai");
+
+    const data=await res.json();
+    add(data.reply || "उत्तर मिळाले नाही","ai");
+  }catch(e){
+    add("❌ सर्व्हरशी संपर्क झाला नाही","ai");
   }
 }
-  
+
+/* Camera / Gallery */
+function openCamera(){
+  document.getElementById("cameraInput").click();
+}
+
+function openGallery(){
+  document.getElementById("galleryInput").click();
+}
 </script>
 
 </body>
