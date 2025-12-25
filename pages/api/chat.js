@@ -2,40 +2,39 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { prompt, image } = req.body;
-  const accountId = process.env.CF_ACCOUNT_ID;
-  const apiToken = process.env.CF_API_TOKEN;
+  const apiKey = process.env.GROQ_API_KEY;
 
   try {
-    // Cloudflare चे अधिकृत व्हिजन मॉडेल
-    const model = "@cf/meta/llama-3.2-11b-vision-instruct";
-    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
+    const url = "https://api.groq.com/openai/v1/chat/completions";
 
-    let inputData = {
-      prompt: prompt || "याबद्दल माहिती द्या.",
-      max_tokens: 512
-    };
+    let content = [{ type: "text", text: prompt || "याबद्दल माहिती द्या." }];
 
-    // फोटो असल्यास तो 'image' फॉरमॅटमध्ये पाठवा
     if (image) {
-      inputData.image = image.split(",")[1]; // Base64 डेटा
+      content.push({
+        type: "image_url",
+        image_url: { url: image } // Groq थेट Base64 स्वीकारते
+      });
     }
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiToken}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(inputData)
+      body: JSON.stringify({
+        model: "llama-3.2-11b-vision-preview",
+        messages: [{ role: "user", content: content }]
+      })
     });
 
     const data = await response.json();
-    const reply = data.result?.response || "उत्तर मिळाले नाही.";
+    const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
 
     res.status(200).json({ reply: reply });
 
   } catch (err) {
-    res.status(200).json({ reply: "Cloudflare एरर: " + err.message });
+    res.status(200).json({ reply: "Groq एरर: " + err.message });
   }
 }
 
