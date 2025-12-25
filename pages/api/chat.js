@@ -1,52 +1,41 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
-  const { prompt } = req.body;
-  const hfToken = process.env.HF_TOKEN;
-
-  if (!hfToken) {
-    return res.status(200).json({ reply: "त्रुटी: Vercel मध्ये HF_TOKEN सापडला नाही." });
-  }
+  const { prompt, image } = req.body;
+  const accountId = process.env.CF_ACCOUNT_ID;
+  const apiToken = process.env.CF_API_TOKEN;
 
   try {
-    // Qwen हे मॉडेल सध्या सर्वात जास्त कार्यरत आणि शक्तिशाली आहे
-    const modelUrl = "https://router.huggingface.co/hf-inference/models/Qwen/Qwen2.5-72B-Instruct";
+    // Cloudflare चे अधिकृत व्हिजन मॉडेल
+    const model = "@cf/meta/llama-3.2-11b-vision-instruct";
+    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
 
-    const response = await fetch(modelUrl, {
+    let inputData = {
+      prompt: prompt || "याबद्दल माहिती द्या.",
+      max_tokens: 512
+    };
+
+    // फोटो असल्यास तो 'image' फॉरमॅटमध्ये पाठवा
+    if (image) {
+      inputData.image = image.split(",")[1]; // Base64 डेटा
+    }
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${hfToken}`,
+        "Authorization": `Bearer ${apiToken}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        inputs: prompt || "नमस्कार",
-        parameters: { max_new_tokens: 500 }
-      })
+      body: JSON.stringify(inputData)
     });
 
-    const result = await response.json();
-
-    // जर मॉडेल लोड होत असेल
-    if (response.status === 503 || (result.error && result.error.includes("loading"))) {
-      return res.status(200).json({ reply: "AI मॉडेल सुरू होत आहे, कृपया १० सेकंद थांबा आणि पुन्हा प्रयत्न करा." });
-    }
-
-    if (result.error) {
-      return res.status(200).json({ reply: "AI एरर: " + result.error });
-    }
-
-    // उत्तर दाखवणे
-    let reply = Array.isArray(result) ? result[0]?.generated_text : (result.generated_text || "उत्तर मिळाले नाही.");
-    
-    // जर उत्तरात युजरचा प्रश्न परत येत असेल तर तो काढून टाकूया
-    if (reply.includes(prompt)) {
-      reply = reply.replace(prompt, "").trim();
-    }
+    const data = await response.json();
+    const reply = data.result?.response || "उत्तर मिळाले नाही.";
 
     res.status(200).json({ reply: reply });
 
   } catch (err) {
-    res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
+    res.status(200).json({ reply: "Cloudflare एरर: " + err.message });
   }
 }
 
