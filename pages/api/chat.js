@@ -2,45 +2,38 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { prompt } = req.body;
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
+
+  if (!apiKey) {
+    return res.status(200).json({ reply: "Vercel मध्ये Groq API Key सापडली नाही!" });
+  }
 
   try {
-    // आपण आता Google ला हवा असलेला अचूक फॉरमॅट वापरत आहोत
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            role: "user",
-            parts: [{ text: prompt }]
-          }]
-        })
-      }
-    );
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192", // हे अतिशय वेगवान मॉडेल आहे
+        messages: [
+          { role: "system", content: "तुम्ही एक मदतनीस आहात." },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
 
     const data = await response.json();
-    
-    // जर तरीही मॉडेल सापडले नाही तर हे 'Backup' मॉडेल वापरेल
-    if (data.error && data.error.message.includes("not found")) {
-        const fallbackRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            }
-        );
-        const fallbackData = await fallbackRes.json();
-        const fallbackReply = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
-        return res.status(200).json({ reply: fallbackReply || "क्षमस्व, गुगलकडून प्रतिसाद मिळत नाहीये." });
+
+    if (data.error) {
+      return res.status(200).json({ reply: "Groq Error: " + data.error.message });
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "उत्तर मिळाले नाही.";
+    const reply = data.choices[0]?.message?.content || "उत्तर मिळाले नाही.";
     res.status(200).json({ reply: reply });
 
   } catch (err) {
-    res.status(200).json({ reply: "सर्व्हर एरर: " + err.message });
+    res.status(200).json({ reply: "Connection Error: " + err.message });
   }
 }
