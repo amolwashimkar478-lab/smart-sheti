@@ -16,7 +16,8 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192", // हे अतिशय वेगवान मॉडेल आहे
+        // आपण आता नवीन 'Llama 3.3' मॉडेल वापरत आहोत
+        model: "llama-3.3-70b-versatile", 
         messages: [
           { role: "system", content: "तुम्ही एक मदतनीस आहात." },
           { role: "user", content: prompt }
@@ -37,3 +38,4 @@ export default async function handler(req, res) {
     res.status(200).json({ reply: "Connection Error: " + err.message });
   }
 }
+
