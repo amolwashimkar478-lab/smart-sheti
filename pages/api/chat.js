@@ -11,14 +11,12 @@ export default async function handler(req, res) {
   try {
     let content = [];
     
-    // टेक्स्ट प्रॉम्प्ट जोडा
     if (prompt) {
       content.push({ type: "text", text: prompt });
     } else if (image) {
       content.push({ type: "text", text: "या फोटोबद्दल माहिती द्या." });
     }
 
-    // जर फोटो असेल तर तो जोडा
     if (image) {
       content.push({
         type: "image_url",
@@ -33,9 +31,10 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview",
+        // नवीन आणि कार्यरत व्हिजन मॉडेल नाव खालीलप्रमाणे आहे
+        model: "llama-3.2-11b-vision-instant",
         messages: [{ role: "user", content: content }],
-        max_tokens: 500
+        max_tokens: 1024
       })
     });
 
@@ -49,7 +48,6 @@ export default async function handler(req, res) {
     res.status(200).json({ reply: reply });
 
   } catch (err) {
-    // हाच तो भाग जो 'सर्व्हरशी संपर्क नाही' हा मेसेज पाठवतो
     res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
   }
 }
