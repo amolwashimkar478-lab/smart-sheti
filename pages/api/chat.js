@@ -5,12 +5,13 @@ export default async function handler(req, res) {
   const hfToken = process.env.HF_TOKEN;
 
   if (!hfToken) {
-    return res.status(200).json({ reply: "त्रुटी: HF_TOKEN सेट केलेला नाही." });
+    return res.status(200).json({ reply: "त्रुटी: Vercel मध्ये HF_TOKEN सेट केलेला नाही." });
   }
 
   try {
-    // नवीन Router URL खालीलप्रमाणे आहे
-    const modelUrl = "https://router.huggingface.co/hf-inference/models/mistralai/Pixtral-12B-2409";
+    // हे मॉडेल राउटरवर अधिक स्थिर (Stable) आहे
+    const modelId = "meta-llama/Llama-3.2-11B-Vision-Instruct";
+    const modelUrl = `https://router.huggingface.co/hf-inference/models/${modelId}`;
 
     const response = await fetch(modelUrl, {
       method: "POST",
@@ -19,28 +20,33 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        inputs: image ? `![image](${image})\n${prompt || "या फोटोबद्दल सांगा."}` : prompt,
+        inputs: image ? `![image](${image})\n${prompt || "या फोटोबद्दल माहिती द्या."}` : prompt,
         parameters: { max_new_tokens: 500 }
       })
     });
 
-    const result = await response.json();
-
-    // मॉडेल लोड होत असेल तर (Wait message)
-    if (response.status === 503) {
-      return res.status(200).json({ reply: "AI मॉडेल तयार होत आहे, १० सेकंदात पुन्हा प्रयत्न करा." });
+    // जर रिस्पॉन्स JSON नसेल तर टेक्स्ट म्हणून वाचूया
+    const textData = await response.text();
+    
+    let result;
+    try {
+      result = JSON.parse(textData);
+    } catch (e) {
+      return res.status(200).json({ reply: "सर्व्हर एरर: " + textData.substring(0, 50) });
     }
 
-    let reply = "";
-    if (Array.isArray(result)) {
-      reply = result[0]?.generated_text || "उत्तर मिळाले नाही.";
-    } else {
-      reply = result.generated_text || result.error || "काहीतरी चूक झाली आहे.";
+    if (response.status === 503 || result.error?.includes("loading")) {
+      return res.status(200).json({ reply: "AI मॉडेल तयार होत आहे (Loading), कृपया १० सेकंदात पुन्हा मेसेज पाठवा." });
     }
 
+    if (result.error) {
+      return res.status(200).json({ reply: "AI एरर: " + result.error });
+    }
+
+    let reply = Array.isArray(result) ? result[0]?.generated_text : (result.generated_text || "उत्तर मिळाले नाही.");
     res.status(200).json({ reply: reply });
 
   } catch (err) {
-    res.status(200).json({ reply: "Router कनेक्शन एरर: " + err.message });
+    res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
   }
 }
