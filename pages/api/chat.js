@@ -31,8 +31,8 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        // नवीन आणि कार्यरत व्हिजन मॉडेल नाव खालीलप्रमाणे आहे
-        model: "llama-3.2-11b-vision-instant",
+        // आपण आता '90b' व्हर्जन वापरत आहोत जे अधिक खात्रीशीर आहे
+        model: "llama-3.2-90b-vision-preview",
         messages: [{ role: "user", content: content }],
         max_tokens: 1024
       })
@@ -41,7 +41,8 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
-      return res.status(200).json({ reply: "Groq एरर: " + data.error.message });
+      // जर अजूनही मॉडेलचा प्रॉब्लेम असेल, तर हे नाव वापरून पहा: "llama-3.2-11b-vision-preview"
+      return res.status(200).json({ reply: "Groq एरर: " + data.error.message + " (Model: " + data.error.type + ")" });
     }
 
     const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
