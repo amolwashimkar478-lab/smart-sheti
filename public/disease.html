@@ -3,145 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌿 रोग ओळख</title>
-
+<title>🌿 स्मार्ट शेती - रोग ओळख</title>
 <style>
-body{
-  font-family: Arial;
-  background:#e8f5e9;
-  padding:20px;
-  text-align:center;
-}
-.container{
-  max-width:420px;
-  margin:auto;
-}
-.card{
-  background:#fff;
-  padding:20px;
-  border-radius:18px;
-}
-h2{
-  color:#2e7d32;
-}
-.btn-row{
-  display:flex;
-  gap:10px;
-  margin:15px 0;
-}
-button{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
-  color:white;
-}
-.camera{ background:#2e7d32; }
-.gallery{ background:#1565c0; }
-.detect{ background:#388e3c; width:100%; margin-top:10px; }
-.back{ background:#1976d2; width:100%; margin-top:15px; }
-
-.result{
-  margin-top:12px;
-  background:#f1f8e9;
-  padding:12px;
-  border-radius:10px;
-  text-align:left;
-}
-
-/* 🔥 FILE INPUT पूर्णपणे HIDE */
-input[type=file]{
-  display:none;
-}
+  body { font-family: Arial; background:#e8f5e9; padding:20px; text-align:center; }
+  .container { max-width:420px; margin:auto; }
+  .card { background:#fff; padding:20px; border-radius:18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  h2 { color:#2e7d32; }
+  .btn-row { display:flex; gap:10px; margin:15px 0; }
+  button { flex:1; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; }
+  .camera { background:#2e7d32; }
+  .gallery { background:#1565c0; }
+  .detect { background:#388e3c; width:100%; margin-top:10px; font-weight:bold; }
+  .back { background:#1976d2; width:100%; margin-top:15px; }
+  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.5; min-height:50px; }
+  input[type=file] { display:none; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
   <h2>📸 पिकाचा फोटो टाका</h2>
-
   <div class="card">
-
-    <!-- Hidden Inputs -->
     <input type="file" id="cameraInput" accept="image/*" capture="environment">
     <input type="file" id="galleryInput" accept="image/*">
-
     <div class="btn-row">
-      <button class="camera" onclick="openCamera()">📷 कॅमेऱ्याने फोटो</button>
-      <button class="gallery" onclick="openGallery()">🖼️ गॅलरीतून फोटो</button>
+      <button class="camera" onclick="document.getElementById('cameraInput').click()">📷 कॅमेरा</button>
+      <button class="gallery" onclick="document.getElementById('galleryInput').click()">🖼️ गॅलरी</button>
     </div>
-
-    <button class="detect" onclick="analyze()">🔍 रोग ओळखा</button>
-
-    <div class="result" id="result"></div>
+    <button class="detect" id="btnDetect" onclick="analyze()">🔍 रोग ओळखा</button>
+    <div class="result" id="result">येथे माहिती दिसेल...</div>
   </div>
-
-  <button class="back" onclick="goBack()">⬅ मुख्य पेज</button>
+  <button class="back" onclick="location.href='home.html'">⬅ मुख्य पेज</button>
 </div>
 
 <script>
-let selectedFile = null;
+let selectedFileBase64 = null;
 
-function openCamera(){
-  document.getElementById("cameraInput").click();
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) {
+    // फोटोची साईज चेक करणे (4MB पेक्षा कमी असावी)
+    if (file.size > 4 * 1024 * 1024) {
+      alert("फोटो खूप मोठा आहे, कृपया लहान फोटो निवडा.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      selectedFileBase64 = event.target.result.split(",")[1];
+      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता 'रोग ओळखा' दाबा.";
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
-function openGallery(){
-  document.getElementById("galleryInput").click();
-}
-
-document.getElementById("cameraInput").onchange = e => {
-  selectedFile = e.target.files[0];
-  document.getElementById("result").innerText = "📸 फोटो निवडला आहे";
-};
-
-document.getElementById("galleryInput").onchange = e => {
-  selectedFile = e.target.files[0];
-  document.getElementById("result").innerText = "🖼️ फोटो निवडला आहे";
-};
-
-function goBack(){
-  speechSynthesis.cancel();
-  location.href="home.html";
-}
+document.getElementById("cameraInput").onchange = handleFile;
+document.getElementById("galleryInput").onchange = handleFile;
 
 async function analyze(){
-  if(!selectedFile){
+  if(!selectedFileBase64){
     alert("आधी फोटो निवडा");
     return;
   }
 
-  document.getElementById("result").innerText = "⏳ तपासणी चालू आहे...";
+  const resultDiv = document.getElementById("result");
+  const btn = document.getElementById("btnDetect");
+  
+  resultDiv.innerText = "⏳ तपासणी सुरू आहे, कृपया वाट पहा...";
+  btn.disabled = true;
 
-  const form = new FormData();
-  form.append("image", selectedFile);
-
-  try{
-    const res = await fetch("/api/disease", {
+  try {
+    const res = await fetch("/api/chat", {
       method:"POST",
-      body: form
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: selectedFileBase64, city: "Pune" })
     });
 
     const data = await res.json();
-    document.getElementById("result").innerText = data.reply;
+    resultDiv.innerText = data.reply;
 
-    // 🔊 Auto Marathi / Hindi voice
+    // आवाज सुरू करणे
     const msg = new SpeechSynthesisUtterance(data.reply);
-    msg.lang = /[अ-ह]/.test(data.reply) ? "mr-IN" : "hi-IN";
-    msg.rate = 0.9;
+    msg.lang = "mr-IN";
     speechSynthesis.speak(msg);
 
-    if(data.weatherAlert){
-      alert("🌧️ पावसामुळे फवारणी टाळा");
-    }
-
-  }catch(e){
-    alert("सर्व्हरशी संपर्क झाला नाही");
+  } catch(e) {
+    resultDiv.innerText = "सर्व्हरशी संपर्क झाला नाही: " + e.message;
+  } finally {
+    btn.disabled = false;
   }
 }
 </script>
-
 </body>
 </html>
