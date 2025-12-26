@@ -2,8 +2,8 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   try {
-    // फ्रंटएंडवरून image (base64) आणि city पाठवा
     const { image, city } = req.body; 
+    const groqApiKey = process.env.GROQ_API_KEY?.trim();
 
     // १. हवामान अंदाज (Weather API)
     const weatherCity = city || "Pune";
@@ -13,36 +13,46 @@ export default async function handler(req, res) {
     const weather = await weatherRes.json();
     const isRaining = weather.weather && weather.weather[0].main.includes("Rain");
 
-    // २. Gemini API कॉल (Updated to 1.5-flash)
-    const prompt = `तू शेती तज्ञ आहेस. फोटोवरून रोग ओळख. शेतकऱ्याला मराठीत उत्तर दे. ${isRaining ? "सध्या पाऊस सुरू आहे, हे लक्षात घेऊन उपाय सांग." : ""}`;
+    // २. Groq API कॉल (Llama 3.2 Vision मॉडेल)
+    const promptText = `तू शेती तज्ञ आहेस. या फोटोवरून पिकाचा रोग ओळख आणि शेतकऱ्याला मराठीत सविस्तर उत्तर दे. ${isRaining ? "सध्या तुमच्या भागात पाऊस सुरू आहे, हे लक्षात घेऊन फवारणीचे उपाय सांग." : ""}`;
 
-    const gRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              { inline_data: { mime_type: "image/jpeg", data: image } } // इथे बदल केला आहे
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${groqApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.2-11b-vision-instruct", // फोटोसाठी सर्वोत्तम सपोर्टेड मॉडेल
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: promptText },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${image}` // Gemini ला फक्त base64 लागतो, Groq ला पूर्ण URL फॉरमॅट लागतो
+                }
+              }
             ]
-          }]
-        })
-      }
-    );
+          }
+        ],
+        max_tokens: 1000
+      })
+    });
 
-    const gData = await gRes.json();
+    const data = await response.json();
     
-    if (!gData.candidates) {
-      return res.status(500).json({ error: "AI रिस्पॉन्समध्ये त्रुटी", details: gData });
+    if (data.error) {
+      return res.status(500).json({ error: "Groq AI त्रुटी", details: data.error.message });
     }
 
-    const reply = gData.candidates[0].content.parts[0].text;
+    const reply = data.choices?.[0]?.message?.content || "AI ला फोटो ओळखता आला नाही.";
 
     res.status(200).json({
       reply,
-      weather: weather.weather[0].description,
+      weather: weather.weather ? weather.weather[0].description : "माहिती नाही",
       rain: isRaining
     });
 
