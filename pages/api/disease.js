@@ -2,41 +2,18 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   try {
-    const { image, city, prompt } = req.body; 
+    const { image, city } = req.body; 
     const groqApiKey = process.env.GROQ_API_KEY?.trim();
 
-    if (!groqApiKey) return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
-
-    // १. हवामान अंदाज
-    let weatherInfo = "माहिती उपलब्ध नाही";
+    // १. हवामान अंदाज (Weather)
     let isRaining = false;
-    
     if (city) {
-      try {
-        const weatherRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
-        );
-        const weather = await weatherRes.json();
-        if (weather.weather) {
-          weatherInfo = weather.weather[0].description;
-          isRaining = weather.weather[0].main.toLowerCase().includes("rain");
-        }
-      } catch (e) { console.error("Weather Error"); }
+      const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`);
+      const weather = await weatherRes.json();
+      isRaining = weather.weather?.[0]?.main.toLowerCase().includes("rain");
     }
 
-    // २. Groq API कॉल
-    const systemPrompt = `तू अनुभवी शेती तज्ञ आहेस. ${isRaining ? "तुमच्या भागात पाऊस सुरू आहे, हे लक्षात घेऊन फवारणी किंवा खतांचे उपाय सांगा." : ""} उत्तरे मराठीत द्या.`;
-    const userPrompt = prompt || "या फोटोमधील पिकाचा रोग ओळखून उपाय सांगा.";
-
-    let content = [{ type: "text", text: userPrompt }];
-
-    if (image) {
-      content.push({
-        type: "image_url",
-        image_url: { url: `data:image/jpeg;base64,${image}` }
-      });
-    }
-
+    // २. Groq API - फोटोसाठी 'preview' मॉडेल वापरणे
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -44,27 +21,22 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        // इथे बदल केला आहे: 'instruct' ऐवजी 'preview' वापरले आहे
-        model: image ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
+        model: "llama-3.2-11b-vision-preview", // हेच नाव वापरा
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: content }
-        ],
-        max_tokens: 1000
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `तू शेती तज्ञ आहेस. या फोटोतील रोग ओळखून मराठीत उपाय सांग. ${isRaining ? "पाऊस लक्षात घेऊन उपाय सांगा." : ""}` },
+              { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image}` } }
+            ]
+          }
+        ]
       })
     });
 
     const data = await response.json();
-    
-    if (data.error) return res.status(200).json({ reply: "AI एरर: " + data.error.message });
-
     const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
-
-    res.status(200).json({
-      reply: reply,
-      weather: weatherInfo,
-      rain: isRaining
-    });
+    res.status(200).json({ reply });
 
   } catch (error) {
     res.status(200).json({ reply: "सर्व्हर एरर: " + error.message });
