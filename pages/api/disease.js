@@ -1,44 +1,20 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+import OpenAI from "openai";
 
-  try {
-    const { image, city } = req.body; 
-    const groqApiKey = process.env.GROQ_API_KEY?.trim();
+const client = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY, // तुमची Groq की
+    baseURL: "https://api.groq.com/openai/v1", // Groq चा पत्ता
+});
 
-    // १. हवामान अंदाज (Weather)
-    let isRaining = false;
-    if (city) {
-      const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`);
-      const weather = await weatherRes.json();
-      isRaining = weather.weather?.[0]?.main.toLowerCase().includes("rain");
-    }
-
-    // २. Groq API - फोटोसाठी 'preview' मॉडेल वापरणे
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${groqApiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview", // हेच नाव वापरा
+async function main() {
+    const response = await client.chat.completions.create({
+        // मॉडेलचे नाव बदला (हे सर्वात महत्त्वाचे आहे)
+        model: "llama-3.3-70b-versatile", 
         messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: `तू शेती तज्ञ आहेस. या फोटोतील रोग ओळखून मराठीत उपाय सांग. ${isRaining ? "पाऊस लक्षात घेऊन उपाय सांगा." : ""}` },
-              { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image}` } }
-            ]
-          }
-        ]
-      })
+            { role: "user", content: "फास्ट लँग्वेज मॉडेल्सचे महत्त्व काय आहे?" }
+        ],
     });
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
-    res.status(200).json({ reply });
-
-  } catch (error) {
-    res.status(200).json({ reply: "सर्व्हर एरर: " + error.message });
-  }
+    console.log(response.choices[0].message.content);
 }
+
+main();
