@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
     if (!groqApiKey) return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
 
-    // १. हवामान अंदाज (Weather API)
+    // १. हवामान अंदाज
     let weatherInfo = "माहिती उपलब्ध नाही";
     let isRaining = false;
     
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     if (image) {
       content.push({
         type: "image_url",
-        image_url: { url: `data:image/jpeg;base64,${image}` } // Groq साठी पूर्ण फॉरमॅट
+        image_url: { url: `data:image/jpeg;base64,${image}` }
       });
     }
 
@@ -44,7 +44,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: image ? "llama-3.2-11b-vision-instruct" : "llama-3.3-70b-versatile",
+        // इथे बदल केला आहे: 'instruct' ऐवजी 'preview' वापरले आहे
+        model: image ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: content }
