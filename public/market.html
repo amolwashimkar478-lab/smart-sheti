@@ -2,31 +2,73 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>लाईव्ह बाजारभाव - सर्व जिल्हे</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>लाईव्ह बाजारभाव - महाराष्ट्र</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f0f4f0; color: #333; }
-    header { background: #2e7d32; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
-    .container { padding: 15px; max-width: 600px; margin: auto; }
-    .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    label { font-weight: bold; display: block; margin-bottom: 10px; }
-    select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; background: #fff; }
+    :root {
+      --primary: #2e7d32;
+      --bg: #f4f7f6;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
     
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; background: white; border-radius: 8px; overflow: hidden; }
-    th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
-    th { background: #f8f8f8; color: #666; font-size: 12px; text-transform: uppercase; }
-    .high { color: #2e7d32; font-weight: bold; }
-    .loading { text-align: center; display: none; margin: 20px 0; font-weight: bold; color: #2e7d32; }
-    .back-btn { display: block; width: 100%; padding: 12px; background: #e0e0e0; border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; color: #333; margin-top: 20px; font-weight: bold; }
+    body {
+      margin: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif;
+      height: 100dvh; display: flex; flex-direction: column;
+    }
+
+    header {
+      background: var(--primary); color: var(--white); padding: 18px;
+      text-align: center; font-size: 20px; font-weight: bold; flex-shrink: 0;
+    }
+
+    .container { flex: 1; overflow-y: auto; padding: 15px; }
+
+    .selection-card {
+      background: var(--white); padding: 20px; border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
+    }
+
+    select {
+      width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #eee;
+      font-size: 16px; outline: none; background: #fafafa;
+    }
+
+    .market-grid { display: grid; gap: 12px; }
+
+    .price-card {
+      background: var(--white); border-radius: 12px; padding: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary);
+    }
+
+    .info h4 { margin: 0; font-size: 17px; color: var(--primary); }
+    .info p { margin: 4px 0 0; font-size: 13px; color: #777; }
+
+    .prices { text-align: right; }
+    .max-price { font-size: 18px; font-weight: 800; color: #1b5e20; display: block; }
+    .min-price { font-size: 13px; color: #888; }
+
+    .footer-action {
+      padding: 15px; background: var(--white); border-top: 1px solid #ddd;
+      padding-bottom: calc(15px + env(safe-area-inset-bottom));
+    }
+
+    .back-btn {
+      display: block; width: 100%; padding: 14px; background: #f0f0f0;
+      border-radius: 12px; text-align: center; text-decoration: none;
+      color: #555; font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-<header>📈 महाराष्ट्र लाईव्ह बाजारभाव</header>
+<header>📊 महाराष्ट्र लाईव्ह बाजारभाव</header>
 
 <div class="container">
-  <div class="box">
-    <label>तुमचा जिल्हा निवडा:</label>
+  <div class="selection-card">
+    <label style="font-weight: bold; display: block; margin-bottom: 10px;">तुमचा जिल्हा निवडा:</label>
     <select id="districtSelect" onchange="fetchLiveRates()">
       <option value="">-- जिल्हा निवडा --</option>
       <option value="Ahmednagar">अहमदनगर</option>
@@ -67,35 +109,29 @@
     </select>
   </div>
 
-  <div id="loader" class="loading">⏳ बाजारभाव शोधत आहे...</div>
+  <div id="loader" style="text-align:center; display:none; color:var(--primary); font-weight:bold;">🔄 माहिती शोधत आहे...</div>
 
-  <table id="rateTable">
-    <thead>
-      <tr>
-        <th>पीक / बाजार समिती</th>
-        <th>किमान</th>
-        <th>कमाल</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
+  <div id="marketGrid" class="market-grid"></div>
   
-  <p id="noData" style="text-align:center; display:none; color: red; margin-top:20px;">❌ या जिल्ह्याचा आजचा डेटा उपलब्ध नाही.</p>
-  
-  <a href="ai.html" class="back-btn">← चॅटवर परत जा</a>
+  <div id="noData" style="text-align:center; display:none; color:red; margin-top:20px;">
+    ❌ या जिल्ह्याचा आजचा डेटा उपलब्ध नाही.
+  </div>
 </div>
+<div class="footer-action">
+  <a href="home.html" class="back-btn">← Home वर परत जा</a>
+</div>
+
 
 <script>
 async function fetchLiveRates() {
   const dist = document.getElementById("districtSelect").value;
-  const table = document.getElementById("rateTable");
-  const body = document.getElementById("tableBody");
+  const grid = document.getElementById("marketGrid");
   const loader = document.getElementById("loader");
   const noData = document.getElementById("noData");
 
   if (!dist) return;
 
-  table.style.display = "none";
+  grid.innerHTML = "";
   noData.style.display = "none";
   loader.style.display = "block";
 
@@ -106,25 +142,28 @@ async function fetchLiveRates() {
     loader.style.display = "none";
 
     if (data.success && data.rates.length > 0) {
-      body.innerHTML = "";
       data.rates.forEach(item => {
-        body.innerHTML += `
-          <tr>
-            <td><strong>${item.commodity}</strong><br><small style="color:gray;">${item.mandi}</small></td>
-            <td>₹${item.min}</td>
-            <td class="high">₹${item.max}</td>
-          </tr>
+        grid.innerHTML += `
+          <div class="price-card">
+            <div class="info">
+              <h4>${item.commodity}</h4>
+              <p>📍 ${item.mandi}</p>
+            </div>
+            <div class="prices">
+              <span class="max-price">₹${item.max}</span>
+              <span class="min-price">किमान ₹${item.min}</span>
+            </div>
+          </div>
         `;
       });
-      table.style.display = "table";
     } else {
       noData.style.display = "block";
     }
   } catch (err) {
     loader.style.display = "none";
-    alert("डेटा लोड करताना तांत्रिक अडचण आली.");
+    alert("डेटा लोड होऊ शकला नाही.");
   }
 }
 </script>
 </body>
-        </html>
+</html>
