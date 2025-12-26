@@ -1,156 +1,146 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌾 जिल्हा आधारित शेती बातम्या</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #e8f5e9;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>फोटोसह शेती बातम्या</title>
+  <style>
+    :root { --orange: #e67e22; --bg: #f4f7f6; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #333; }
+    header { background: var(--orange); color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+    
+    .news-container { padding: 15px; max-width: 600px; margin: auto; }
+    
+    .news-card { 
+      background: #fff; border-radius: 15px; overflow: hidden; margin-bottom: 20px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative;
+    }
+    
+    .news-img { width: 100%; height: 200px; object-fit: cover; background: #ddd; }
+    
+    .news-content { padding: 15px; }
+    .news-content h3 { margin: 0 0 10px; font-size: 17px; line-height: 1.4; color: #111; }
+    .news-content p { font-size: 14px; color: #666; margin-bottom: 12px; }
+    
+    .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 10px; }
+    .read-more { color: var(--orange); text-decoration: none; font-weight: bold; font-size: 14px; }
+    
+    .save-btn { 
+      background: rgba(255,255,255,0.9); border: none; font-size: 20px; cursor: pointer; 
+      position: absolute; top: 10px; right: 10px; border-radius: 50%; width: 35px; height: 35px;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .saved { color: var(--orange); }
 
-.header {
-  font-size: 26px;
-  font-weight: bold;
-  color: #2e7d32;
-  margin-bottom: 20px;
-  text-align: center;
-}
+    .tabs { display: flex; background: white; position: sticky; top: 55px; z-index: 90; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-weight: bold; color: #888; border-bottom: 3px solid transparent; }
+    .active-tab { color: var(--orange); border-bottom-color: var(--orange); }
 
-select, button {
-  width: 100%;
-  max-width: 320px;
-  padding: 12px;
-  margin: 8px 0;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-button {
-  background: #2e7d32;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1b5e20;
-}
-
-.news-container {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 360px;
-}
-
-.news-card {
-  background: #fff;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.news-card h3 {
-  margin: 0 0 6px;
-  font-size: 18px;
-  color: #1b5e20;
-}
-
-.news-card p {
-  font-size: 15px;
-  margin: 0;
-}
-</style>
+    #loader { text-align: center; padding: 50px; color: var(--orange); }
+  </style>
 </head>
 <body>
 
-<div class="header">🌾 महाराष्ट्र जिल्हा आधारित शेती बातम्या</div>
+<header>📰 शेती बातम्या</header>
 
-<select id="district">
-  <option value="">-- जिल्हा निवडा --</option>
-  <option value="अहमदनगर">अहमदनगर</option>
-  <option value="अकोला">अकोला</option>
-  <option value="अमरावती">अमरावती</option>
-  <option value="बीड">बीड</option>
-  <option value="बुलढाणा">बुलढाणा</option>
-  <option value="चंद्रपूर">चंद्रपूर</option>
-  <option value="धुळे">धुळे</option>
-  <option value="गडचिरोली">गडचिरोली</option>
-  <option value="गोंदिया">गोंदिया</option>
-  <option value="हिंगोली">हिंगोली</option>
-  <option value="जळगाव">जळगाव</option>
-  <option value="जालना">जालना</option>
-  <option value="कोल्हापूर">कोल्हापूर</option>
-  <option value="लातूर">लातूर</option>
-  <option value="मुंबई शहर">मुंबई शहर</option>
-  <option value="मुंबई उपनगर">मुंबई उपनगर</option>
-  <option value="नागपूर">नागपूर</option>
-  <option value="नंदुरबार">नंदुरबार</option>
-  <option value="नाशिक">नाशिक</option>
-  <option value="पारभणी">पारभणी</option>
-  <option value="पुणे">पुणे</option>
-  <option value="रत्नागिरी">रत्नागिरी</option>
-  <option value="सांगली">सांगली</option>
-  <option value="सातारा">सातारा</option>
-  <option value="सिंधुदुर्ग">सिंधुदुर्ग</option>
-  <option value="सोलापूर">सोलापूर</option>
-  <option value="ठाणे">ठाणे</option>
-  <option value="वर्धा">वर्धा</option>
-  <option value="वाशिम">वाशिम</option>
-  <option value="यवतमाळ">यवतमाळ</option>
-</select>
+<div class="tabs">
+  <div id="latestTab" class="tab active-tab" onclick="showLatest()">ताज्या बातम्या</div>
+  <div id="savedTab" class="tab" onclick="showSaved()">सेव्ह केलेल्या</div>
+</div>
 
-<button onclick="fetchNews()">🔍 बातम्या दाखवा</button>
+<div class="news-container" id="newsBox">
+  <div id="loader">🔄 बातम्या आणि फोटो लोड होत आहेत...</div>
+</div>
 
-<div class="news-container" id="newsContainer"></div>
+<div style="padding: 20px; text-align: center;">
+  <button onclick="location.href='home.html'" style="width:100%; padding:14px; border-radius:12px; border:none; background:#eee; font-weight:bold; cursor:pointer;">← होमवर परत जा</button>
+</div>
 
 <script>
-const API_KEY = "00d47c00261f47be850253577e6ee131";
+let allNews = [];
+let savedNews = JSON.parse(localStorage.getItem('agri_saved_news')) || [];
 
-async function fetchNews() {
-  const district = document.getElementById("district").value;
-  if (!district) {
-    alert("कृपया जिल्हा निवडा");
-    return;
-  }
-
-  document.getElementById("newsContainer").innerHTML = "<p>⏳ बातम्या लोड होत आहेत...</p>";
-
+async function fetchAgriNews() {
   try {
-    const res = await fetch(`https://newsapi.org/v2/everything?q=${district}+कृषि&language=mr&sortBy=publishedAt&pageSize=10&apiKey=${API_KEY}`);
-    const data = await res.json();
-
-    if(data.articles.length === 0){
-      document.getElementById("newsContainer").innerHTML = "<p>बातम्या सापडल्या नाहीत</p>";
-      return;
-    }
-
-    let html = "";
-    data.articles.forEach(article => {
-      html += `
-        <div class="news-card">
-          <h3>${article.title}</h3>
-          <p>${article.description || ""}</p>
-          <a href="${article.url}" target="_blank">📰 पूर्ण वाचा</a>
-        </div>
-      `;
+    // Google News RSS feed for Agriculture in Marathi
+    const rssUrl = 'https://news.google.com/rss/search?q=Maharashtra+Agriculture+Marathi&hl=mr&gl=IN&ceid=IN:mr';
+    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+    const data = await response.json();
+    
+    allNews = data.items.map(item => {
+      // बातमीमधील फोटो शोधण्याचा प्रयत्न (Description मधून)
+      let img = "https://via.placeholder.com/400x200?text=Agri+News";
+      const div = document.createElement('div');
+      div.innerHTML = item.description;
+      const imgTag = div.querySelector('img');
+      if (imgTag) img = imgTag.src;
+      
+      return { ...item, thumbnail: img };
     });
-
-    document.getElementById("newsContainer").innerHTML = html;
-
-  } catch(err) {
-    console.error(err);
-    document.getElementById("newsContainer").innerHTML = "<p>सर्व्हरशी संपर्क झाला नाही किंवा API key चुकली आहे</p>";
+    
+    showLatest();
+  } catch (err) {
+    document.getElementById('newsBox').innerHTML = "❌ बातम्या लोड होऊ शकल्या नाहीत. इंटरनेट तपासा.";
   }
 }
-</script>
 
+function renderNews(items) {
+  const box = document.getElementById('newsBox');
+  box.innerHTML = "";
+  
+  items.forEach((news) => {
+    const isSaved = savedNews.some(s => s.link === news.link);
+    box.innerHTML += `
+      <div class="news-card">
+        <img src="${news.thumbnail}" class="news-img" onerror="this.src='https://via.placeholder.com/400x200?text=Smart+Sheti'">
+        <button class="save-btn" onclick="toggleSave(${JSON.stringify(news).replace(/"/g, '&quot;')})">
+          ${isSaved ? '🔖' : '📑'}
+        </button>
+        <div class="news-content">
+          <h3>${news.title}</h3>
+          <div class="card-footer">
+            <small>📅 ${new Date(news.pubDate).toLocaleDateString('mr-IN')}</small>
+            <a href="${news.link}" target="_blank" class="read-more">पूर्ण बातमी वाचा →</a>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function toggleSave(news) {
+  const index = savedNews.findIndex(s => s.link === news.link);
+  if (index > -1) {
+    savedNews.splice(index, 1);
+  } else {
+    savedNews.unshift(news);
+  }
+  localStorage.setItem('agri_saved_news', JSON.stringify(savedNews));
+  
+  if (document.getElementById('savedTab').classList.contains('active-tab')) {
+    showSaved();
+  } else {
+    showLatest();
+  }
+}
+
+function showLatest() {
+  document.getElementById('latestTab').classList.add('active-tab');
+  document.getElementById('savedTab').classList.remove('active-tab');
+  renderNews(allNews);
+}
+
+function showSaved() {
+  document.getElementById('savedTab').classList.add('active-tab');
+  document.getElementById('latestTab').classList.remove('active-tab');
+  if (savedNews.length === 0) {
+    document.getElementById('newsBox').innerHTML = "<p style='text-align:center; margin-top:50px;'>तुम्ही अजून एकही बातमी सेव्ह केलेली नाही.</p>";
+  } else {
+    renderNews(savedNews);
+  }
+}
+
+fetchAgriNews();
+</script>
 </body>
 </html>
