@@ -3,65 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Sheti - AI</title>
+<title>Smart Sheti AI - Expert Advice</title>
 
 <style>
-*{box-sizing:border-box;}
-body{margin:0;background:#e8f5e9;font-family:Arial;height:100vh;display:flex;flex-direction:column;}
+  * { box-sizing: border-box; }
+  body { 
+    margin: 0; background: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; 
+    height: 100vh; display: flex; flex-direction: column; 
+  }
 
-/* HEADER */
-header{
-  background:#2e7d32;color:#fff;padding:14px;display:flex;align-items:center;
-  font-size:18px;gap:12px;z-index:20;position:relative;
-}
-.menuBtn{font-size:22px;cursor:pointer;}
+  /* HEADER */
+  header {
+    background: #1b5e20; color: #fff; padding: 15px; display: flex; align-items: center;
+    font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 20;
+  }
+  .menuBtn { font-size: 24px; cursor: pointer; margin-right: 15px; }
 
-/* SIDE MENU */
-#sideMenu{
-  position:fixed;top:0;left:-260px;width:260px;height:100%;background:white;
-  padding:14px;box-shadow:3px 0 10px rgba(0,0,0,0.3);transition:0.3s;overflow-y:auto;z-index:15;
-}
-#sideMenu.show{left:0;}
+  /* SIDE MENU */
+  #sideMenu {
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white;
+    padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.2); transition: 0.3s; overflow-y: auto; z-index: 30;
+  }
+  #sideMenu.show { left: 0; }
+  #sideMenu h3 { color: #1b5e20; border-bottom: 2px solid #eee; padding-bottom: 10px; }
 
-.history-item{
-  padding:10px;border-bottom:1px solid #ddd;cursor:pointer;
-  font-size:15px;display:flex;justify-content:space-between;align-items:center;
-  user-select:none;
-}
+  .history-item {
+    padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+    font-size: 14px; color: #333; transition: background 0.2s;
+  }
+  .history-item:hover { background: #f9f9f9; }
 
-/* LONG PRESS OPTIONS */
-#optionMenu{
-  position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
-  width:200px;background:white;border-radius:10px;display:none;
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);overflow:hidden;z-index:99;
-}
-#optionMenu button{
-  width:100%;padding:12px;border:none;background:none;text-align:left;
-  border-bottom:1px solid #eee;font-size:15px;cursor:pointer;
-}
+  /* OVERLAY */
+  #overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; z-index: 25;
+  }
 
-/* OVERLAY */
-#overlay{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.4);display:none;z-index:10;
-}
+  /* CHAT AREA */
+  #chatBox { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  
+  .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; position: relative; }
+  .user { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 2px; color: #000; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  .ai { background: #ffffff; align-self: flex-start; border-bottom-left-radius: 2px; color: #333; border: 1px solid #e0e0e0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
-/* CHAT */
-#chatBox{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;}
-.user,.ai{
-  max-width:85%;padding:10px;margin:6px 0;border-radius:14px;font-size:15px;
-}
-.user{background:#c8e6c9;align-self:flex-end;}
-.ai{background:white;border:1px solid #ddd;align-self:flex-start;}
+  .chat-img { max-width: 100%; border-radius: 10px; margin-bottom: 8px; display: block; border: 1px solid #ddd; }
 
-.chat-img{max-width:100%;border-radius:8px;margin-top:6px;}
+  /* INPUT BAR */
+  #inputBar { display: flex; gap: 10px; padding: 12px; background: #fff; border-top: 1px solid #ddd; align-items: center; }
+  #userInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1px solid #ccc; outline: none; font-size: 15px; }
+  #userInput:focus { border-color: #1b5e20; }
 
-/* INPUT BAR */
-#inputBar{display:flex;gap:6px;padding:8px;background:#fff;border-top:1px solid #ccc;}
-#inputBar input{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;}
+  .iconBtn {
+    background: #1b5e20; border: none; color: #fff; width: 45px; height: 45px;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .cameraBtn { background: #555; }
+  .sendBtn { background: #1565c0; }
 
-.iconBtn{background:#2e7d32;border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;}
-.sendBtn{background:#1565c0;}
+  /* LOADING SPINNER */
+  .typing { font-style: italic; color: #777; font-size: 13px; margin-left: 5px; }
 </style>
 </head>
 
@@ -69,125 +69,165 @@ header{
 
 <header>
   <span class="menuBtn" onclick="toggleMenu()">☰</span>
-  🤖 शेतकरी AI मित्र
+  🌿 डिजिटल शेती मित्र
 </header>
 
-<div id="overlay" onclick="closeMenu();closeOptions();"></div>
+<div id="overlay" onclick="closeMenu()"></div>
 
 <div id="sideMenu">
-  <h3>📜 माझी हिस्ट्री</h3>
-  <input id="searchHistory" oninput="filterHistory()" placeholder="चॅट शोधा..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-bottom:10px;">
+  <h3>📜 जुनी चर्चा</h3>
   <div id="historyList"></div>
-  <button onclick="clearAllHistory()" style="margin-top:15px;background:#d32f2f;color:#fff;padding:10px;width:100%;border:none;border-radius:6px;">🗑️ सर्व डाटा डिलिट</button>
+  <button onclick="clearHistory()" style="margin-top:20px; background:#c62828; color:white; border:none; width:100%; padding:10px; border-radius:5px; cursor:pointer;">🗑️ हिस्ट्री पुसा</button>
 </div>
 
-<div id="chatBox"></div>
+<div id="chatBox">
+  <div class="msg ai">नमस्कार! मी आपला AI शेती सल्लागार आहे. तुम्ही मला कोणताही प्रश्न विचारू शकता किंवा पिकाच्या रोगाचा फोटो पाठवू शकता.</div>
+</div>
 
 <div id="inputBar">
-  <input id="userInput" placeholder="प्रश्न लिहा...">
-  <button class="iconBtn sendBtn" onclick="sendMessage()">➤</button>
-</div>
-
-<!-- LONG PRESS MENU -->
-<div id="optionMenu">
-  <button id="openBtn">📂 चॅट उघडा</button>
-  <button id="pinBtn">📌 पिन करा</button>
-  <button id="renameBtn">✏️ नाव बदला</button>
-  <button id="deleteBtn">🗑️ हटवा</button>
+  <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="processFile(event)">
+  <button class="iconBtn cameraBtn" onclick="document.getElementById('fileInput').click()">📷</button>
+  
+  <input id="userInput" placeholder="येथे मेसेज लिहा..." onkeypress="if(event.key==='Enter') sendText()">
+  <button class="iconBtn sendBtn" onclick="sendText()">➤</button>
 </div>
 
 <script>
 const chatBox = document.getElementById("chatBox");
-let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-let longPressIndex = null;
+const userInput = document.getElementById("userInput");
+let history = JSON.parse(localStorage.getItem("agriChat") || "[]");
 
-/* ---------------- MENU ---------------- */
-function toggleMenu(){
-  const m=document.getElementById("sideMenu");
-  const o=document.getElementById("overlay");
-  m.classList.toggle("show");
-  o.style.display = m.classList.contains("show") ? "block" : "none";
+/* --- UI Logic --- */
+function toggleMenu() {
+  document.getElementById("sideMenu").classList.toggle("show");
+  document.getElementById("overlay").style.display = document.getElementById("sideMenu").classList.contains("show") ? "block" : "none";
   renderHistory();
 }
-function closeMenu(){
+
+function closeMenu() {
   document.getElementById("sideMenu").classList.remove("show");
-  document.getElementById("overlay").style.display="none";
+  document.getElementById("overlay").style.display = "none";
 }
 
-/* ---------------- CHAT ---------------- */
-function sendMessage(){
+function addMessage(text, sender, imgSrc = null) {
+  const div = document.createElement("div");
+  div.className = `msg ${sender}`;
+  
+  if(imgSrc) {
+    const img = document.createElement("img");
+    img.src = imgSrc;
+    img.className = "chat-img";
+    div.appendChild(img);
+  }
+
+  const span = document.createElement("span");
+  span.innerText = text;
+  div.appendChild(span);
+  
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
+}
+
+/* --- Sending Logic --- */
+async function sendText() {
   const text = userInput.value.trim();
   if(!text) return;
-  add(text,"user");
-  saveHistory(text);
-  userInput.value="";
-}
-function add(t,c){
-  const d=document.createElement("div");
-  d.className=c; d.innerText=t;
-  chatBox.appendChild(d);
-  chatBox.scrollTop=chatBox.scrollHeight;
+
+  addMessage(text, "user");
+  userInput.value = "";
+
+  const aiMsgDiv = addMessage("⏳ विचार करत आहे...", "ai");
+
+  try {
+    const res = await fetch("/api/disease", { // तुमच्या Backend फाईलचे नाव तपासा
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: text, city: "Maharashtra" })
+    });
+    const data = await res.json();
+    aiMsgDiv.innerText = data.reply;
+    saveToHistory(text, data.reply);
+  } catch (err) {
+    aiMsgDiv.innerText = "Error: सर्व्हरशी संपर्क झाला नाही.";
+  }
 }
 
-/* ---------------- HISTORY ---------------- */
-function saveHistory(text){
-  history.unshift({txt:text,pin:false,data:[{sender:"user",text:text}]});
-  updateHistory();
+/* --- Image Processing --- */
+function processFile(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.width = 800; // फोटो रिसाईज
+      const scale = 800 / img.width;
+      canvas.width = 800;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      uploadPhoto(compressedBase64);
+    };
+  };
+  reader.readAsDataURL(file);
 }
-function renderHistory(list=history){
-  const box=document.getElementById("historyList");
-  box.innerHTML="";
-  list.forEach((h,i)=>{
-    box.innerHTML+=`
-      <div class="history-item"
-        onclick="openChat(${i})"
-        oncontextmenu="event.preventDefault();showOptions(${i})"
-        ontouchstart="startPress(${i})"
-        ontouchend="cancelPress()"
-      >
-        <span>${h.pin?"📌":"💬"} ${h.txt.slice(0,18)}...</span>
-      </div>`;
+
+async function uploadPhoto(base64) {
+  addMessage("फोटो तपासणीसाठी पाठवला आहे...", "user", base64);
+  const aiMsgDiv = addMessage("⏳ AI फोटोचा अभ्यास करत आहे...", "ai");
+
+  try {
+    const res = await fetch("/api/disease", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        image: base64.split(",")[1], 
+        city: "Maharashtra" 
+      })
+    });
+    const data = await res.json();
+    aiMsgDiv.innerText = data.reply;
+  } catch (err) {
+    aiMsgDiv.innerText = "फोटो तपासताना एरर आला.";
+  }
+}
+
+/* --- History Logic --- */
+function saveToHistory(q, a) {
+  history.unshift({ q, a });
+  localStorage.setItem("agriChat", JSON.stringify(history.slice(0, 15)));
+}
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+  history.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerText = "💬 " + item.q.substring(0, 25) + "...";
+    div.onclick = () => {
+      chatBox.innerHTML = "";
+      addMessage(item.q, "user");
+      addMessage(item.a, "ai");
+      closeMenu();
+    };
+    list.appendChild(div);
   });
 }
-function openChat(i){
-  chatBox.innerHTML="";
-  history[i].data.forEach(msg=> add(msg.text,msg.sender));
-  closeMenu();
-}
-function startPress(i){
-  pressTimer = setTimeout(()=>showOptions(i),600);
-}
-function cancelPress(){
-  clearTimeout(pressTimer);
-}
 
-/* ---------------- LONG PRESS OPTIONS ---------------- */
-function showOptions(i){
-  longPressIndex=i;
-  const m=document.getElementById("optionMenu");
-  m.style.display="block";
-  document.getElementById("overlay").style.display="block";
-
-  document.getElementById("openBtn").onclick=()=>{openChat(i);closeOptions();}
-  document.getElementById("pinBtn").onclick=()=>{history[i].pin=!history[i].pin;updateHistory();}
-  document.getElementById("renameBtn").onclick=()=>{let n=prompt("नवीन नाव:",history[i].txt);if(n){history[i].txt=n;updateHistory();}}
-  document.getElementById("deleteBtn").onclick=()=>{history.splice(i,1);updateHistory();closeOptions();}
+function clearHistory() {
+  if(confirm("हिस्ट्री कायमची पुसायची का?")) {
+    localStorage.removeItem("agriChat");
+    history = [];
+    renderHistory();
+  }
 }
-function closeOptions(){ document.getElementById("optionMenu").style.display="none"; }
-
-function updateHistory(){
-  localStorage.setItem("chatHistory",JSON.stringify(history));
-  renderHistory();closeOptions();
-}
-function filterHistory(){
-  let k=searchHistory.value.toLowerCase();
-  renderHistory(history.filter(h=>h.txt.toLowerCase().includes(k)));
-}
-function clearAllHistory(){
-  if(confirm("सर्व हटवायचे?")){localStorage.removeItem("chatHistory");history=[];renderHistory();}
-}
-
-renderHistory();
 </script>
 </body>
 </html>
+
