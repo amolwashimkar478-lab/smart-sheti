@@ -3,71 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Sheti - AI</title>
-
+<title>Smart Sheti AI - Chat & History</title>
 <style>
-*{box-sizing:border-box;}
-body{
-  margin:0;background:#e8f5e9;font-family:Arial;height:100vh;display:flex;flex-direction:column;
-}
+  *{box-sizing:border-box;}
+  body{ margin:0;background:#e8f5e9;font-family:Arial;height:100vh;display:flex;flex-direction:column; }
+  header{ background:#2e7d32;color:#fff;padding:14px;display:flex;align-items:center; font-size:18px;gap:12px;z-index:20; }
+  .menuBtn{font-size:22px;cursor:pointer;}
 
-/* HEADER */
-header{
-  background:#2e7d32;color:#fff;padding:14px;display:flex;align-items:center;
-  font-size:18px;gap:12px;position:relative;z-index:20;
-}
-.menuBtn{font-size:22px;cursor:pointer;}
+  /* SIDE MENU */
+  #sideMenu{ position:fixed;top:0;left:-260px;width:260px;height:100%;background:#fff; padding:14px;box-shadow:2px 0 8px rgba(0,0,0,0.2);transition:0.3s;z-index:15; display:flex; flex-direction:column; }
+  #sideMenu.show{left:0;}
+  .new-chat-btn { background:#2e7d32; color:#fff; border:none; padding:12px; border-radius:8px; margin-bottom:15px; cursor:pointer; font-weight:bold; width:100%; }
+  #historyList { flex:1; overflow-y:auto; }
+  .history-item{ padding:12px;border-bottom:1px solid #eee;cursor:pointer; font-size:14px; user-select:none; }
 
-/* SIDE MENU */
-#sideMenu{
-  position:fixed;top:0;left:-260px;width:260px;height:100%;background:#ffffff;
-  padding:14px;box-shadow:2px 0 8px rgba(0,0,0,0.2);transition:0.3s;z-index:15;
-  display:flex; flex-direction:column;
-}
-#sideMenu.show{left:0;}
+  /* OPTIONS POPUP */
+  .history-actions{ position:fixed;bottom:30px;left:50%;transform:translateX(-50%); width:220px;background:#fff;border-radius:12px; display:none;z-index:30;box-shadow:0 5px 20px rgba(0,0,0,0.3); overflow:hidden; }
+  .history-actions button{ background:none;border:none;padding:12px;text-align:left;font-size:15px;width:100%; border-bottom:1px solid #f0f0f0; cursor:pointer; }
 
-.new-chat-btn {
-  background: #2e7d32; color: white; border: none; padding: 12px;
-  border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold;
-}
+  #overlay{ position:fixed;top:0;left:0;width:100%;height:100%; background:rgba(0,0,0,0.45);display:none;z-index:10; }
 
-#historyList { flex: 1; overflow-y: auto; }
+  /* CHAT AREA */
+  #chatBox{ flex:1;padding:12px;overflow-y:auto; display:flex; flex-direction:column; }
+  .user,.ai{ max-width:85%; padding:10px 14px; margin:6px 0; border-radius:15px; font-size:15px; line-height:1.4; }
+  .user{ background:#c8e6c9; align-self:flex-end; border-bottom-right-radius:2px; }
+  .ai{ background:#fff; border:1px solid #ddd; align-self:flex-start; border-bottom-left-radius:2px; white-space: pre-wrap; }
 
-.history-item{
-  padding:12px;border-bottom:1px solid #eee;cursor:pointer;
-  display:flex;justify-content:space-between;align-items:center;
-  user-select: none; font-size: 14px;
-}
-
-/* Options Box */
-.history-actions{
-  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-  width:220px;background:#fff;border-radius:12px;
-  display:none;z-index:30;box-shadow: 0 5px 20px rgba(0,0,0,0.3); overflow: hidden;
-}
-.history-actions button{
-  background:none;border:none;padding:12px;text-align:left;font-size:15px;width:100%; border-bottom: 1px solid #f0f0f0;
-}
-
-#overlay{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.45);display:none;z-index:10;
-}
-
-/* CHAT AREA */
-#chatBox{flex:1;padding:12px;overflow-y:auto; display: flex; flex-direction: column;}
-.user,.ai{ max-width: 85%; padding: 10px 14px; margin: 6px 0; border-radius: 15px; font-size: 15px; line-height: 1.4; }
-.user{ background: #c8e6c9; align-self: flex-end; border-bottom-right-radius: 2px; }
-.ai{ background: #fff; border: 1px solid #ddd; align-self: flex-start; border-bottom-left-radius: 2px; }
-
-/* INPUT BAR */
-#inputBar{ display:flex;gap:6px;padding:10px;background:#fff;border-top:1px solid #ccc; }
-#inputBar input{ flex:1;padding:12px;border-radius:25px;border:1px solid #ccc;outline: none; }
-.iconBtn{ background:#2e7d32;border:none;color:#fff;width:42px;height:42px;border-radius:50%; cursor: pointer; }
-.sendBtn{background:#1565c0;}
+  /* INPUT BAR */
+  #inputBar{ display:flex;gap:6px;padding:10px;background:#fff;border-top:1px solid #ccc; }
+  #inputBar input{ flex:1;padding:12px;border-radius:25px;border:1px solid #ccc;outline:none; }
+  .iconBtn{ background:#2e7d32;border:none;color:#fff;width:42px;height:42px;border-radius:50%; cursor:pointer; font-size:18px; }
+  .sendBtn{ background:#1565c0; }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -78,10 +46,10 @@ header{
 <div id="overlay" onclick="closeMenu(); hideOptions();"></div>
 
 <div id="sideMenu">
-  <h3>📜 चर्चा इतिहास</h3>
-  <button class="new-chat-btn" onclick="startNewChat()">+ नवीन चॅट (New Chat)</button>
+  <h3>📜 चॅट हिस्ट्री</h3>
+  <button class="new-chat-btn" onclick="startNewChat()">+ नवीन चॅट सुरू करा</button>
   <div id="historyList"></div>
-  <button onclick="clearAllHistory()" style="background:none; border:none; color:red; cursor:pointer; padding:10px;">🗑️ सर्व डिलीट करा</button>
+  <button onclick="clearAllHistory()" style="background:none; border:none; color:red; cursor:pointer; padding:10px; width:100%;">🗑️ सर्व डिलीट करा</button>
 </div>
 
 <div id="optionBox" class="history-actions"></div>
@@ -89,10 +57,10 @@ header{
 <div id="chatBox"></div>
 
 <div id="inputBar">
-  <button class="iconBtn" onclick="openCamera()">📷</button>
-  <input id="userInput" placeholder="येथे लिहा...">
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden onchange="handleFile(event)">
+  <button class="iconBtn" onclick="document.getElementById('cameraInput').click()">📷</button>
+  <input id="userInput" placeholder="प्रश्न लिहा..." onkeypress="if(event.key==='Enter') sendMessage()">
   <button class="iconBtn sendBtn" onclick="sendMessage()">➤</button>
-  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
 </div>
 
 <script>
@@ -103,6 +71,7 @@ let currentChatIndex = null;
 let pressTimer;
 
 renderHistory();
+startNewChat(); // सुरुवातीला एक नवीन चॅट तयार ठेवा
 
 function toggleMenu(){
   document.getElementById("sideMenu").classList.toggle("show");
@@ -116,47 +85,48 @@ function closeMenu(){
 
 function hideOptions() { document.getElementById("optionBox").style.display = "none"; }
 
-// नवीन चॅट सुरू करणे
 function startNewChat() {
   currentChatIndex = null;
-  chatBox.innerHTML = '<div class="ai">नवीन चॅट सुरू झाले आहे. मी तुम्हाला काय मदत करू शकतो?</div>';
+  chatBox.innerHTML = '<div class="ai">नमस्कार! मी तुम्हाला कशी मदत करू शकतो?</div>';
   input.value = "";
   closeMenu();
 }
 
-async function sendMessage(){
+async function sendMessage(photoBase64 = null) {
   const text = input.value.trim();
-  if(!text) return;
+  if(!text && !photoBase64) return;
 
-  addMessage(text, "user");
+  // युजरचा मेसेज दाखवा
+  addMessage(text || "फोटो तपासत आहे...", "user");
   input.value = "";
 
-  // जर हा नवीन चॅट असेल तर हिस्ट्रीमध्ये नवीन एंट्री करा
+  // नवीन चॅटची हिस्ट्रीमध्ये नोंद करणे
   if (currentChatIndex === null) {
-    const newChat = { title: text, messages: [{t: text, c: "user"}] };
+    const newChat = { title: text || "फोटो तपासणी", messages: [] };
     history.unshift(newChat);
     currentChatIndex = 0;
-  } else {
-    history[currentChatIndex].messages.push({t: text, c: "user"});
   }
+  history[currentChatIndex].messages.push({t: text || "📷 फोटो", c: "user"});
 
   const aiLoading = addMessage("⏳ विचार करत आहे...", "ai");
 
   try {
-    const res = await fetch("/api/chat", {
+    // तुमच्या फाईलचे नाव /api/disease.js आहे, म्हणून हा पत्ता वापरला आहे
+    const res = await fetch("/api/disease", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: text })
+      body: JSON.stringify({ prompt: text, image: photoBase64 })
     });
+    
     const data = await res.json();
-    const reply = data.reply || "उत्तर मिळाले नाही";
+    const reply = data.reply || "उत्तर मिळाले नाही.";
     aiLoading.innerText = reply;
     
-    // AI चे उत्तर सेव्ह करा
+    // AI चे उत्तर हिस्ट्रीमध्ये सेव्ह करणे
     history[currentChatIndex].messages.push({t: reply, c: "ai"});
     save();
-  } catch {
-    aiLoading.innerText = "❌ एरर: सर्व्हरशी संपर्क तुटला.";
+  } catch (e) {
+    aiLoading.innerText = "❌ एरर: सर्व्हरशी संपर्क होऊ शकला नाही.";
   }
 }
 
@@ -169,31 +139,20 @@ function addMessage(t, c) {
   return d;
 }
 
-function save() {
-  localStorage.setItem("chatHistory", JSON.stringify(history));
-  renderHistory();
-}
-
 function renderHistory() {
   const box = document.getElementById("historyList");
   box.innerHTML = "";
   history.forEach((h, i) => {
     const div = document.createElement("div");
     div.className = "history-item";
-    div.innerHTML = `💬 ${h.title.slice(0, 20)}...`;
-    
-    // क्लिक केल्यावर चॅट उघडणे
+    div.innerText = "💬 " + h.title.slice(0, 20) + "...";
     div.onclick = () => loadChat(i);
-
-    // लाँग प्रेस ऑप्शन्स
     div.onmousedown = div.ontouchstart = () => { pressTimer = setTimeout(() => openOptions(i), 600); };
     div.onmouseup = div.ontouchend = () => clearTimeout(pressTimer);
-
     box.appendChild(div);
   });
 }
 
-// जुना चॅट लोड करणे
 function loadChat(i) {
   currentChatIndex = i;
   chatBox.innerHTML = "";
@@ -201,41 +160,44 @@ function loadChat(i) {
   closeMenu();
 }
 
+function save() {
+  localStorage.setItem("chatHistory", JSON.stringify(history));
+  renderHistory();
+}
+
 function openOptions(i) {
   const menu = document.getElementById("optionBox");
   menu.style.display = "block";
   document.getElementById("overlay").style.display = "block";
   menu.innerHTML = `
-    <button onclick="renameChat(${i})">✏️ नाव बदला</button>
     <button onclick="deleteChat(${i})" style="color:red;">🗑️ चॅट हटवा</button>
     <button onclick="hideOptions()">❌ रद्द करा</button>
   `;
 }
 
-function renameChat(i) {
-  let n = prompt("चॅटला नवीन नाव द्या:", history[i].title);
-  if(n) { history[i].title = n; save(); }
-  hideOptions();
-}
-
 function deleteChat(i) {
-  if(confirm("हा चॅट कायमचा हटवायचा?")) {
+  if(confirm("हा चॅट हटवायचा?")) {
     history.splice(i, 1);
-    if (currentChatIndex === i) startNewChat();
+    startNewChat();
     save();
   }
   hideOptions();
 }
 
 function clearAllHistory() {
-  if(confirm("सर्व डेटा पुसायचा?")) { history = []; save(); startNewChat(); }
+  if(confirm("सर्व डेटा डिलीट करायचा?")) { history = []; save(); startNewChat(); }
 }
 
-function openCamera() { document.getElementById("cameraInput").click(); }
-
-// सुरुवातीला रिकामे चॅट दाखवा
-startNewChat();
+function handleFile(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result.split(",")[1];
+    sendMessage(base64); // फोटोसह रिक्वेस्ट पाठवा
+  };
+  reader.readAsDataURL(file);
+}
 </script>
-
 </body>
 </html>
