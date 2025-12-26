@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>लाईव्ह बाजारभाव - सर्व जिल्हे</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f0f4f0; color: #333; }
+    header { background: #2e7d32; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
+    .container { padding: 15px; max-width: 600px; margin: auto; }
+    .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    label { font-weight: bold; display: block; margin-bottom: 10px; }
+    select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; background: #fff; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; background: white; border-radius: 8px; overflow: hidden; }
+    th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+    th { background: #f8f8f8; color: #666; font-size: 12px; text-transform: uppercase; }
+    .high { color: #2e7d32; font-weight: bold; }
+    .loading { text-align: center; display: none; margin: 20px 0; font-weight: bold; color: #2e7d32; }
+    .back-btn { display: block; width: 100%; padding: 12px; background: #e0e0e0; border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; color: #333; margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<header>📈 महाराष्ट्र लाईव्ह बाजारभाव</header>
+
+<div class="container">
+  <div class="box">
+    <label>तुमचा जिल्हा निवडा:</label>
+    <select id="districtSelect" onchange="fetchLiveRates()">
+      <option value="">-- जिल्हा निवडा --</option>
+      <option value="Ahmednagar">अहमदनगर</option>
+      <option value="Akola">अकोला</option>
+      <option value="Amravati">अमरावती</option>
+      <option value="Beed">बीड</option>
+      <option value="Bhandara">भंडारा</option>
+      <option value="Buldhana">बुलढाणा</option>
+      <option value="Chandrapur">चंद्रपूर</option>
+      <option value="Chhatrapati Sambhajinagar">छत्रपती संभाजीनगर</option>
+      <option value="Dharashiv">धाराशिव</option>
+      <option value="Dhule">धुळे</option>
+      <option value="Gadchiroli">गडचिरोली</option>
+      <option value="Gondiya">गोंदिया</option>
+      <option value="Hingoli">हिंगोली</option>
+      <option value="Jalgaon">जळगाव</option>
+      <option value="Jalna">जालना</option>
+      <option value="Kolhapur">कोल्हापूर</option>
+      <option value="Latur">लातूर</option>
+      <option value="Mumbai">मुंबई</option>
+      <option value="Nagpur">नागपूर</option>
+      <option value="Nanded">नांदेड</option>
+      <option value="Nandurbar">नंदुरबार</option>
+      <option value="Nashik">नाशिक</option>
+      <option value="Palghar">पालघर</option>
+      <option value="Parbhani">परभणी</option>
+      <option value="Pune">पुणे</option>
+      <option value="Raigad">रायगड</option>
+      <option value="Ratnagiri">रत्नागिरी</option>
+      <option value="Sangli">सांगली</option>
+      <option value="Satara">सातारा</option>
+      <option value="Sindhudurg">सिंधुदुर्ग</option>
+      <option value="Solapur">सोलापूर</option>
+      <option value="Thane">ठाणे</option>
+      <option value="Wardha">वर्धा</option>
+      <option value="Washim">वाशिम</option>
+      <option value="Yavatmal">यवतमाळ</option>
+    </select>
+  </div>
+
+  <div id="loader" class="loading">⏳ बाजारभाव शोधत आहे...</div>
+
+  <table id="rateTable">
+    <thead>
+      <tr>
+        <th>पीक / बाजार समिती</th>
+        <th>किमान</th>
+        <th>कमाल</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  
+  <p id="noData" style="text-align:center; display:none; color: red; margin-top:20px;">❌ या जिल्ह्याचा आजचा डेटा उपलब्ध नाही.</p>
+  
+  <a href="ai.html" class="back-btn">← चॅटवर परत जा</a>
+</div>
+
+<script>
+async function fetchLiveRates() {
+  const dist = document.getElementById("districtSelect").value;
+  const table = document.getElementById("rateTable");
+  const body = document.getElementById("tableBody");
+  const loader = document.getElementById("loader");
+  const noData = document.getElementById("noData");
+
+  if (!dist) return;
+
+  table.style.display = "none";
+  noData.style.display = "none";
+  loader.style.display = "block";
+
+  try {
+    const res = await fetch(`/api/market?district=${dist}`);
+    const data = await res.json();
+
+    loader.style.display = "none";
+
+    if (data.success && data.rates.length > 0) {
+      body.innerHTML = "";
+      data.rates.forEach(item => {
+        body.innerHTML += `
+          <tr>
+            <td><strong>${item.commodity}</strong><br><small style="color:gray;">${item.mandi}</small></td>
+            <td>₹${item.min}</td>
+            <td class="high">₹${item.max}</td>
+          </tr>
+        `;
+      });
+      table.style.display = "table";
+    } else {
+      noData.style.display = "block";
+    }
+  } catch (err) {
+    loader.style.display = "none";
+    alert("डेटा लोड करताना तांत्रिक अडचण आली.");
+  }
+}
+</script>
+</body>
+</html>
