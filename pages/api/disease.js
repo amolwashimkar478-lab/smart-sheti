@@ -5,6 +5,8 @@ export default async function handler(req, res) {
     const { image, city, prompt } = req.body; 
     const groqApiKey = process.env.GROQ_API_KEY?.trim();
 
+    if (!groqApiKey) return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
+
     // १. हवामान अंदाज (Weather API)
     let weatherInfo = "माहिती उपलब्ध नाही";
     let isRaining = false;
@@ -17,21 +19,21 @@ export default async function handler(req, res) {
         const weather = await weatherRes.json();
         if (weather.weather) {
           weatherInfo = weather.weather[0].description;
-          isRaining = weather.weather[0].main.includes("Rain");
+          isRaining = weather.weather[0].main.toLowerCase().includes("rain");
         }
       } catch (e) { console.error("Weather Error"); }
     }
 
-    // २. Groq API कॉल - फोटो आणि चॅट दोन्हीसाठी
-    const systemPrompt = `तू शेती तज्ञ आहेस. ${isRaining ? "सध्या पाऊस सुरू आहे, हे लक्षात घेऊन उपाय सांग." : ""} उत्तरे मराठीत दे.`;
-    const userPrompt = prompt || "या फोटोवरून पिकाचा रोग ओळखा आणि उपाय सांगा.";
+    // २. Groq API कॉल
+    const systemPrompt = `तू अनुभवी शेती तज्ञ आहेस. ${isRaining ? "तुमच्या भागात पाऊस सुरू आहे, हे लक्षात घेऊन फवारणी किंवा खतांचे उपाय सांगा." : ""} उत्तरे मराठीत द्या.`;
+    const userPrompt = prompt || "या फोटोमधील पिकाचा रोग ओळखून उपाय सांगा.";
 
     let content = [{ type: "text", text: userPrompt }];
 
     if (image) {
       content.push({
         type: "image_url",
-        image_url: { url: image.includes("base64") ? image : `data:image/jpeg;base64,${image}` }
+        image_url: { url: `data:image/jpeg;base64,${image}` } // Groq साठी पूर्ण फॉरमॅट
       });
     }
 
@@ -47,15 +49,13 @@ export default async function handler(req, res) {
           { role: "system", content: systemPrompt },
           { role: "user", content: content }
         ],
-        max_tokens: 800
+        max_tokens: 1000
       })
     });
 
     const data = await response.json();
     
-    if (data.error) {
-      return res.status(200).json({ reply: "AI एरर: " + data.error.message });
-    }
+    if (data.error) return res.status(200).json({ reply: "AI एरर: " + data.error.message });
 
     const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
 
@@ -68,5 +68,4 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(200).json({ reply: "सर्व्हर एरर: " + error.message });
   }
-        }
-      
+}
