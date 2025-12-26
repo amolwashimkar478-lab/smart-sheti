@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌿 स्मार्ट शेती - रोग ओळख</title>
 <style>
-  body { font-family: Arial; background:#e8f5e9; padding:20px; text-align:center; }
+  body { font-family: Arial, sans-serif; background:#e8f5e9; padding:20px; text-align:center; }
   .container { max-width:420px; margin:auto; }
   .card { background:#fff; padding:20px; border-radius:18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
   h2 { color:#2e7d32; }
   .btn-row { display:flex; gap:10px; margin:15px 0; }
-  button { flex:1; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; }
+  button { flex:1; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; font-weight:bold; }
   .camera { background:#2e7d32; }
   .gallery { background:#1565c0; }
-  .detect { background:#388e3c; width:100%; margin-top:10px; font-weight:bold; }
+  .detect { background:#388e3c; width:100%; margin-top:10px; }
   .back { background:#1976d2; width:100%; margin-top:15px; }
-  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.5; min-height:50px; }
+  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; }
   input[type=file] { display:none; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -26,12 +27,14 @@
   <div class="card">
     <input type="file" id="cameraInput" accept="image/*" capture="environment">
     <input type="file" id="galleryInput" accept="image/*">
+
     <div class="btn-row">
       <button class="camera" onclick="document.getElementById('cameraInput').click()">📷 कॅमेरा</button>
       <button class="gallery" onclick="document.getElementById('galleryInput').click()">🖼️ गॅलरी</button>
     </div>
+
     <button class="detect" id="btnDetect" onclick="analyze()">🔍 रोग ओळखा</button>
-    <div class="result" id="result">येथे माहिती दिसेल...</div>
+    <div class="result" id="result">पिकाचा फोटो निवडा आणि 'रोग ओळखा' बटण दाबा.</div>
   </div>
   <button class="back" onclick="location.href='home.html'">⬅ मुख्य पेज</button>
 </div>
@@ -39,59 +42,85 @@
 <script>
 let selectedFileBase64 = null;
 
+// फोटो कॉम्प्रेस आणि रिसाईज करण्याचे लॉजिक
 function handleFile(e) {
   const file = e.target.files[0];
-  if (file) {
-    // फोटोची साईज चेक करणे (4MB पेक्षा कमी असावी)
-    if (file.size > 4 * 1024 * 1024) {
-      alert("फोटो खूप मोठा आहे, कृपया लहान फोटो निवडा.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      selectedFileBase64 = event.target.result.split(",")[1];
-      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता 'रोग ओळखा' दाबा.";
+  if (!file) return;
+
+  document.getElementById("result").innerText = "⏳ फोटो प्रोसेस होत आहे...";
+  
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.src = event.target.result;
+    
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // फोटोची रुंदी जास्तीत जास्त 800px ठेवूया (साईज कमी करण्यासाठी)
+      const maxWidth = 800;
+      const scale = maxWidth / img.width;
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+      
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      // ७०% क्वालिटीमध्ये JPEG फॉरमॅटमध्ये रूपांतर
+      selectedFileBase64 = canvas.toDataURL('image/jpeg', 0.7).split(",")[1];
+      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता तपासणी करा.";
     };
-    reader.readAsDataURL(file);
-  }
+  };
+  reader.readAsDataURL(file);
 }
 
 document.getElementById("cameraInput").onchange = handleFile;
 document.getElementById("galleryInput").onchange = handleFile;
 
-async function analyze(){
-  if(!selectedFileBase64){
-    alert("आधी फोटो निवडा");
+async function analyze() {
+  if(!selectedFileBase64) {
+    alert("कृपया आधी फोटो निवडा किंवा काढा.");
     return;
   }
 
   const resultDiv = document.getElementById("result");
   const btn = document.getElementById("btnDetect");
   
-  resultDiv.innerText = "⏳ तपासणी सुरू आहे, कृपया वाट पहा...";
+  resultDiv.innerText = "⏳ एआय तपासणी करत आहे, कृपया थोडा वेळ थांबा...";
   btn.disabled = true;
 
   try {
     const res = await fetch("/api/chat", {
-      method:"POST",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: selectedFileBase64, city: "Pune" })
+      body: JSON.stringify({ 
+        image: selectedFileBase64, 
+        city: "Maharashtra", // तुम्ही युजरचे लोकेशन घेऊ शकता
+        prompt: "या पिकाच्या फोटोमधील रोग ओळखा आणि त्यावर प्रतिबंधात्मक उपाय मराठीत सांगा."
+      })
     });
 
     const data = await res.json();
-    resultDiv.innerText = data.reply;
+    
+    if(data.reply) {
+      resultDiv.innerText = data.reply;
+      
+      // ऑडिओ रिस्पॉन्स
+      const msg = new SpeechSynthesisUtterance(data.reply);
+      msg.lang = "mr-IN";
+      window.speechSynthesis.speak(msg);
+    } else {
+      resultDiv.innerText = "क्षमस्व, माहिती मिळू शकली नाही. कृपया पुन्हा प्रयत्न करा.";
+    }
 
-    // आवाज सुरू करणे
-    const msg = new SpeechSynthesisUtterance(data.reply);
-    msg.lang = "mr-IN";
-    speechSynthesis.speak(msg);
-
-  } catch(e) {
-    resultDiv.innerText = "सर्व्हरशी संपर्क झाला नाही: " + e.message;
+  } catch (e) {
+    resultDiv.innerText = "एरर: " + e.message;
+    console.error(e);
   } finally {
     btn.disabled = false;
   }
 }
 </script>
+
 </body>
 </html>
