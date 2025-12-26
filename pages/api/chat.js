@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { prompt, image } = req.body;
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY?.trim();
 
   if (!apiKey) {
     return res.status(200).json({ reply: "त्रुटी: Groq API Key सापडली नाही." });
@@ -13,6 +13,7 @@ export default async function handler(req, res) {
 
     let content = [{ type: "text", text: prompt || "याबद्दल मराठीत माहिती द्या." }];
 
+    // जर फोटो असेल तर व्हिजन मॉडेल वापरूया
     if (image) {
       content.push({
         type: "image_url",
@@ -27,7 +28,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview", // फोटो आणि चॅटसाठी सर्वोत्तम फ्री मॉडेल
+        // नवीन सपोर्टेड मॉडेल खालीलप्रमाणे आहे
+        model: image ? "llama-3.2-11b-vision-instruct" : "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: content }],
         max_tokens: 500
       })
@@ -46,3 +48,4 @@ export default async function handler(req, res) {
     res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
   }
 }
+
