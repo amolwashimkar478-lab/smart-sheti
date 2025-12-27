@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Sheti - प्रगत खत कॅल्क्युलेटर</title>
+  <style>
+    :root { --primary: #1b5e20; --secondary: #2e7d32; --bg: #f0f4f0; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; }
+    .calc-card { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
+    h2 { color: var(--primary); text-align: center; margin-bottom: 20px; font-size: 22px; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #333; }
+    select, input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; }
+    select:focus, input:focus { border-color: var(--secondary); background: #f9fff9; }
+    .calc-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .result-box { margin-top: 25px; padding: 20px; background: #e8f5e9; border-radius: 15px; display: none; border: 1px solid #c8e6c9; }
+    .res-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #abd1ac; }
+    .res-val { font-weight: 800; color: #1b5e20; font-size: 18px; }
+    .back-btn { margin-top: 20px; text-decoration: none; color: #666; font-weight: bold; }
+    .search-box { background: #fffde7; padding: 5px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #856404; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="calc-card">
+  <h2>🧪 प्रगत खत मोजणी</h2>
+  
+  <div class="input-group">
+    <label>📅 हंगाम निवडा:</label>
+    <select id="season" onchange="updateCrops()">
+      <option value="kharif">🌧️ खरीप हंगाम (Kharif)</option>
+      <option value="rabi">❄️ रब्बी हंगाम (Rabi)</option>
+      <option value="summer">🔆 उन्हाळी हंगाम (Zaid)</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>🌱 पीक निवडा (A to Z):</label>
+    <select id="crop">
+      </select>
+    <div class="search-box">टीप: तुमच्या हंगामातील सर्व A to Z पिके येथे आहेत.</div>
+  </div>
+
+  <div class="input-group">
+    <label>📏 क्षेत्रफळ (एकर मध्ये):</label>
+    <input type="number" id="area" placeholder="उदा. 1.5" step="0.1">
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">खताची मात्रा मोजा</button>
+
+  <div id="result" class="result-box">
+    <h4 style="margin:0 0 10px 0; text-align:center; color:#1b5e20;">एकूण खत मात्रा (एकरसाठी)</h4>
+    <div class="res-row"><span>युरिया:</span> <span id="u" class="res-val">0</span></div>
+    <div class="res-row"><span>DAP (१८:४६):</span> <span id="d" class="res-val">0</span></div>
+    <div class="res-row"><span>पोटॅश (MOP):</span> <span id="p" class="res-val">0</span></div>
+    <p style="font-size:11px; color:#555; margin-top:15px; text-align:center;">*माती परीक्षण अहवालानुसार खताचे प्रमाण बदलावे.</p>
+  </div>
+</div>
+
+<a href="home.html" class="back-btn">← होमवर परत जा</a>
+
+<script>
+const cropData = {
+  kharif: [
+    {n:"अरहर (तूर)",u:20,d:40,p:20}, {n:"बाजरी",u:60,d:30,p:30}, {n:"भुईमूग",u:20,d:40,p:0}, {n:"कापूस",u:100,d:50,p:50},
+    {n:"कोथिंबीर",u:40,d:20,p:20}, {n:"कांदा (खरीप)",u:80,d:40,p:40}, {n:"कारले",u:50,d:50,p:50}, {n:"डाळिंब",u:150,d:100,p:100},
+    {n:"एरंडी",u:40,d:40,p:20}, {n:"गवार",u:20,d:40,p:20}, {n:"ज्वारी (खरीप)",u:80,d:40,p:40}, {n:"काकडी",u:40,d:40,p:40},
+    {n:"मका",u:120,d:60,p:40}, {n:"मुग",u:15,d:30,p:0}, {n:"नाचणी",u:60,d:30,p:30}, {n:"सोयाबीन",u:30,d:50,p:30},
+    {n:"तांदूळ (भात)",u:100,d:50,p:50}, {n:"उडीद",u:15,d:30,p:0}, {n:"वांगे",u:100,d:50,p:50}, {n:"झेंडू",u:80,d:40,p:40}
+  ],
+  rabi: [
+    {n:"गहू",u:120,d:60,p:40}, {n:"हरभरा",u:20,d:50,p:0}, {n:"बटाटा",u:120,d:80,p:100}, {n:"कांदा (रब्बी)",u:100,d:50,p:50},
+    {n:"लसूण",u:80,d:50,p:50}, {n:"मोहरी",u:60,d:30,p:30}, {n:"ज्वारी (रब्बी)",u:60,d:30,p:30}, {n:"बार्ली (जव)",u:60,d:30,p:30},
+    {n:"मटार (वाटाणा)",u:30,d:60,p:30}, {n:"मेथी",u:40,d:20,p:0}, {n:"टोमॅटो",u:150,d:100,p:100}, {n:"करडई",u:40,d:40,p:0}
+  ],
+  summer: [
+    {n:"कलिंगड (Watermelon)",u:80,d:50,p:50}, {n:"खरबूज",u:60,d:40,p:40}, {n:"काकडी",u:50,d:40,p:40}, {n:"उन्हाळी मका",u:120,d:60,p:40},
+    {n:"उन्हाळी भुईमूग",u:20,d:40,p:0}, {n:"दुधी भोपळा",u:40,d:40,p:40}, {n:"भेंडी",u:80,d:40,p:40}, {n:"मिरची",u:100,d:50,p:50}
+  ]
+};
+
+function updateCrops() {
+  const season = document.getElementById('season').value;
+  const cropSelect = document.getElementById('crop');
+  cropSelect.innerHTML = "";
+  
+  // A to Z सॉर्टिंग (Optional पण चांगलं दिसतं)
+  const list = cropData[season].sort((a, b) => a.n.localeCompare(b.n));
+
+  list.forEach((c, index) => {
+    let opt = document.createElement('option');
+    opt.value = JSON.stringify(c);
+    opt.innerHTML = c.n;
+    cropSelect.appendChild(opt);
+  });
+}
+
+function calculate() {
+  const cropInfo = JSON.parse(document.getElementById('crop').value);
+  const area = document.getElementById('area').value;
+  
+  if(area > 0) {
+    document.getElementById('u').innerText = (cropInfo.u * area).toFixed(1) + " किलो";
+    document.getElementById('d').innerText = (cropInfo.d * area).toFixed(1) + " किलो";
+    document.getElementById('p').innerText = (cropInfo.p * area).toFixed(1) + " किलो";
+    document.getElementById('result').style.display = 'block';
+  } else {
+    alert("कृपया क्षेत्रफळ (एकर) टाका.");
+  }
+}
+
+updateCrops();
+</script>
+
+</body>
+</html>
