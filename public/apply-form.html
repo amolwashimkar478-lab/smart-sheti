@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>योजना अर्ज फॉर्म</title>
+  <style>
+    :root { --green: #2e7d32; --bg: #f4f7f6; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); padding: 15px; }
+    .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+    h2 { color: var(--green); text-align: center; margin-bottom: 25px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+    input, select { width: 100%; padding: 14px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+    input:focus { border-color: var(--green); }
+    .submit-btn { width: 100%; padding: 16px; background: var(--green); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    #status { text-align: center; margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="form-card">
+  <h2>📋 योजनेचा अर्ज भरा</h2>
+  
+  <form id="agriForm">
+    <label>निवडलेली योजना:</label>
+    <select name="schemeName" id="schemeSelect" required>
+      <option value="">-- योजना निवडा --</option>
+      <option value="नमो शेतकरी योजना">नमो शेतकरी योजना</option>
+      <option value="१ रुपया पीक विमा">१ रुपया पीक विमा</option>
+      <option value="सौर कृषी पंप">सौर कृषी पंप</option>
+      <option value="ट्रॅक्टर व अवजारे अनुदान">ट्रॅक्टर व अवजारे अनुदान</option>
+      <option value="गोपीनाथ मुंडे अपघात विमा">गोपीनाथ मुंडे अपघात विमा</option>
+      <option value="विहीर योजना">विहीर योजना</option>
+      <option value="कांदा चाळ योजना">कांदा चाळ योजना</option>
+      <option value="फळबाग लागवड">फळबाग लागवड</option>
+    </select>
+
+    <label>शेतकऱ्याचे नाव:</label>
+    <input type="text" name="fullName" placeholder="पूर्ण नाव लिहा" required>
+
+    <label>मोबाईल नंबर:</label>
+    <input type="tel" name="mobile" pattern="[0-9]{10}" placeholder="१० अंकी नंबर" required>
+
+    <label>जिल्हा व गाव:</label>
+    <input type="text" name="address" placeholder="उदा. वाशिम, मालेगाव" required>
+
+    <label>आधार नंबर:</label>
+    <input type="number" name="aadhaar" placeholder="१२ अंकी आधार नंबर">
+
+    <button type="submit" id="submitBtn" class="submit-btn">अर्ज सबमिट करा</button>
+  </form>
+  
+  <div id="status"></div>
+  <a href="yojana.html" style="display:block; text-align:center; margin-top:20px; color:#777; text-decoration:none;">← मागे जा</a>
+</div>
+
+<script>
+  // १. आधीच्या पेजवरून आलेली योजना आपोआप सिलेक्ट करणे
+  window.onload = function() {
+    const selected = localStorage.getItem('selectedScheme');
+    if(selected) {
+      document.getElementById('schemeSelect').value = selected;
+    }
+  }
+
+  // २. डेटा Google Sheets ला पाठवणे
+  const scriptURL = 'तुमची_WEB_APP_URL_इथे_टाका'; 
+  const form = document.getElementById('agriForm');
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    btn.disabled = true;
+    status.innerHTML = "⏳ पाठवत आहे...";
+    status.style.color = "blue";
+
+    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+      .then(response => {
+        status.innerHTML = "✅ अर्ज यशस्वीरित्या प्राप्त झाला!";
+        status.style.color = "green";
+        form.reset();
+        btn.disabled = false;
+        setTimeout(() => { window.location.href = 'yojana.html'; }, 2500);
+      })
+      .catch(error => {
+        status.innerHTML = "❌ त्रुटी आली, पुन्हा प्रयत्न करा.";
+        status.style.color = "red";
+        btn.disabled = false;
+      });
+  });
+</script>
+
+</body>
+</html>
