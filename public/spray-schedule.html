@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Sheti - A to Z फवारणी वेळापत्रक</title>
+  <style>
+    :root { --blue: #0d47a1; --green: #1b5e20; --bg: #f0f4f8; --card: #ffffff; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #333; }
+    header { background: var(--blue); color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    
+    .container { max-width: 500px; margin: auto; padding: 15px; }
+    .search-card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+    select { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; outline: none; transition: 0.3s; }
+    select:focus { border-color: var(--blue); }
+
+    .result-box { display: none; animation: slideUp 0.5s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .crop-header { background: var(--green); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
+    
+    .stage-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 6px solid #ff9800; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .stage-card h4 { margin: 0 0 8px; color: #e65100; font-size: 16px; }
+    .stage-card p { margin: 0; font-size: 14px; line-height: 1.5; color: #444; }
+
+    .note { background: #fffde7; padding: 10px; border-radius: 8px; font-size: 12px; border: 1px dashed #fbc02d; margin-top: 20px; text-align: center; }
+    .back-btn { display: block; text-align: center; margin-top: 30px; text-decoration: none; color: #0d47a1; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<header>🚜 फवारणी व पीक संरक्षण</header>
+
+<div class="container">
+  <div class="search-card">
+    <label>१. हंगाम निवडा:</label>
+    <select id="seasonSelect" onchange="loadCrops()">
+      <option value="kharif">🌧️ खरीप पिके (Kharif)</option>
+      <option value="rabi">❄️ रब्बी पिके (Rabi)</option>
+      <option value="summer">🔆 उन्हाळी पिके (Summer)</option>
+    </select>
+
+    <label>२. पीक निवडा (A to Z):</label>
+    <select id="cropSelect" onchange="showSchedule()">
+      </select>
+  </div>
+
+  <div id="resultBox" class="result-box">
+    <div id="cropHeader" class="crop-header"></div>
+    <div id="stagesContainer"></div>
+    
+    <div class="note">
+      * महत्त्वाची टीप: फवारणी करताना जमिनीत ओलावा असणे आवश्यक आहे. औषधांचे प्रमाण पंपाच्या क्षमतेनुसार (१५ लि. किंवा २० लि.) कृषी सेवा केंद्राकडून तपासून घ्यावे.
+    </div>
+  </div>
+
+  <a href="home.html" class="back-btn">← मुख्य मेनूवर जा</a>
+</div>
+
+<script>
+const allCrops = {
+  kharif: ["अरहर (तूर)", "बाजरी", "भुईमूग", "कापूस", "कोथिंबीर", "कांदा (खरीप)", "कारले", "डाळिंब", "एरंडी", "गवार", "हिरवा मका", "ज्वारी (खरीप)", "काकडी", "कोबी", "लाल भोपळा", "भेंडी", "मका", "मुग", "मसूर", "नाचणी", "ओवा", "पेरू", "पपई", "तांदूळ", "सोयाबीन", "सुर्यफूल", "तीळ", "उडीद", "वांगे", "वरई", "टरबूज", "झेंडू"],
+  rabi: ["अजमोदा", "बार्ली", "बटाटा", "कोथिंबीर", "कोबी", "कांदा (रब्बी)", "डाळिंब", "एरंडी", "फुलकोबी", "फ्रेंच बीन्स", "गहू", "गवार", "हरभरा", "हिरवी मिरची", "जिरे", "काकडी", "गाजर", "करडई", "लसूण", "लाल मिर्ची", "मसूर", "मेथी", "ओवा", "पालक", "मोहरी", "टोमॅटो", "वाटाणा"],
+  summer: ["अरबी", "दुधी भोपळा", "काकडी", "दोडका", "फरसबी", "गवार", "खरबूज", "ज्वारी (उन्हाळी)", "कारले", "मिरची", "मका (उन्हाळी)", "मेथी", "रताळे", "सुर्यफूल", "सिमला मिरची", "तरबूज", "वांगे"]
+};
+
+const defaultPlan = [
+  {t: "१ली फवारणी (१५-२० दिवस)", d: "कीटकनाशक (उदा. प्रोफेनोफॉस) + १९:१९:१९ विद्राव्य खत + बुरशीनाशक."},
+  {t: "२री फवारणी (फुलोरा अवस्था)", d: "टॉनिक (इसाबियन/भरारी) + ०:५२:३४ + बोरोन (२० ग्रॅम)."},
+  {t: "३री फवारणी (फळ/शेंगा भरताना)", d: "अळीनाशक (कोराजन/अ‍ॅम्प्लीगो) + ०:०:५० + विद्राव्य सल्फर."}
+];
+
+const specialPlans = {
+  "कापूस": [
+    {t: "३० दिवस (रसशोषक कीड)", d: "उलाला किंवा कॉन्फिडोर + १९:१९:१९ विद्राव्य खत."},
+    {t: "६० दिवस (पातेगळ रोखण्यासाठी)", d: "प्लॅनोफिक्स ५ मिली + १२:६१:० (५० ग्रॅम)."},
+    {t: "९० दिवस (बोंडअळी नियंत्रण)", d: "अ‍ॅम्प्लीगो किंवा प्रोफेक्स सुपर + ०:०:५०."}
+  ],
+  "सोयाबीन": [
+    {t: "२५ दिवस (खोडमाशी/अळी)", d: "इमामेक्टीन बेंझोएट + १९:१९:१९ विद्राव्य खत."},
+    {t: "४५ दिवस (फुलधारणा)", d: "०:५२:३४ + टॉनिक + बोरॉन."},
+    {t: "७० दिवस (शेंगा भरताना)", d: "कोराजन + ०:०:५० विद्राव्य खत."}
+  ],
+  "गहू": [
+    {t: "३० दिवस (वाढ अवस्था)", d: "१९:१९:१९ विद्राव्य खत + सूक्ष्म अन्नद्रव्ये."},
+    {t: "७० दिवस (ओंब्या भरताना)", d: "०:५२:३४ + बुरशीनाशक (टेब्युकोनॅझोल)."}
+  ]
+};
+
+function loadCrops() {
+  const season = document.getElementById('seasonSelect').value;
+  const cropSelect = document.getElementById('cropSelect');
+  cropSelect.innerHTML = '<option value="">-- पीक निवडा --</option>';
+  
+  allCrops[season].sort().forEach(crop => {
+    let opt = document.createElement('option');
+    opt.value = crop;
+    opt.innerHTML = crop;
+    cropSelect.appendChild(opt);
+  });
+  document.getElementById('resultBox').style.display = 'none';
+}
+
+function showSchedule() {
+  const crop = document.getElementById('cropSelect').value;
+  const container = document.getElementById('stagesContainer');
+  const resultBox = document.getElementById('resultBox');
+  
+  if(!crop) return;
+
+  document.getElementById('cropHeader').innerText = "🌱 " + crop;
+  container.innerHTML = "";
+  
+  const plan = specialPlans[crop] || defaultPlan;
+  
+  plan.forEach(step => {
+    container.innerHTML += `
+      <div class="stage-card">
+        <h4>${step.t}</h4>
+        <p>${step.d}</p>
+      </div>
+    `;
+  });
+  
+  resultBox.style.display = 'block';
+}
+
+loadCrops();
+</script>
+
+</body>
+</html>
