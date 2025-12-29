@@ -12,9 +12,12 @@
     await OneSignal.init({
       appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
     });
+
+    // युजरला नोटिफिकेशनसाठी परवानगी विचारणारा पॉप-अप दाखवा
+    OneSignal.Slidedown.promptPush();
   });
 
-  // युजरच्या लोकेशननुसार हवामान तपासणारे फंक्शन
+  // 2. युजरच्या लोकेशननुसार हवामान तपासणारे फंक्शन
   async function checkWeatherAndNotify() {
       const weatherKey = "4e520dcafeb783757272573493f6a2d3";
 
@@ -27,7 +30,7 @@
                   const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`);
                   const data = await response.json();
 
-                  // जर युजरच्या ठिकाणी पाऊस असेल तर नोटिफिकेशन
+                  // जर युजरच्या ठिकाणी पाऊस (Rain) किंवा रिमझिम (Drizzle) असेल तर नोटिफिकेशन पाठवा
                   if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
                       window.OneSignalDeferred.push(function(OneSignal) {
                           OneSignal.Notifications.displaySelfClickableNotification(
@@ -46,7 +49,7 @@
       }
   }
 
-  // ॲप सुरू झाल्यावर ५ सेकंदाने तपासणी करा
+  // ॲप सुरू झाल्यावर ५ सेकंदाने आपोआप तपासणी करा
   setTimeout(checkWeatherAndNotify, 5000);
 </script>
 
@@ -146,6 +149,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// तुमचे Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
   authDomain: "smart-sheti-6512e.firebaseapp.com",
@@ -159,15 +163,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+// ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
+
   signInWithEmailAndPassword(auth, email, password)
     .then(() => { window.location.href = "home.html"; })
     .catch(err => alert("लॉगिन एरर: " + err.message));
 };
 
+// Google लॉगिन
 document.getElementById('googleBtn').onclick = () => {
   signInWithPopup(auth, provider)
     .then(() => { window.location.href = "home.html"; })
@@ -177,11 +184,13 @@ document.getElementById('googleBtn').onclick = () => {
     });
 };
 
+// पासवर्ड रिसेट
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
   if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
+
   sendPasswordResetEmail(auth, email)
-    .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे."))
+    .then(() => alert("पासवर्ड रिसेट लिंक तुमच्या ईमेलवर पाठवली आहे."))
     .catch(err => alert(err.message));
 };
 </script>
