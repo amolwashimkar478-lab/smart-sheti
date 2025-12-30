@@ -5,24 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Login</title>
 
-<!-- OneSignal Notification SDK -->
+<!-- 📢 OneSignal Notification SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-      safari_web_id: "WEB_PUSH_ID_IF_ANY",
       notifyButton: { enable: true },
+      allowLocalhostAsSecureOrigin: true
     });
   });
 
-  // 👉 Permission popup (User ला एकदा विचारेल)
-  OneSignalDeferred.push(function(OneSignal){
-    OneSignal.Slidedown.promptPush();
-  });
-
-  // 👉 Automatic Weather Based Spray Alert
+  /* ⛅ हवामान तपासून आपोआप सूचना */
   async function checkWeatherAndNotify() {
       const weatherKey = "4e520dcafeb783757272573493f6a2d3";
 
@@ -32,14 +27,16 @@
               const lon = position.coords.longitude;
 
               try {
-                  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`);
+                  const response = await fetch(
+                      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`
+                  );
                   const data = await response.json();
 
-                  if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
+                  if (data.weather[0].main.toLowerCase().includes("rain")) {
                       OneSignalDeferred.push(function(OneSignal) {
                           OneSignal.Notifications.displaySelfClickableNotification(
                               "🌧️ फवारणी इशारा",
-                              `तुमच्या परिसरात (${data.name}) पाऊस दिसतोय. आज फवारणी टाळा!`,
+                              `तुमच्या परिसरात (${data.name}) पाऊस आहे. आज फवारणी करू नका!`,
                               "https://smart-sheti.vercel.app/"
                           );
                       });
@@ -51,13 +48,19 @@
       }
   }
 
+  // 📌 Popup allow दाबेपर्यंत गायब होणार नाही
+  OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.Slidedown.promptPush();
+  });
+
   setTimeout(checkWeatherAndNotify, 5000);
 </script>
+
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
     height: 100vh;
     display: flex;
@@ -80,9 +83,7 @@
     border-radius: 8px;
     border: 1px solid #ddd;
     font-size: 16px;
-    outline: none;
   }
-  input:focus { border-color: #2e7d32; }
   button {
     width: 100%;
     padding: 12px;
@@ -92,29 +93,16 @@
     font-weight: bold;
     border: none;
     cursor: pointer;
-    transition: 0.3s;
   }
   .btn-login { background: #2e7d32; color: white; }
   .btn-login:hover { background: #1b5e20; }
   .btn-google {
-    background: white;
-    color: #444;
-    border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    background: white; border: 1px solid #ddd;
+    display: flex; justify-content: center; gap: 10px;
   }
   .btn-google:hover { background: #f5f5f5; }
-  .link {
-    font-size: 14px;
-    color: #2e7d32;
-    cursor: pointer;
-    margin-top: 10px;
-    text-decoration: none;
-    display: inline-block;
-  }
-  hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+  .link { color: #2e7d32; cursor: pointer; margin-top: 10px; display: inline-block; }
+  hr { margin: 20px 0; border-top: 1px solid #eee; }
 </style>
 </head>
 
@@ -127,27 +115,24 @@
   <input id="password" type="password" placeholder="पासवर्ड">
 
   <button class="btn-login" id="loginBtn">लॉगिन करा</button>
-
   <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
-  <br>
   <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
 
   <hr>
 
   <button class="btn-google" id="googleBtn">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
     Google सह पुढे जा
   </button>
 </div>
 
+
+<!-- 🔥 Firebase Auth -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail
+  getAuth, GoogleAuthProvider, signInWithPopup,
+  signInWithEmailAndPassword, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -163,29 +148,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-document.getElementById('loginBtn').onclick = () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
+loginBtn.onclick = () => {
+  const email = email.value;
+  const password = password.value;
+  if(!email || !password) return alert("कृपया माहिती भरा");
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => { window.location.href = "home.html"; })
+    .then(() => window.location.href = "home.html")
     .catch(err => alert("लॉगिन एरर: " + err.message));
 };
 
-document.getElementById('googleBtn').onclick = () => {
+googleBtn.onclick = () => {
   signInWithPopup(auth, provider)
-    .then(() => { window.location.href = "home.html"; })
-    .catch(err => alert("Google लॉगिन अयशस्वी!"));
+    .then(() => window.location.href = "home.html")
+    .catch(() => alert("Google लॉगिन अयशस्वी!"));
 };
 
-document.getElementById('forgotBtn').onclick = () => {
-  const email = document.getElementById('email').value;
-  if(!email) return alert("कृपया आधी ईमेल लिहा");
-
-  sendPasswordResetEmail(auth, email)
-    .then(() => alert("लिंक ईमेलवर पाठवली आहे."))
-    .catch(err => alert(err.message));
+forgotBtn.onclick = () => {
+  const emailAddress = email.value;
+  if(!emailAddress) return alert("ईमेल लिहा");
+  sendPasswordResetEmail(auth, emailAddress).then(() => alert("लिंक पाठवली."));
 };
 </script>
 
