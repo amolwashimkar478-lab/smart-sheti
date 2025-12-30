@@ -5,19 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Login</title>
 
+<!-- OneSignal Notification SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+      safari_web_id: "WEB_PUSH_ID_IF_ANY",
+      notifyButton: { enable: true },
     });
+  });
 
-    // युजरला नोटिफिकेशनसाठी परवानगी विचारणारा पॉप-अप दाखवा
+  // 👉 Permission popup (User ला एकदा विचारेल)
+  OneSignalDeferred.push(function(OneSignal){
     OneSignal.Slidedown.promptPush();
   });
 
-  // 2. युजरच्या लोकेशननुसार हवामान तपासणारे फंक्शन
+  // 👉 Automatic Weather Based Spray Alert
   async function checkWeatherAndNotify() {
       const weatherKey = "4e520dcafeb783757272573493f6a2d3";
 
@@ -30,26 +35,22 @@
                   const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`);
                   const data = await response.json();
 
-                  // जर युजरच्या ठिकाणी पाऊस (Rain) किंवा रिमझिम (Drizzle) असेल तर नोटिफिकेशन पाठवा
                   if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
-                      window.OneSignalDeferred.push(function(OneSignal) {
+                      OneSignalDeferred.push(function(OneSignal) {
                           OneSignal.Notifications.displaySelfClickableNotification(
-                              "🌧️ तुमच्या भागात फवारणी इशारा", 
-                              `सध्या तुमच्या परिसरात (${data.name}) पाऊस दिसत आहे. कृपया फवारणी टाळा आणि मजुरीचे पैसे वाचवा!`,
+                              "🌧️ फवारणी इशारा",
+                              `तुमच्या परिसरात (${data.name}) पाऊस दिसतोय. आज फवारणी टाळा!`,
                               "https://smart-sheti.vercel.app/"
                           );
                       });
                   }
               } catch (e) {
-                  console.log("हवामान माहिती मिळू शकली नाही.");
+                  console.log("हवामान माहिती मिळाली नाही.");
               }
-          }, (error) => {
-              console.log("लोकेशन परवानगी नाकारली.");
           });
       }
   }
 
-  // ॲप सुरू झाल्यावर ५ सेकंदाने आपोआप तपासणी करा
   setTimeout(checkWeatherAndNotify, 5000);
 </script>
 
@@ -149,7 +150,6 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// तुमचे Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
   authDomain: "smart-sheti-6512e.firebaseapp.com",
@@ -163,7 +163,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -174,23 +173,18 @@ document.getElementById('loginBtn').onclick = () => {
     .catch(err => alert("लॉगिन एरर: " + err.message));
 };
 
-// Google लॉगिन
 document.getElementById('googleBtn').onclick = () => {
   signInWithPopup(auth, provider)
     .then(() => { window.location.href = "home.html"; })
-    .catch(err => {
-      console.error(err);
-      alert("Google लॉगिन अयशस्वी!");
-    });
+    .catch(err => alert("Google लॉगिन अयशस्वी!"));
 };
 
-// पासवर्ड रिसेट
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
-  if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
+  if(!email) return alert("कृपया आधी ईमेल लिहा");
 
   sendPasswordResetEmail(auth, email)
-    .then(() => alert("पासवर्ड रिसेट लिंक तुमच्या ईमेलवर पाठवली आहे."))
+    .then(() => alert("लिंक ईमेलवर पाठवली आहे."))
     .catch(err => alert(err.message));
 };
 </script>
