@@ -5,6 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Home</title>
 
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+      allowLocalhostAsSecureOrigin: true,
+      slidedown: {
+        prompts: [
+          {
+            type: "push",
+            autoPrompt: true, 
+            text: {
+              actionMessage: "तुम्हाला शेतीविषयक महत्त्वाच्या सूचना आणि पावसाचा इशारा मिळवायचा आहे का?",
+              acceptButton: "हो, Allow करा",
+              cancelButton: "नको, Deny करा"
+            },
+            delay: {
+              pageViews: 1,
+              timeDelay: 3 // पेज लोड झाल्यावर ३ सेकंदाने पॉप-अप दिसेल
+            }
+          }
+        ]
+      }
+    });
+  });
+
+  // हवामान तपासून ऑटोमॅटिक बॅकग्राउंड नोटिफिकेशन
+  async function checkWeatherAndNotify() {
+      const weatherKey = "4e520dcafeb783757272573493f6a2d3";
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              try {
+                  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`);
+                  const data = await response.json();
+
+                  if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
+                      window.OneSignalDeferred.push(function(OneSignal) {
+                          OneSignal.Notifications.displaySelfClickableNotification(
+                              "🌧️ फवारणी इशारा", 
+                              `सध्या तुमच्या परिसरात (${data.name}) पाऊस दिसत आहे. कृपया फवारणी टाळा.`,
+                              "https://smart-sheti.vercel.app/"
+                          );
+                      });
+                  }
+              } catch (e) { console.log("Weather error"); }
+          });
+      }
+  }
+  setTimeout(checkWeatherAndNotify, 5000);
+</script>
+
 <style>
 body{
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -22,7 +77,6 @@ body{
   margin-bottom:25px;
 }
 
-/* Common button */
 .btn{
   width:100%;
   max-width:300px;
@@ -42,24 +96,16 @@ body{
 }
 
 .btn:active { transform: scale(0.98); }
-
-/* Weather & Spray */
 .weather-btn{ background:#1565c0; }
-.spray-btn { background:#00796b; } /* नवीन फवारणी बटनसाठी रंग */
-
-/* AI & Tools */
+.spray-btn { background:#00796b; } 
 .ai-btn{ background:#2e7d32; }
-
-/* Notification & News */
 .notify-btn{ background:#ef6c00; }
   
-  /* Market बटन उठून दिसण्यासाठी */
 .market-btn {
-    background-color: #2e7d32 !important; /* हिरवा रंग */
+    background-color: #2e7d32 !important;
     color: white !important;
     opacity: 1 !important;
 }
-  
 </style>
 </head>
 
@@ -67,7 +113,7 @@ body{
 
 <div class="logo">🌾 Smart Sheti</div>
 
-<button class="btn weather-btn" onclick="goToWeather()">
+<button class="btn weather-btn" onclick="location.href='weather.html'">
   🌦 आजचं हवामान
 </button>
 
@@ -91,104 +137,54 @@ body{
   📰 शेती बातम्या
 </button>
 
-<button class="btn notify-btn" onclick="enableNotification()">
-  🔔 पावसाचा Alert ON
+<button class="btn notify-btn" onclick="triggerPushPrompt()">
+  🔔 पावसाचा Alert ON करा
 </button>
 
-<button class="btn" onclick="window.open('https://agmarknet.gov.in/SearchCMM2.aspx?enam=Y', '_blank')" style="background-color: #2e7d32; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; width: 95%; font-size: 16px; cursor: pointer;">
-  📊 थेट बाजार भाव पहा (Agmarknet)
+<button class="btn market-btn" onclick="location.href='market.html'">
+  <span class="icon">📈</span> Market (बाजारभाव)
 </button>
-  
-  
-  <button class="btn" onclick="location.href='calculator.html'" style="background-color: #43a047; margin-left: auto; margin-right: auto;">
+
+<button onclick="location.href='calculator.html'" style="width: 100%; max-width:300px; padding: 18px; margin: 10px 0; border: none; border-radius: 15px; background: linear-gradient(135deg, #2e7d32, #43a047); color: white; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
   🧪 खत कॅल्क्युलेटर (A-Z)
 </button>
 
-<button class="btn" onclick="location.href='spray-schedule.html'" style="background-color: #ef6c00; margin-left: auto; margin-right: auto;">
+<button onclick="location.href='spray-schedule.html'" style="width: 100%; max-width:300px; padding: 18px; margin: 10px 0; border: none; border-radius: 15px; background: linear-gradient(135deg, #ef6c00, #fb8c00); color: white; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
   🚜 फवारणी वेळापत्रक (A-Z)
 </button>
   
-  
 <script>
-function goToWeather(){
-  window.location.href = "weather.html";
+// मॅन्युअली नोटिफिकेशन चालू करण्यासाठी फंक्शन
+function triggerPushPrompt() {
+  window.OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.Slidedown.promptPush();
+  });
 }
 
-// --- 🌧️ फवारणी आणि हवामान सल्ला (तुमचा कोड इथे जोडला आहे) ---
+// फवारणीसाठी हवामान तपासणे
 function checkWeatherForSpray() {
   if (!navigator.geolocation) {
-    alert("तुमच्या ब्राउझरमध्ये लोकेशन सपोर्ट नाही.");
+    alert("लोकेशन सपोर्ट नाही.");
     return;
   }
-
-  alert("हवामान तपासत आहे, कृपया थोडा वेळ थांबा...");
-
+  alert("हवामान तपासत आहे...");
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const { latitude, longitude } = pos.coords;
-
     try {
-      // तुमच्या बॅकएंड API ला कॉल (pages/api/weather.js)
-      const res = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);
+      const weatherKey = "4e520dcafeb783757272573493f6a2d3";
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${weatherKey}&units=metric`);
       const data = await res.json();
-
-      if (data.isRaining) {
-        alert("🌧️ पाऊस सुरू आहे किंवा पावसाची शक्यता आहे. फवारणी पुढे ढकला! ❌");
+      
+      if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
+        alert("🌧️ पाऊस सुरू आहे. फवारणी पुढे ढकला! ❌");
       } else {
-        alert("✅ सध्या हवामान साफ आहे. तुम्ही फवारणीचे नियोजन करू शकता. 🌿");
+        alert("✅ हवामान साफ आहे. तुम्ही फवारणी करू शकता. 🌿");
       }
     } catch (err) {
-      console.error("Error:", err);
-      alert("हवामान माहिती मिळवण्यात अडचण आली. कृपया तुमची API Key तपासा.");
-    }
-  }, (error) => {
-    alert("लोकेशन ॲक्सेस नाकारला. कृपया GPS चालू करा.");
-  });
-}
-
-// 🔔 Notification Permission
-function enableNotification(){
-  if(!("Notification" in window)){
-    alert("तुमच्या browser मध्ये notification support नाही");
-    return;
-  }
-
-  Notification.requestPermission().then(permission=>{
-    if(permission === "granted"){
-      alert("✅ पावसाचा alert चालू झाला");
-      new Notification("🌧️ Smart Sheti", {
-        body: "पावसाचा alert चालू आहे. पाऊस आल्यास सूचना मिळेल 🌾"
-      });
-    }else{
-      alert("❌ Notification परवानगी नाकारली");
+      alert("माहिती मिळवण्यात अडचण आली.");
     }
   });
 }
-
-// 📰 District-based daily news notification
-async function checkDailyNews(district){
-  try{
-    const res = await fetch(`/api/news?district=${district}`);
-    const data = await res.json();
-    if(data.articles && data.articles.length > 0){
-      const article = data.articles[0];
-      if(Notification.permission === "granted"){
-        new Notification(`📰 ${district} शेती बातम्या`, {
-          body: article.title,
-        }).onclick = () => window.open(article.url, "_blank");
-      }
-    }
-  } catch(err){
-    console.error("News fetch error:", err);
-  }
-}
-
-// 🌞 Auto-run on page load
-window.onload = () => {
-  const userDistrict = "Maharashtra"; 
-  if(Notification.permission === "granted") {
-    checkDailyNews(userDistrict);
-  }
-};
 </script>
 
 </body>
