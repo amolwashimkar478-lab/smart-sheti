@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>शेती खर्च डायरी - Smart Sheti</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f8e9; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+  .container { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+  h2 { color: #2e7d32; text-align: center; margin-bottom: 20px; }
+  label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+  input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+  .btn-save { background: #2e7d32; color: white; border: none; width: 100%; padding: 15px; margin-top: 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+  .expense-list { margin-top: 30px; width: 100%; max-width: 400px; }
+  .expense-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #2e7d32; }
+  .total-box { background: #e8f5e9; padding: 15px; border-radius: 10px; width: 100%; max-width: 400px; text-align: center; font-size: 18px; font-weight: bold; color: #1b5e20; margin-top: 20px; border: 1px solid #2e7d32; }
+  .back-btn { margin-top: 20px; color: #2e7d32; text-decoration: none; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>💰 खर्च डायरी</h2>
+  
+  <label>खर्चाचा प्रकार:</label>
+  <select id="type">
+    <option value="बियाणे">बियाणे</option>
+    <option value="खते">खते</option>
+    <option value="मजुरी">मजुरी</option>
+    <option value="फवारणी">फवारणी</option>
+    <option value="डिझेल/भाडे">डिझेल किंवा भाडे</option>
+    <option value="इतर">इतर</option>
+  </select>
+
+  <label>रक्कम (₹):</label>
+  <input type="number" id="amount" placeholder="उदा. 500">
+
+  <label>तारीख:</label>
+  <input type="date" id="date">
+
+  <button class="btn-save" onclick="addExpense()">खर्च जतन करा</button>
+</div>
+
+<div class="total-box" id="totalDisplay">एकूण खर्च: ₹ 0</div>
+
+<div class="expense-list" id="expenseList">
+  </div>
+
+<a href="home.html" class="back-btn">← परत होम वर जा</a>
+
+<script>
+  let expenses = JSON.parse(localStorage.getItem('sheti_expenses')) || [];
+
+  function updateUI() {
+    const list = document.getElementById('expenseList');
+    const totalDisplay = document.getElementById('totalDisplay');
+    list.innerHTML = "";
+    let total = 0;
+
+    expenses.forEach((item, index) => {
+      total += parseFloat(item.amount);
+      list.innerHTML += `
+        <div class="expense-item">
+          <div>
+            <strong>${item.type}</strong><br>
+            <small>${item.date}</small>
+          </div>
+          <div style="color: #c62828; font-weight: bold;">₹ ${item.amount}</div>
+          <button onclick="deleteExpense(${index})" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
+        </div>
+      `;
+    });
+
+    totalDisplay.innerText = `एकूण खर्च: ₹ ${total}`;
+    localStorage.setItem('sheti_expenses', JSON.stringify(expenses));
+  }
+
+  function addExpense() {
+    const type = document.getElementById('type').value;
+    const amount = document.getElementById('amount').value;
+    const date = document.getElementById('date').value;
+
+    if(!amount || !date) {
+      alert("कृपया सर्व माहिती भरा");
+      return;
+    }
+
+    expenses.push({ type, amount, date });
+    updateUI();
+    
+    // Clear fields
+    document.getElementById('amount').value = "";
+  }
+
+  function deleteExpense(index) {
+    if(confirm("हा खर्च काढून टाकायचा का?")) {
+      expenses.splice(index, 1);
+      updateUI();
+    }
+  }
+
+  // सुरुवातीला माहिती लोड करा
+  window.onload = updateUI;
+</script>
+
+</body>
+</html>
