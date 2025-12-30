@@ -9,32 +9,35 @@
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   
-  // 👉 1) OneSignal Init (Popup सेटिंग्ससह)
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-      allowLocalhostAsSecureOrigin: true, 
-      notifyButton: { enable: true },
+      allowLocalhostAsSecureOrigin: true,
+      // खालील सेटिंगमुळे UI न बदलता Allow/Deny चा पॉप-अप येईल
       slidedown: {
         prompts: [
           {
             type: "push",
-            autoPrompt: true, // स्वतः popup दाखवेल
+            autoPrompt: true, 
             text: {
-              actionMessage: "🌾 Smart Sheti कडून सूचना मिळवू इच्छिता?",
-              acceptButton: "होय, Allow",
+              actionMessage: "तुम्हाला शेतीविषयक महत्त्वाच्या सूचना आणि पावसाचा इशारा मिळवायचा आहे का?",
+              acceptButton: "हो, Allow",
               cancelButton: "नको"
+            },
+            delay: {
+              pageViews: 1,
+              timeDelay: 3
             }
           }
         ]
       }
     });
 
-    // Init पूर्ण झाल्यावर Popup ट्रिगर करा
+    // खात्रीशीरपणे पॉप-अप दाखवण्यासाठी
     OneSignal.Slidedown.promptPush();
   });
 
-  // 👉 2) हवामान तपासून ऑटोमॅटिक नोटिफिकेशन
+  // युजरच्या लोकेशननुसार हवामान तपासणारे फंक्शन
   async function checkWeatherAndNotify() {
       const weatherKey = "4e520dcafeb783757272573493f6a2d3";
 
@@ -47,30 +50,28 @@
                   const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=metric`);
                   const data = await response.json();
 
-                  // जर पाऊस (Rain) किंवा रिमझिम (Drizzle) असेल तर नोटिफिकेशन
                   if (data.weather[0].main === "Rain" || data.weather[0].main === "Drizzle") {
                       window.OneSignalDeferred.push(function(OneSignal) {
                           OneSignal.Notifications.displaySelfClickableNotification(
-                              "🌧️ फवारणी इशारा",
-                              `${data.name} भागात पाऊस आहे. आज फवारणी टाळा आणि मजुरीचे पैसे वाचवा!`,
+                              "🌧️ फवारणी इशारा", 
+                              `सध्या तुमच्या परिसरात (${data.name}) पाऊस दिसत आहे. कृपया फवारणी टाळा.`,
                               "https://smart-sheti.vercel.app/"
                           );
                       });
                   }
               } catch (e) {
-                  console.log("हवामान माहिती मिळू शकली नाही.");
+                  console.log("हवामान माहिती मिळाली नाही.");
               }
-          }, (error) => {
-              console.log("लोकेशन परवानगी नाकारली.");
           });
       }
   }
 
-  // ⏳ 5 सेकंदाने हवामान तपासणी सुरू
+  // ५ सेकंदाने रन करा
   setTimeout(checkWeatherAndNotify, 5000);
 </script>
 
 <style>
+  /* तुमचा मूळ UI कोड - यात कोणताही बदल केलेला नाही */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -192,18 +193,14 @@ document.getElementById('loginBtn').onclick = () => {
 document.getElementById('googleBtn').onclick = () => {
   signInWithPopup(auth, provider)
     .then(() => { window.location.href = "home.html"; })
-    .catch(err => {
-      console.error(err);
-      alert("Google लॉगिन अयशस्वी!");
-    });
+    .catch(err => alert("Google लॉगिन अयशस्वी!"));
 };
 
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
   if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
-
   sendPasswordResetEmail(auth, email)
-    .then(() => alert("पासवर्ड रिसेट लिंक तुमच्या ईमेलवर पाठवली आहे."))
+    .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे."))
     .catch(err => alert(err.message));
 };
 </script>
