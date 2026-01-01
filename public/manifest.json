@@ -1,51 +1,27 @@
 {
-  "id": "/",
+  "id": "com.smartsheti.app",
   "name": "Smart Sheti",
   "short_name": "Smart Sheti",
-  "description": "स्मार्ट शेती: महाराष्ट्रातील शेतकऱ्यांसाठी रोजचे ताजे बाजारभाव आणि शेती मार्गदर्शन.",
-  "lang": "mr",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "https://smart-sheti.vercel.app/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
-
+  "orientation": "portrait",
+  "description": "स्मार्ट शेती: महाराष्ट्रातील शेतकऱ्यांसाठी रोजचे ताजे बाजारभाव आणि शेती मार्गदर्शन.",
+  "lang": "mr",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/main/public/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/main/public/icon-512.png",
+      "src": "https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/refs/heads/main/public/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-
-  "categories": ["productivity", "education", "business"],
-  "display_override": ["standalone", "fullscreen", "window-controls-overlay"],
-
-  "shortcuts": [
-    {
-      "name": "Market Rates",
-      "url": "/market"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "name": "Farming Guides",
-      "url": "/guides"
+      "src": "https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/refs/heads/main/public/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ],
-
-  "share_target": {
-    "action": "/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }
