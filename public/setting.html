@@ -141,7 +141,7 @@ hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
 <body>
 
 <div class="header">
-  <span style="font-size:24px; cursor:pointer;" onclick="history.back()">←</span>
+  <span style="font-size:24px; cursor:pointer;" onclick="location.href='home.html'">←</span>
   <h2 data-text="settingsTitle">अॅप सेटिंग</h2>
 </div>
 
@@ -195,10 +195,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth,
   onAuthStateChanged,
-  signOut
+  signOut,
+  deleteUser,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
   authDomain: "smart-sheti-6512e.firebaseapp.com",
@@ -211,58 +212,72 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* 🔐 Login check */
+let base64Image = ""; // फोटो डेटा साठवण्यासाठी
+
+/* 🔐 युजर माहिती लोड करणे */
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "index.html"; // login page
+  if (user) {
+    if(user.displayName) document.getElementById("nameField").value = user.displayName;
+    if(user.photoURL) document.getElementById("profileImg").src = user.photoURL;
+  } else {
+    window.location.replace("index.html");
   }
 });
 
-/* 🚪 Logout */
+/* 📸 फोटो निवडणे आणि त्याचे रूपांतर करणे */
+document.getElementById("fileInput").onchange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      base64Image = event.target.result;
+      document.getElementById("profileImg").src = base64Image;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+/* 💾 प्रोफाइल माहिती जतन करा (नाव आणि फोटो दोन्ही सेव्ह होतील) */
+document.getElementById("saveProfile").onclick = () => {
+  const user = auth.currentUser;
+  const newName = document.getElementById("nameField").value;
+
+  if (user) {
+    let updateData = { displayName: newName };
+    if (base64Image) {
+      updateData.photoURL = base64Image;
+    }
+
+    updateProfile(user, updateData)
+    .then(() => alert("तुमची प्रोफाइल माहिती आणि फोटो यशस्वीरित्या जतन झाले आहेत!"))
+    .catch(err => alert("चूक झाली: " + err.message));
+  }
+};
+
+/* 🚪 लॉगआउट */
 document.getElementById("logoutBtn").onclick = () => {
-  signOut(auth).then(() => {
-    window.location.href = "index.html";
-  });
+  if(confirm("लॉगआउट करायचे का?")) {
+    signOut(auth).then(() => window.location.replace("index.html"));
+  }
 };
 
-/* ---------- Profile Image ---------- */
-const profileImg = document.getElementById("profileImg");
-const fileInput = document.getElementById("fileInput");
-
-fileInput.onchange = () => {
-  const file = fileInput.files[0];
-  if (file) profileImg.src = URL.createObjectURL(file);
+/* ⚠️ खाते हटवा */
+document.getElementById("deleteBtn").onclick = () => {
+  const user = auth.currentUser;
+  if (user && confirm("सावधान! तुमचे खाते कायमचे हटवले जाईल.")) {
+    deleteUser(user).then(() => {
+      alert("खाते हटवले आहे.");
+      window.location.replace("index.html");
+    }).catch(err => alert("चूक: " + err.message));
+  }
 };
 
-/* ---------- Language ---------- */
-const words = {
-  mr:{settingsTitle:"अॅप सेटिंग",language:"भाषा / Language",theme:"थीम",fontsize:"अक्षरांचा आकार"},
-  hi:{settingsTitle:"एप सेटिंग",language:"भाषा",theme:"थीम",fontsize:"फ़ॉन्ट साइज़"},
-  en:{settingsTitle:"App Settings",language:"Language",theme:"Theme",fontsize:"Font Size"}
-};
-
-document.getElementById("langSelect").onchange = (e) => {
-  let lang = e.target.value;
-  document.querySelectorAll("[data-text]").forEach(x => {
-    x.innerText = words[lang][x.dataset.text];
-  });
-  localStorage.setItem("appLang", lang);
-};
-
-/* ---------- Theme ---------- */
+/* ---------- थीम, भाषा इ. ---------- */
 document.getElementById("themeSelect").onchange = (e) => {
   document.documentElement.setAttribute("data-theme", e.target.value);
-  localStorage.setItem("theme", e.target.value);
 };
+</script>
 
-if (localStorage.getItem("theme")) {
-  document.documentElement.setAttribute("data-theme", localStorage.getItem("theme"));
-}
+</body>
+</html>
 
-/* ---------- Font ---------- */
-document.getElementById("fontSelect").onchange = (e) => {
-  document.body.style.fontSize =
-    e.target.value === "Small" ? "14px" :
-    e.target.value === "Large" ? "20px" : "16px";
-};
-  </script>
