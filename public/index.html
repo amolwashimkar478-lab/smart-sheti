@@ -4,94 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Login</title>
- 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8832195992833438"
-     crossorigin="anonymous"></script>
- 
 <link rel="manifest" href="/manifest.json" />
- 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 100vh; display: flex; justify-content: center; align-items: center;
   }
-  .box {
-    background: #ffffff;
-    width: 350px;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    text-align: center;
+  /* लोडिंग स्क्रीन */
+  #loader {
+    display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: white; z-index: 999; justify-content: center; align-items: center; flex-direction: column;
   }
-  h2 { color: #2e7d32; margin-bottom: 20px; font-size: 24px; }
-  input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 16px;
-    outline: none;
-  }
-  input:focus { border-color: #2e7d32; }
-  button {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-  }
+  .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2e7d32; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .box { background: #ffffff; width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center; }
+  h2 { color: #2e7d32; margin-bottom: 20px; }
+  input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; outline: none; }
+  button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
   .btn-login { background: #2e7d32; color: white; }
-  .btn-login:hover { background: #1b5e20; }
-  .btn-google {
-    background: white;
-    color: #444;
-    border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .btn-google:hover { background: #f5f5f5; }
-  .link {
-    font-size: 14px;
-    color: #2e7d32;
-    cursor: pointer;
-    margin-top: 10px;
-    text-decoration: none;
-    display: inline-block;
-  }
-  hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+  .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .link { font-size: 14px; color: #2e7d32; cursor: pointer; margin-top: 10px; display: inline-block; }
 </style>
 </head>
-
 <body>
+
+<div id="loader">
+  <div class="spinner"></div>
+  <p style="margin-top:10px; color:#2e7d32;">तपासत आहे...</p>
+</div>
 
 <div class="box">
   <h2>🌱 Smart Sheti</h2>
-
   <input id="email" type="email" placeholder="ईमेल पत्ता">
   <input id="password" type="password" placeholder="पासवर्ड">
-
   <button class="btn-login" id="loginBtn">लॉगिन करा</button>
-
-  <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
-  <br>
+  <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div><br>
   <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
-
-  <hr>
-
+  <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
   <button class="btn-google" id="googleBtn">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
     Google सह पुढे जा
   </button>
 </div>
@@ -99,15 +53,8 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence
+  getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult,
+  onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -123,56 +70,64 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// १. ऑटो-लॉगिन चेक (जर आधीच लॉगिन असेल तर होमवर पाठवा)
+const loader = document.getElementById('loader');
+
+// १. ऑटो-लॉगिन आणि रिडायरेक्ट रिझल्ट चेक
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
+  } else {
+    loader.style.display = "none";
   }
 });
 
-// २. रिडायरेक्ट होऊन परत आल्यावर रिझल्ट तपासणे (महत्त्वाचे)
-getRedirectResult(auth)
-  .then((result) => {
-    if (result && result.user) {
-      window.location.replace("home.html");
-    }
-  })
-  .catch((error) => {
-    console.error("Auth Error:", error.code, error.message);
-  });
+getRedirectResult(auth).then((result) => {
+  if (result && result.user) {
+    window.location.replace("home.html");
+  }
+}).catch((error) => {
+  console.error(error.message);
+  loader.style.display = "none";
+});
 
-// ३. Google सह लॉगिन (Full Screen Redirect पद्धत)
+// २. Google लॉगिन बटण
 document.getElementById('googleBtn').onclick = () => {
-  // यामुळे छोटा पॉपअप न उघडता संपूर्ण स्क्रीनवर Google चा इंटरफेस उघडेल
+  loader.style.display = "flex";
   signInWithRedirect(auth, provider);
 };
 
-// ४. ईमेल लॉगिन
+// ३. ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
-
+  if(!email || !password) return alert("माहिती भरा");
+  
+  loader.style.display = "flex";
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => { window.location.replace("home.html"); })
-    .catch(err => alert("लॉगिन अयशस्वी! माहिती तपासा."));
+    .then(() => window.location.replace("home.html"))
+    .catch(err => {
+      loader.style.display = "none";
+      alert("लॉगिन अयशस्वी!");
+    });
 };
 
-// ५. पासवर्ड रिसेट
+// ४. विसरलेला पासवर्ड
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
   if(!email) return alert("ईमेल टाका");
-  sendPasswordResetEmail(auth, email)
-    .then(() => alert("रिसेट लिंक ईमेलवर पाठवली आहे."))
-    .catch(err => alert(err.message));
+  sendPasswordResetEmail(auth, email).then(() => alert("लिंक पाठवली आहे."));
 };
 </script>
 
- <script>
+<script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(() => console.log('SW Registered'));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW Registered'))
+        .catch(err => console.log('SW Error', err));
+    });
   }
- </script>
+</script>
 
 </body>
 </html>
