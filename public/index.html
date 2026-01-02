@@ -3,29 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Sheti - Login</title>
+<title>Smart Sheti</title>
 <link rel="manifest" href="/manifest.json" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
+    background: #f0f2f5;
     height: 100vh; display: flex; justify-content: center; align-items: center;
   }
-  /* लोडिंग स्क्रीन */
+  /* प्रोफेशनल लोडर */
   #loader {
     display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: white; z-index: 999; justify-content: center; align-items: center; flex-direction: column;
   }
   .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2e7d32; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-  .box { background: #ffffff; width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center; }
-  h2 { color: #2e7d32; margin-bottom: 20px; }
+  
+  .box { background: #ffffff; width: 90%; max-width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+  h2 { color: #2e7d32; margin-bottom: 25px; }
   input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; outline: none; }
-  button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
-  .btn-login { background: #2e7d32; color: white; }
-  .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn-login { background: #2e7d32; color: white; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+  .btn-google { 
+    background: white; color: #444; border: 1px solid #ddd; width: 100%; padding: 12px; 
+    border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; 
+    align-items: center; justify-content: center; gap: 10px; margin-top: 15px;
+  }
   .link { font-size: 14px; color: #2e7d32; cursor: pointer; margin-top: 10px; display: inline-block; }
 </style>
 </head>
@@ -33,7 +36,7 @@
 
 <div id="loader">
   <div class="spinner"></div>
-  <p style="margin-top:10px; color:#2e7d32;">तपासत आहे...</p>
+  <p style="margin-top:10px; color:#2e7d32;">लोड होत आहे...</p>
 </div>
 
 <div class="box">
@@ -59,7 +62,7 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-  authDomain: "smart-sheti-6512e.firebaseapp.com",
+  authDomain: "smart-sheti.vercel.app", // बदल: तुमचे स्वतःचे डोमेन वापरा
   projectId: "smart-sheti-6512e",
   storageBucket: "smart-sheti-6512e.firebasestorage.app",
   messagingSenderId: "1086459599128",
@@ -72,7 +75,7 @@ const provider = new GoogleAuthProvider();
 
 const loader = document.getElementById('loader');
 
-// १. ऑटो-लॉगिन आणि रिडायरेक्ट रिझल्ट चेक
+// १. ऑटो-लॉगिन आणि रिडायरेक्ट रिझल्ट (ईमेल निवडल्यावर होमवर नेणे)
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
@@ -82,7 +85,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 getRedirectResult(auth).then((result) => {
-  if (result && result.user) {
+  if (result?.user) {
     window.location.replace("home.html");
   }
 }).catch((error) => {
@@ -90,7 +93,7 @@ getRedirectResult(auth).then((result) => {
   loader.style.display = "none";
 });
 
-// २. Google लॉगिन बटण
+// २. Google लॉगिन बटण (Full Screen Redirect)
 document.getElementById('googleBtn').onclick = () => {
   loader.style.display = "flex";
   signInWithRedirect(auth, provider);
