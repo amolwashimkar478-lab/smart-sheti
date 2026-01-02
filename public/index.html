@@ -10,7 +10,6 @@
  
 <link rel="manifest" href="/manifest.json" />
  
-
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -103,8 +102,13 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // तुमचे Firebase Config
@@ -120,33 +124,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
- // 🔐 Already logged-in user check
+
+// 🔐 १. लॉगिन सेव्ह करण्यासाठी सेटिंग (Persistence)
+setPersistence(auth, browserLocalPersistence);
+
+// 🔐 २. लॉगिन चेक (ऑटोमॅटिक होमवर जाण्यासाठी)
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // User आधीच login आहे → direct home
-    window.location.href = "home.html";
+    window.location.replace("home.html");
   }
 });
 
-// ईमेल लॉगिन
+// ३. Google Redirect नंतरचा रिझल्ट तपासणे
+getRedirectResult(auth).then((result) => {
+  if (result?.user) {
+    window.location.replace("home.html");
+  }
+}).catch((error) => {
+  console.log("Redirect Result Error: ", error.message);
+});
+
+// ४. ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => { window.location.href = "home.html"; })
-    .catch(err => alert("लॉगिन एरर: " + err.message));
+    .then(() => { window.location.replace("home.html"); })
+    .catch(err => alert("लॉगिन अयशस्वी! तुमचा ईमेल किंवा पासवर्ड तपासा."));
 };
 
-// Google लॉगिन
+// ५. Google लॉगिन (App मध्ये Redirect उत्तम चालते)
 document.getElementById('googleBtn').onclick = () => {
-  signInWithPopup(auth, provider)
-    .then(() => { window.location.href = "home.html"; })
-    .catch(err => alert("Google लॉगिन अयशस्वी!"));
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    // जर ॲप मधून उघडले असेल तर Redirect करा
+    signInWithRedirect(auth, provider);
+  } else {
+    // जर ब्राउझर मधून उघडले असेल तर Popup दाखवा
+    signInWithPopup(auth, provider)
+      .then(() => { window.location.replace("home.html"); })
+      .catch(() => signInWithRedirect(auth, provider));
+  }
 };
 
-// पासवर्ड रिसेट
+// ६. पासवर्ड रिसेट
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
   if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
@@ -165,7 +187,6 @@ document.getElementById('forgotBtn').onclick = () => {
     });
   }
  </script>
- 
 
 </body>
 </html>
