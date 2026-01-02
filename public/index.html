@@ -125,23 +125,23 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// 🔐 १. लॉगिन सेव्ह करण्यासाठी सेटिंग (Persistence)
+// 🔐 १. लॉगिन सेव्ह करणे (Persistence)
 setPersistence(auth, browserLocalPersistence);
 
-// 🔐 २. लॉगिन चेक (ऑटोमॅटिक होमवर जाण्यासाठी)
+// 🔐 २. ऑटो-लॉगिन चेक
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
   }
 });
 
-// ३. Google Redirect नंतरचा रिझल्ट तपासणे
+// 🔐 ३. Google Redirect रिझल्ट हाताळणे (ईमेल निवडल्यानंतर होमवर जाणे)
 getRedirectResult(auth).then((result) => {
-  if (result?.user) {
-    window.location.replace("home.html");
+  if (result && result.user) {
+    window.location.href = "home.html";
   }
 }).catch((error) => {
-  console.log("Redirect Result Error: ", error.message);
+  console.error("Redirect Result Error: ", error.message);
 });
 
 // ४. ईमेल लॉगिन
@@ -155,17 +155,19 @@ document.getElementById('loginBtn').onclick = () => {
     .catch(err => alert("लॉगिन अयशस्वी! तुमचा ईमेल किंवा पासवर्ड तपासा."));
 };
 
-// ५. Google लॉगिन (App मध्ये Redirect उत्तम चालते)
+// ५. Google सह पुढे जा (Sign Up न करता थेट होमवर जाणे)
 document.getElementById('googleBtn').onclick = () => {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    // जर ॲप मधून उघडले असेल तर Redirect करा
-    signInWithRedirect(auth, provider);
-  } else {
-    // जर ब्राउझर मधून उघडले असेल तर Popup दाखवा
-    signInWithPopup(auth, provider)
-      .then(() => { window.location.replace("home.html"); })
-      .catch(() => signInWithRedirect(auth, provider));
-  }
+  // ॲप किंवा मोबाईलसाठी सुरक्षित पॉपअप/रिडायरेक्ट पद्धत
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      if (result.user) {
+        window.location.href = "home.html"; 
+      }
+    })
+    .catch((error) => {
+      console.log("Popup blocked or failed, using redirect...");
+      signInWithRedirect(auth, provider);
+    });
 };
 
 // ६. पासवर्ड रिसेट
