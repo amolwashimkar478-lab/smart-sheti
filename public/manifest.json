@@ -2,7 +2,7 @@
   "id": "com.smartsheti.app",
   "name": "Smart Sheti",
   "short_name": "Smart Sheti",
-  "start_url": "https://smart-sheti.vercel.app/",
+  "start_url": "/", 
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
