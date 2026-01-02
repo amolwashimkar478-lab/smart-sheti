@@ -101,7 +101,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
@@ -111,7 +110,6 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// तुमचे Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
   authDomain: "smart-sheti-6512e.firebaseapp.com",
@@ -125,23 +123,23 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// 🔐 १. लॉगिन सेव्ह करणे (Persistence)
+// १. युजर सेशन सेव्ह करणे
 setPersistence(auth, browserLocalPersistence);
 
-// 🔐 २. ऑटो-लॉगिन चेक
+// २. रिडायरेक्ट पूर्ण झाल्यावर होम पेजवर नेणे
+getRedirectResult(auth).then((result) => {
+  if (result && result.user) {
+    window.location.replace("home.html");
+  }
+}).catch((error) => {
+  console.error("Login error: ", error.message);
+});
+
+// ३. ऑटो-लॉगिन चेक
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
   }
-});
-
-// 🔐 ३. Google Redirect रिझल्ट हाताळणे (ईमेल निवडल्यानंतर होमवर जाणे)
-getRedirectResult(auth).then((result) => {
-  if (result && result.user) {
-    window.location.href = "home.html";
-  }
-}).catch((error) => {
-  console.error("Redirect Result Error: ", error.message);
 });
 
 // ४. ईमेल लॉगिन
@@ -155,19 +153,10 @@ document.getElementById('loginBtn').onclick = () => {
     .catch(err => alert("लॉगिन अयशस्वी! तुमचा ईमेल किंवा पासवर्ड तपासा."));
 };
 
-// ५. Google सह पुढे जा (Sign Up न करता थेट होमवर जाणे)
+// ५. Google सह पुढे जा (अॅपसारखा Full Screen अनुभव)
 document.getElementById('googleBtn').onclick = () => {
-  // ॲप किंवा मोबाईलसाठी सुरक्षित पॉपअप/रिडायरेक्ट पद्धत
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      if (result.user) {
-        window.location.href = "home.html"; 
-      }
-    })
-    .catch((error) => {
-      console.log("Popup blocked or failed, using redirect...");
-      signInWithRedirect(auth, provider);
-    });
+  // मोबाईलवर छोटा पॉपअप टाळण्यासाठी Redirect पद्धत वापरली आहे
+  signInWithRedirect(auth, provider);
 };
 
 // ६. पासवर्ड रिसेट
@@ -184,8 +173,8 @@ document.getElementById('forgotBtn').onclick = () => {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('Service Worker Registered'))
-        .catch(err => console.log('Service Worker Error', err));
+        .then(reg => console.log('SW Registered'))
+        .catch(err => console.log('SW Error', err));
     });
   }
  </script>
