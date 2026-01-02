@@ -78,6 +78,11 @@ select, input {
   outline: none;
 }
 
+input:disabled {
+  background: #f9f9f9;
+  opacity: 0.8;
+}
+
 /* ---------- Profile Image ---------- */
 .profile-section {
   text-align: center;
@@ -115,6 +120,12 @@ select, input {
 #fileInput { display: none; }
 
 /* ---------- Buttons ---------- */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
 .btn {
   width: 100%;
   padding: 12px;
@@ -123,11 +134,11 @@ select, input {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 10px;
   transition: 0.2s;
 }
 
-.btn-primary { background: #2e7d32; color: white; }
+.btn-edit { background: #555; color: white; }
+.btn-save { background: #2e7d32; color: white; }
 .btn-primary:hover { background: #1b5e20; }
 
 .btn-orange { background: #ff9800; color: white; margin-top: 20px; }
@@ -148,13 +159,18 @@ hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
 <div class="container">
   
   <div class="card profile-section">
-    <div class="profile-pic-container" onclick="document.getElementById('fileInput').click()">
+    <div class="profile-pic-container" id="picContainer" style="pointer-events: none;">
       <img src="https://via.placeholder.com/120" id="profileImg" class="profile-pic">
       <div class="camera-icon">📷</div>
     </div>
     <input type="file" id="fileInput" accept="image/*">
-    <input type="text" id="nameField" placeholder="तुमचं नाव टाका" style="margin-top:15px;">
-    <button class="btn btn-primary" id="saveProfile">माहिती जतन करा</button>
+    
+    <input type="text" id="nameField" placeholder="तुमचं नाव टाका" style="margin-top:15px;" disabled>
+    
+    <div class="btn-group">
+      <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
+      <button class="btn btn-save" id="saveProfile" style="display:none;">सेव्ह (Save)</button>
+    </div>
   </div>
 
   <div class="card">
@@ -212,9 +228,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let base64Image = ""; // फोटो डेटा साठवण्यासाठी
+let base64Image = ""; 
 
-/* 🔐 युजर माहिती लोड करणे */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     if(user.displayName) document.getElementById("nameField").value = user.displayName;
@@ -224,55 +239,67 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-/* 📸 फोटो निवडणे आणि त्याचे रूपांतर करणे */
+// एडिट बटण लॉजिक
+document.getElementById("editBtn").onclick = function() {
+  document.getElementById("nameField").disabled = false;
+  document.getElementById("picContainer").style.pointerEvents = "auto";
+  this.style.display = "none";
+  document.getElementById("saveProfile").style.display = "block";
+};
+
 document.getElementById("fileInput").onchange = (e) => {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (event) => {
-      base64Image = event.target.result;
-      document.getElementById("profileImg").src = base64Image;
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 150;
+        canvas.height = 150;
+        ctx.drawImage(img, 0, 0, 150, 150);
+        base64Image = canvas.toDataURL('image/jpeg', 0.7); 
+        document.getElementById("profileImg").src = base64Image;
+      };
     };
     reader.readAsDataURL(file);
   }
 };
 
-/* 💾 प्रोफाइल माहिती जतन करा (नाव आणि फोटो दोन्ही सेव्ह होतील) */
 document.getElementById("saveProfile").onclick = () => {
   const user = auth.currentUser;
   const newName = document.getElementById("nameField").value;
 
   if (user) {
     let updateData = { displayName: newName };
-    if (base64Image) {
-      updateData.photoURL = base64Image;
-    }
+    if (base64Image) updateData.photoURL = base64Image;
 
     updateProfile(user, updateData)
-    .then(() => alert("तुमची प्रोफाइल माहिती आणि फोटो यशस्वीरित्या जतन झाले आहेत!"))
-    .catch(err => alert("चूक झाली: " + err.message));
+    .then(() => {
+      alert("यशस्वीरित्या जतन झाले!");
+      // पुन्हा लॉक करणे
+      document.getElementById("nameField").disabled = true;
+      document.getElementById("picContainer").style.pointerEvents = "none";
+      document.getElementById("saveProfile").style.display = "none";
+      document.getElementById("editBtn").style.display = "block";
+    })
+    .catch(err => alert("चूक: " + err.message));
   }
 };
 
-/* 🚪 लॉगआउट */
 document.getElementById("logoutBtn").onclick = () => {
-  if(confirm("लॉगआउट करायचे का?")) {
-    signOut(auth).then(() => window.location.replace("index.html"));
-  }
+  if(confirm("लॉगआउट करायचे का?")) signOut(auth).then(() => window.location.replace("index.html"));
 };
 
-/* ⚠️ खाते हटवा */
 document.getElementById("deleteBtn").onclick = () => {
   const user = auth.currentUser;
-  if (user && confirm("सावधान! तुमचे खाते कायमचे हटवले जाईल.")) {
-    deleteUser(user).then(() => {
-      alert("खाते हटवले आहे.");
-      window.location.replace("index.html");
-    }).catch(err => alert("चूक: " + err.message));
+  if (user && confirm("सावधान! खाते हटवले जाईल.")) {
+    deleteUser(user).then(() => window.location.replace("index.html")).catch(err => alert(err.message));
   }
 };
 
-/* ---------- थीम, भाषा इ. ---------- */
 document.getElementById("themeSelect").onchange = (e) => {
   document.documentElement.setAttribute("data-theme", e.target.value);
 };
