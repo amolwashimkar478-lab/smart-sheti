@@ -120,6 +120,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+ // 🔐 Already logged-in user check
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // User आधीच login आहे → direct home
+    window.location.href = "home.html";
+  }
+});
 
 // ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
