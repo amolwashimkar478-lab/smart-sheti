@@ -123,24 +123,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// १. युजर सेशन सेव्ह करणे
-setPersistence(auth, browserLocalPersistence);
-
-// २. रिडायरेक्ट पूर्ण झाल्यावर होम पेजवर नेणे
-getRedirectResult(auth).then((result) => {
-  if (result && result.user) {
-    window.location.replace("home.html");
-  }
-}).catch((error) => {
-  console.error("Login error: ", error.message);
-});
-
-// ३. ऑटो-लॉगिन चेक
+// १. ऑटो-लॉगिन चेक (जर आधीच लॉगिन असेल तर होमवर पाठवा)
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
   }
 });
+
+// २. रिडायरेक्ट होऊन परत आल्यावर रिझल्ट तपासणे (महत्त्वाचे)
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      window.location.replace("home.html");
+    }
+  })
+  .catch((error) => {
+    console.error("Auth Error:", error.code, error.message);
+  });
+
+// ३. Google सह लॉगिन (Full Screen Redirect पद्धत)
+document.getElementById('googleBtn').onclick = () => {
+  // यामुळे छोटा पॉपअप न उघडता संपूर्ण स्क्रीनवर Google चा इंटरफेस उघडेल
+  signInWithRedirect(auth, provider);
+};
 
 // ४. ईमेल लॉगिन
 document.getElementById('loginBtn').onclick = () => {
@@ -150,32 +155,22 @@ document.getElementById('loginBtn').onclick = () => {
 
   signInWithEmailAndPassword(auth, email, password)
     .then(() => { window.location.replace("home.html"); })
-    .catch(err => alert("लॉगिन अयशस्वी! तुमचा ईमेल किंवा पासवर्ड तपासा."));
+    .catch(err => alert("लॉगिन अयशस्वी! माहिती तपासा."));
 };
 
-// ५. Google सह पुढे जा (अॅपसारखा Full Screen अनुभव)
-document.getElementById('googleBtn').onclick = () => {
-  // मोबाईलवर छोटा पॉपअप टाळण्यासाठी Redirect पद्धत वापरली आहे
-  signInWithRedirect(auth, provider);
-};
-
-// ६. पासवर्ड रिसेट
+// ५. पासवर्ड रिसेट
 document.getElementById('forgotBtn').onclick = () => {
   const email = document.getElementById('email').value;
-  if(!email) return alert("कृपया आधी तुमचा ईमेल पत्ता टाका");
+  if(!email) return alert("ईमेल टाका");
   sendPasswordResetEmail(auth, email)
-    .then(() => alert("पासवर्ड रिसेट लिंक तुमच्या ईमेलवर पाठवली आहे."))
+    .then(() => alert("रिसेट लिंक ईमेलवर पाठवली आहे."))
     .catch(err => alert(err.message));
 };
 </script>
 
  <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW Registered'))
-        .catch(err => console.log('SW Error', err));
-    });
+    navigator.serviceWorker.register('/sw.js').then(() => console.log('SW Registered'));
   }
  </script>
 
