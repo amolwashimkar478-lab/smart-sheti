@@ -79,8 +79,8 @@ select, input {
 }
 
 input:disabled {
-  background: #f9f9f9;
-  opacity: 0.8;
+  background: #f1f1f1;
+  color: #666;
 }
 
 /* ---------- Profile Image ---------- */
@@ -92,6 +92,7 @@ input:disabled {
 .profile-pic-container {
   position: relative;
   display: inline-block;
+  cursor: pointer;
 }
 
 .profile-pic {
@@ -99,7 +100,6 @@ input:disabled {
   border-radius: 50%;
   border: 3px solid #2e7d32;
   object-fit: cover;
-  cursor: pointer;
   background: #eee;
 }
 
@@ -138,13 +138,9 @@ input:disabled {
 }
 
 .btn-edit { background: #555; color: white; }
-.btn-save { background: #2e7d32; color: white; }
-.btn-primary:hover { background: #1b5e20; }
-
+.btn-save { background: #2e7d32; color: white; display: none; }
 .btn-orange { background: #ff9800; color: white; margin-top: 20px; }
 .btn-red { background: #f44336; color: white; margin-top: 10px; }
-
-hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
 
 </style>
 </head>
@@ -159,7 +155,7 @@ hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
 <div class="container">
   
   <div class="card profile-section">
-    <div class="profile-pic-container" id="picContainer" style="pointer-events: none;">
+    <div class="profile-pic-container" onclick="document.getElementById('fileInput').click()">
       <img src="https://via.placeholder.com/120" id="profileImg" class="profile-pic">
       <div class="camera-icon">📷</div>
     </div>
@@ -169,41 +165,28 @@ hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
     
     <div class="btn-group">
       <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
-      <button class="btn btn-save" id="saveProfile" style="display:none;">सेव्ह (Save)</button>
+      <button class="btn btn-save" id="saveProfile">सेव्ह (Save)</button>
     </div>
   </div>
 
   <div class="card">
-    <label class="section-title" data-text="language">🌐 भाषा / Language</label>
+    <label class="section-title">🌐 भाषा / Language</label>
     <select id="langSelect">
         <option value="mr">मराठी</option>
         <option value="hi">हिंदी</option>
         <option value="en">English</option>
     </select>
-
-    <label class="section-title" data-text="theme">🎨 थीम (Theme)</label>
+    <label class="section-title">🎨 थीम (Theme)</label>
     <select id="themeSelect">
-        <option value="light">Light (दिवस)</option>
-        <option value="dark">Dark (रात्र)</option>
-    </select>
-
-    <label class="section-title" data-text="fontsize">🔤 अक्षरांचा आकार (Font)</label>
-    <select id="fontSelect">
-        <option value="Small">लहान</option>
-        <option value="Medium" selected>मध्यम</option>
-        <option value="Large">मोठा</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
     </select>
   </div>
 
-  <div class="card" style="border: 1px solid #ffcdd2;">
+  <div class="card">
     <button class="btn btn-orange" id="logoutBtn">बाहेर पडा (Logout)</button>
     <button class="btn btn-red" id="deleteBtn">खाते हटवा (Delete Account)</button>
   </div>
-
-  <p style="text-align:center; font-size: 12px; opacity: 0.7;">
-    📱 Smart Sheti v1.0.0<br>
-    ❤️ बळीराजासाठी समर्पित
-  </p>
 </div>
 
 <script type="module">
@@ -239,14 +222,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// एडिट बटण लॉजिक
-document.getElementById("editBtn").onclick = function() {
-  document.getElementById("nameField").disabled = false;
-  document.getElementById("picContainer").style.pointerEvents = "auto";
-  this.style.display = "none";
-  document.getElementById("saveProfile").style.display = "block";
-};
-
+// १. फोटो निवडणे आणि तो कॉम्प्रेस करणे (कधीही निवडता येईल)
 document.getElementById("fileInput").onchange = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -262,12 +238,25 @@ document.getElementById("fileInput").onchange = (e) => {
         ctx.drawImage(img, 0, 0, 150, 150);
         base64Image = canvas.toDataURL('image/jpeg', 0.7); 
         document.getElementById("profileImg").src = base64Image;
+        
+        // फोटो निवडल्यावर आपोआप सेव्ह बटण दाखवा
+        document.getElementById("editBtn").style.display = "none";
+        document.getElementById("saveProfile").style.display = "block";
       };
     };
     reader.readAsDataURL(file);
   }
 };
 
+// २. एडिट बटण (फक्त नाव एडिट करण्यासाठी)
+document.getElementById("editBtn").onclick = function() {
+  document.getElementById("nameField").disabled = false;
+  document.getElementById("nameField").focus();
+  this.style.display = "none";
+  document.getElementById("saveProfile").style.display = "block";
+};
+
+// ३. सेव्ह बटण
 document.getElementById("saveProfile").onclick = () => {
   const user = auth.currentUser;
   const newName = document.getElementById("nameField").value;
@@ -279,9 +268,7 @@ document.getElementById("saveProfile").onclick = () => {
     updateProfile(user, updateData)
     .then(() => {
       alert("यशस्वीरित्या जतन झाले!");
-      // पुन्हा लॉक करणे
       document.getElementById("nameField").disabled = true;
-      document.getElementById("picContainer").style.pointerEvents = "none";
       document.getElementById("saveProfile").style.display = "none";
       document.getElementById("editBtn").style.display = "block";
     })
@@ -290,7 +277,7 @@ document.getElementById("saveProfile").onclick = () => {
 };
 
 document.getElementById("logoutBtn").onclick = () => {
-  if(confirm("लॉगआउट करायचे का?")) signOut(auth).then(() => window.location.replace("index.html"));
+  if(confirm("बाहेर पडायचे का?")) signOut(auth).then(() => window.location.replace("index.html"));
 };
 
 document.getElementById("deleteBtn").onclick = () => {
@@ -299,12 +286,7 @@ document.getElementById("deleteBtn").onclick = () => {
     deleteUser(user).then(() => window.location.replace("index.html")).catch(err => alert(err.message));
   }
 };
-
-document.getElementById("themeSelect").onchange = (e) => {
-  document.documentElement.setAttribute("data-theme", e.target.value);
-};
 </script>
 
 </body>
 </html>
-
