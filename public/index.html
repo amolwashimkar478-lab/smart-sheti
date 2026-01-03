@@ -166,7 +166,7 @@ document.getElementById('googleBtn').onclick = () => {
     })
     .catch((error) => {
       console.log("Popup blocked or failed, using redirect...");
-      signInWithRedirect(auth, provider);
+    signInWithPopup(auth, provider);
     });
 };
 
