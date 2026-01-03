@@ -158,7 +158,7 @@ document.getElementById('loginBtn').onclick = () => {
 // ५. Google सह पुढे जा (Sign Up न करता थेट होमवर जाणे)
 document.getElementById('googleBtn').onclick = () => {
   // ॲप किंवा मोबाईलसाठी सुरक्षित पॉपअप/रिडायरेक्ट पद्धत
-  signInWithPopup(auth, provider)
+  signInWithRedirect(auth, provider)
     .then((result) => {
       if (result.user) {
         window.location.href = "home.html"; 
