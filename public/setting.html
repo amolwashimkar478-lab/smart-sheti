@@ -1,202 +1,63 @@
 <!DOCTYPE html>
-<html lang="mr" data-theme="light">
+<html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚙️ Settings - Smart Sheti</title>
-
-<style>
-/* ---------- CSS Variables (Theme Support) ---------- */
-:root {
-  --bg-color: #f0f2f5;
-  --card-bg: #ffffff;
-  --text-color: #1c1e21;
-  --primary-color: #2e7d32;
-  --border-color: #ddd;
-}
-
-[data-theme="dark"] {
-  --bg-color: #121212;
-  --card-bg: #1e1e1e;
-  --text-color: #e4e6eb;
-  --primary-color: #4caf50;
-  --border-color: #333;
-}
-
-/* ---------- Global UI Style ---------- */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0; padding: 0;
-  background: var(--bg-color);
-  color: var(--text-color);
-  transition: 0.3s;
-}
-
-.header {
-  background: #2e7d32;
-  color: white;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.container {
-  width: 90%; max-width: 450px;
-  margin: 20px auto;
-}
-
-.card {
-  background: var(--card-bg);
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
-}
-
-h2 { font-size: 20px; margin: 0; }
-.section-title { 
-  font-weight: 600; 
-  display: block; 
-  margin: 15px 0 8px; 
-  font-size: 14px;
-  color: var(--primary-color);
-}
-
-/* ---------- Inputs & Selects ---------- */
-select, input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-color);
-  font-size: 16px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-input:disabled {
-  background: #f1f1f1;
-  color: #666;
-}
-
-/* ---------- Profile Image ---------- */
-.profile-section {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.profile-pic-container {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-}
-
-.profile-pic {
-  width: 110px; height: 110px;
-  border-radius: 50%;
-  border: 3px solid #2e7d32;
-  object-fit: cover;
-  background: #eee;
-}
-
-.camera-icon {
-  position: absolute;
-  bottom: 5px; right: 5px;
-  background: #2e7d32;
-  color: white;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  border: 2px solid white;
-}
-
-#fileInput { display: none; }
-
-/* ---------- Buttons ---------- */
-.btn-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-edit { background: #555; color: white; }
-.btn-save { background: #2e7d32; color: white; display: none; }
-.btn-orange { background: #ff9800; color: white; margin-top: 20px; }
-.btn-red { background: #f44336; color: white; margin-top: 10px; }
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Sheti - Login</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="manifest" href="/manifest.json" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .box {
+            background: #ffffff; width: 350px; padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center;
+        }
+        h2 { color: #2e7d32; margin-bottom: 20px; font-size: 24px; }
+        input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            border: 1px solid #ddd; font-size: 16px; outline: none;
+        }
+        button {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            font-size: 16px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s;
+        }
+        .btn-login { background: #2e7d32; color: white; }
+        .btn-google {
+            background: white; color: #444; border: 1px solid #ddd;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .link { font-size: 14px; color: #2e7d32; cursor: pointer; margin-top: 10px; text-decoration: none; display: inline-block; }
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+    </style>
 </head>
-
 <body>
-
-<div class="header">
-  <span style="font-size:24px; cursor:pointer;" onclick="location.href='home.html'">←</span>
-  <h2 data-text="settingsTitle">अॅप सेटिंग</h2>
-</div>
-
-<div class="container">
-  
-  <div class="card profile-section">
-    <div class="profile-pic-container" onclick="document.getElementById('fileInput').click()">
-      <img src="https://via.placeholder.com/120" id="profileImg" class="profile-pic">
-      <div class="camera-icon">📷</div>
-    </div>
-    <input type="file" id="fileInput" accept="image/*">
-    
-    <input type="text" id="nameField" placeholder="तुमचं नाव टाका" style="margin-top:15px;" disabled>
-    
-    <div class="btn-group">
-      <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
-      <button class="btn btn-save" id="saveProfile">सेव्ह (Save)</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <label class="section-title">🌐 भाषा / Language</label>
-    <select id="langSelect">
-        <option value="mr">मराठी</option>
-        <option value="hi">हिंदी</option>
-        <option value="en">English</option>
-    </select>
-    <label class="section-title">🎨 थीम (Theme)</label>
-    <select id="themeSelect">
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-    </select>
-  </div>
-
-  <div class="card">
-    <button class="btn btn-orange" id="logoutBtn">बाहेर पडा (Logout)</button>
-    <button class="btn btn-red" id="deleteBtn">खाते हटवा (Delete Account)</button>
-  </div>
+<div class="box">
+    <h2>🌱 Smart Sheti</h2>
+    <input id="email" type="email" placeholder="ईमेल पत्ता">
+    <input id="password" type="password" placeholder="पासवर्ड">
+    <button class="btn-login" id="loginBtn">लॉगिन करा</button>
+    <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
+    <br>
+    <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
+    <hr>
+    <button class="btn-google" id="googleBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+        Google सह पुढे जा
+    </button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  deleteUser,
-  updateProfile
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -210,83 +71,46 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-let base64Image = ""; 
+setPersistence(auth, browserLocalPersistence);
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    if(user.displayName) document.getElementById("nameField").value = user.displayName;
-    if(user.photoURL) document.getElementById("profileImg").src = user.photoURL;
-  } else {
-    window.location.replace("index.html");
-  }
+  if (user) window.location.replace("home.html");
 });
 
-// १. फोटो निवडणे आणि तो कॉम्प्रेस करणे (कधीही निवडता येईल)
-document.getElementById("fileInput").onchange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 150;
-        canvas.height = 150;
-        ctx.drawImage(img, 0, 0, 150, 150);
-        base64Image = canvas.toDataURL('image/jpeg', 0.7); 
-        document.getElementById("profileImg").src = base64Image;
-        
-        // फोटो निवडल्यावर आपोआप सेव्ह बटण दाखवा
-        document.getElementById("editBtn").style.display = "none";
-        document.getElementById("saveProfile").style.display = "block";
-      };
-    };
-    reader.readAsDataURL(file);
-  }
+getRedirectResult(auth).then((result) => {
+  if (result?.user) window.location.replace("home.html");
+}).catch(err => console.error(err));
+
+document.getElementById('loginBtn').onclick = () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  if(!email || !password) return alert("कृपया ईमेल आणि पासवर्ड टाका");
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => window.location.replace("home.html"))
+    .catch(() => alert("लॉगिन अयशस्वी! तपशील तपासा."));
 };
 
-// २. एडिट बटण (फक्त नाव एडिट करण्यासाठी)
-document.getElementById("editBtn").onclick = function() {
-  document.getElementById("nameField").disabled = false;
-  document.getElementById("nameField").focus();
-  this.style.display = "none";
-  document.getElementById("saveProfile").style.display = "block";
+document.getElementById('googleBtn').onclick = () => {
+  signInWithPopup(auth, provider).catch(() => signInWithRedirect(auth, provider));
 };
 
-// ३. सेव्ह बटण
-document.getElementById("saveProfile").onclick = () => {
-  const user = auth.currentUser;
-  const newName = document.getElementById("nameField").value;
-
-  if (user) {
-    let updateData = { displayName: newName };
-    if (base64Image) updateData.photoURL = base64Image;
-
-    updateProfile(user, updateData)
-    .then(() => {
-      alert("यशस्वीरित्या जतन झाले!");
-      document.getElementById("nameField").disabled = true;
-      document.getElementById("saveProfile").style.display = "none";
-      document.getElementById("editBtn").style.display = "block";
-    })
-    .catch(err => alert("चूक: " + err.message));
-  }
-};
-
-document.getElementById("logoutBtn").onclick = () => {
-  if(confirm("बाहेर पडायचे का?")) signOut(auth).then(() => window.location.replace("index.html"));
-};
-
-document.getElementById("deleteBtn").onclick = () => {
-  const user = auth.currentUser;
-  if (user && confirm("सावधान! खाते हटवले जाईल.")) {
-    deleteUser(user).then(() => window.location.replace("index.html")).catch(err => alert(err.message));
-  }
+document.getElementById('forgotBtn').onclick = () => {
+  const email = document.getElementById('email').value;
+  if(!email) return alert("आधी ईमेल टाका");
+  sendPasswordResetEmail(auth, email).then(() => alert("रिसेट लिंक ईमेलवर पाठवली आहे."));
 };
 </script>
 
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW Registered'))
+        .catch(err => console.log('SW Error', err));
+    });
+  }
+</script>
 </body>
 </html>
