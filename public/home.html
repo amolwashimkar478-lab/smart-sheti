@@ -88,7 +88,6 @@ body {
   color: white;
   display: block;
   text-align: center;
-  text-decoration: none;
 }
 .weather-btn { background: #1565c0; }
 .spray-btn { background: #00796b; }
@@ -124,10 +123,8 @@ body {
 <button class="btn schedule-btn" onclick="location.href='spray-schedule.html'">🚜 फवारणी वेळापत्रक</button>
 
 <button class="btn satbara-btn" onclick="window.open('https://digitalsatbara.mahabhumi.gov.in/','_blank')">📄 डिजिटल सातबारा / ८अ</button>
-
-<button class="btn" onclick="window.open('https://pmfby.gov.in/', '_blank')" style="background: #607d8b;">📑 पीक विमा स्टेटस</button>
-
-<button class="btn" onclick="window.open('https://pmkisan.gov.in/BeneficiaryStatus_New.aspx', '_blank')" style="background: #546e7a;">💸 PM-Kisan हप्ता चेक</button>
+<button class="btn" onclick="window.open('https://pmfby.gov.in/', '_blank')" style="background:#607d8b;">📑 पीक विमा स्टेटस</button>
+<button class="btn" onclick="window.open('https://pmkisan.gov.in/BeneficiaryStatus_New.aspx', '_blank')" style="background:#546e7a;">💸 PM-Kisan हप्ता चेक</button>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -145,29 +142,33 @@ body {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // १. जर युजर लॉगआउट झाला असेल, तर बॅक बटण दाबल्यावर हे त्याला लॉगिन पेजवर ढकलून देईल
   onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.replace("index.html");
-    }
-  });
-
-  // २. मोबाईल बॅक बटण दाबलं की 'Exit' विचारण्यासाठी
-  window.history.pushState(null, "", window.location.href);
-  window.addEventListener("popstate", () => {
-    if (confirm("स्मार्ट शेती ॲपमधून बाहेर पडायचे आहे का?")) {
-      window.history.back(); // ॲपमधून बाहेर जाण्यासाठी
-    } else {
-      window.history.pushState(null, "", window.location.href); // पुन्हा पेजवर राहण्यासाठी
-    }
+    if (!user) window.location.replace("index.html");
   });
 </script>
 
 <script>
   function checkWeatherForSpray() {
     alert("हवामान तपासत आहे...");
-    // तुमचे पुढील कोड...
   }
+</script>
+
+<!-- ✅ ADD केलेला Exit / Back Button Code -->
+<script>
+  window.history.pushState(null, null, window.location.href);
+
+  window.onpopstate = function () {
+    window.history.pushState(null, null, window.location.href);
+
+    var check = confirm("तुम्हाला स्मार्ट शेती ॲपमधून बाहेर पडायचे आहे का?");
+    if (check === true) {
+      if (navigator.app && navigator.app.exitApp) {
+        navigator.app.exitApp();
+      } else {
+        window.close();
+      }
+    }
+  };
 </script>
 
 </body>
