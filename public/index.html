@@ -1,74 +1,131 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Sheti - Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Sheti - Login</title>
 
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#2e7d32">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2e7d32">
 
-<link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json" />
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
-  background:linear-gradient(135deg,#e8f5e9,#a5d6a7);
-  height:100vh;display:flex;justify-content:center;align-items:center;
-}
-.box{
-  background:#fff;width:350px;padding:30px;border-radius:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.15);text-align:center;
-}
-h2{color:#2e7d32;margin-bottom:20px}
-input{
-  width:100%;padding:12px;margin:10px 0;border-radius:8px;
-  border:1px solid #ddd;font-size:16px;
-}
-button{
-  width:100%;padding:12px;margin:10px 0;border-radius:8px;
-  font-size:16px;font-weight:bold;border:none;cursor:pointer;
-}
-.btn-login{background:#2e7d32;color:#fff}
-.btn-google{
-  background:#fff;color:#444;border:1px solid #ddd;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-}
-.link{font-size:14px;color:#2e7d32;cursor:pointer;margin-top:10px}
-hr{margin:20px 0;border-top:1px solid #eee}
-</style>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            background: #ffffff;
+            width: 350px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-login {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-google {
+            background: white;
+            color: #444;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .link {
+            font-size: 14px;
+            color: #2e7d32;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="box">
-  <h2>🌱 Smart Sheti</h2>
+    <h2>🌱 Smart Sheti</h2>
 
-  <input id="email" type="email" placeholder="ईमेल पत्ता">
-  <input id="password" type="password" placeholder="पासवर्ड">
+    <input id="email" type="email" placeholder="ईमेल पत्ता">
+    <input id="password" type="password" placeholder="पासवर्ड">
 
-  <button class="btn-login" id="loginBtn">लॉगिन करा</button>
+    <button class="btn-login" id="loginBtn">लॉगिन करा</button>
 
-  <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
-  <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
+    <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
+    <br>
+    <div class="link" onclick="location.href='signup.html'">
+        नवीन वापरकर्ता? नोंदणी करा
+    </div>
 
-  <hr>
+    <hr>
 
-  <button class="btn-google" id="googleBtn">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-    Google सह पुढे जा
-  </button>
+    <button class="btn-google" id="googleBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+        Google सह पुढे जा
+    </button>
 </div>
 
-<!-- 🔥 FIREBASE LOGIN -->
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult,
-  signInWithEmailAndPassword, sendPasswordResetEmail,
-  onAuthStateChanged, setPersistence, browserLocalPersistence
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -84,49 +141,62 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Login कायम ठेवण्यासाठी
+/* Login session कायम ठेवणे */
 setPersistence(auth, browserLocalPersistence);
 
-// आधीच login असेल तर home
-onAuthStateChanged(auth, (user)=>{
-  if(user) window.location.replace("home.html");
+/* आधीच लॉगिन असेल तर home */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.replace("home.html");
+  }
 });
 
-// Google redirect result
-getRedirectResult(auth).then((result)=>{
-  if(result?.user) window.location.replace("home.html");
+/* Google redirect result */
+getRedirectResult(auth).then((result) => {
+  if (result && result.user) {
+    window.location.replace("home.html");
+  }
 });
 
-// Google login
-document.getElementById("googleBtn").onclick=()=>{
-  signInWithRedirect(auth,provider);
+/* Google login */
+document.getElementById("googleBtn").onclick = () => {
+  signInWithRedirect(auth, provider);
 };
 
-// Email login
-document.getElementById("loginBtn").onclick=()=>{
-  const email=email.value;
-  const password=password.value;
-  if(!email||!password) return alert("ईमेल आणि पासवर्ड टाका");
-  signInWithEmailAndPassword(auth,email,password)
-    .then(()=>window.location.replace("home.html"))
-    .catch(()=>alert("लॉगिन अयशस्वी"));
+/* Email login */
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("कृपया ईमेल आणि पासवर्ड टाका");
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => window.location.replace("home.html"))
+    .catch(err => alert(err.message));
 };
 
-// Password reset
-document.getElementById("forgotBtn").onclick=()=>{
-  if(!email.value) return alert("आधी ईमेल टाका");
-  sendPasswordResetEmail(auth,email.value)
-    .then(()=>alert("Reset लिंक पाठवली आहे"));
+/* Password reset */
+document.getElementById("forgotBtn").onclick = () => {
+  const email = document.getElementById("email").value;
+  if (!email) {
+    alert("आधी ईमेल टाका");
+    return;
+  }
+
+  sendPasswordResetEmail(auth, email)
+    .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे"))
+    .catch(err => alert(err.message));
 };
 </script>
 
-<!-- 🧩 SERVICE WORKER -->
+<!-- Service Worker -->
 <script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js')
-      .then(()=>console.log("SW Registered"))
-      .catch(e=>console.log("SW Failed",e));
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
   });
 }
 </script>
