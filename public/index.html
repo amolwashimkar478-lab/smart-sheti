@@ -112,17 +112,6 @@ document.getElementById('forgotBtn').onclick = () => {
   sendPasswordResetEmail(auth, email).then(() => alert("रिसेट लिंक पाठवली आहे."));
 };
 
-// ६. बॅक बटण दाबल्यावर एक्झिट विचारणे
-window.history.pushState(null, null, window.location.pathname);
-window.addEventListener('popstate', function () {
-  if (confirm("तुम्हाला स्मार्ट शेती ॲपमधून बाहेर पडायचे आहे का?")) {
-    window.history.back();
-  } else {
-    window.history.pushState(null, null, window.location.pathname);
-  }
-});
-</script>
-
 <script>
   // ७. सर्विस वर्कर रजिस्ट्रेशन (हा कोड तुम्ही मागितला होता)
   if ('serviceWorker' in navigator) {
