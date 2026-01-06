@@ -1,184 +1,178 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Sheti - Q&A Community</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Sheti Community</title>
+    
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
+    <style>
+        :root { --primary: #2e7d32; --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #e4e6eb; }
+        body.dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e4e6eb; --border: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; transition: 0.3s; }
 
-<!-- OneSignal SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .container { max-width: 600px; margin: auto; padding: 10px; }
 
-<style>
-:root {
-    --primary-color: #2e7d32;
-    --card-bg: #ffffff;
-    --bg-color: #f0f2f5;
-    --text-color: #1c1e21;
-    --border-color: #ddd;
-}
-body.dark-theme {
-    --bg-color: #121212;
-    --card-bg: #1e1e1e;
-    --text-color: #e4e6eb;
-    --border-color: #333;
-}
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin:0; padding:0; transition:0.3s; color: var(--text-color); }
-.header { background: var(--primary-color); color:white; padding:15px; display:flex; justify-content:space-between; align-items:center; }
-.header h1 { margin:0; font-size:20px; }
-.header .theme-toggle { cursor:pointer; }
-.container { max-width:600px; margin:20px auto; padding:0 10px; }
-.search-bar { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px; font-size:16px; box-sizing:border-box; outline:none; }
-.card { background: var(--card-bg); padding:15px; border-radius:15px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-.card h3 { margin:0 0 8px 0; font-size:16px; }
-.card p { margin:5px 0; }
-.actions { display:flex; gap:10px; margin-top:10px; }
-.actions button { padding:6px 10px; font-size:12px; border-radius:8px; border:none; cursor:pointer; }
-.btn-like { background:#43a047; color:white; }
-.btn-report { background:#f44336; color:white; }
-.btn-voice { background:#1565c0; color:white; }
-.top-helpers { background: var(--card-bg); border-radius:15px; padding:10px; margin-bottom:15px; }
-.top-helpers h4 { margin:0 0 8px 0; font-size:14px; }
-.top-helpers ul { margin:0; padding:0; list-style:none; }
-.top-helpers li { padding:4px 0; border-bottom:1px solid var(--border-color); }
-.new-question { display:flex; gap:10px; margin-bottom:15px; }
-.new-question input { flex:1; padding:12px; border-radius:12px; border:1px solid var(--border-color); }
-.new-question button { padding:12px; border-radius:12px; border:none; background: var(--primary-color); color:white; cursor:pointer; }
-</style>
+        /* UI Elements */
+        .search-bar { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; background: var(--card); color: var(--text); outline: none; }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .expert-badge { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-left: 10px; }
+        .answer-box { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; border-left: 4px solid var(--primary); }
+
+        .actions { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; flex-wrap: wrap; }
+        .btn-act { background: none; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text); font-size: 12px; }
+        .btn-report { color: #d32f2f; border-color: #ffcdd2; }
+
+        .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
+        .input-area input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
+        .circle-btn { width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; }
+    </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>🌾 Smart Sheti Community</h1>
-    <span class="theme-toggle" onclick="toggleTheme()">🌓</span>
+    <div onclick="location.href='home.html'" style="cursor:pointer">⬅️</div>
+    <h1>शेतकरी चर्चा मंच</h1>
+    <div onclick="toggleTheme()" style="cursor:pointer">🌓</div>
 </div>
 
 <div class="container">
-    <input type="text" id="searchBar" class="search-bar" placeholder="प्रश्न शोधा..." onkeyup="filterQuestions()">
-    <div class="top-helpers">
-        <h4>📊 Top Helpers</h4>
-        <ul id="helpersList"></ul>
-    </div>
-    <div class="new-question">
-        <input type="text" id="newQuestionInput" placeholder="तुमचा प्रश्न टाका...">
-        <button onclick="addQuestion()">❓</button>
-    </div>
-    <div id="questionsContainer"></div>
+    <input type="text" id="searchBar" class="search-bar" placeholder="🔍 प्रश्न शोधा..." onkeyup="filterQuestions()">
+    
+    <div id="questionsContainer">प्रश्न लोड होत आहेत...</div>
 </div>
 
-<!-- Firebase -->
+<div class="input-area">
+    <button class="circle-btn" style="background:#1565c0" onclick="startVoice()">🎤</button>
+    <input type="text" id="qInput" placeholder="तुमचा प्रश्न लिहा...">
+    <button class="circle-btn" style="background:var(--primary)" id="sendBtn">🚀</button>
+</div>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-    authDomain: "smart-sheti-6512e.firebaseapp.com",
-    databaseURL: "https://smart-sheti-6512e-default-rtdb.firebaseio.com",
-    projectId: "smart-sheti-6512e",
-    storageBucket: "smart-sheti-6512e.firebasestorage.app",
-    messagingSenderId: "1086459599128",
-    appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+        authDomain: "smart-sheti-6512e.firebaseapp.com",
+        databaseURL: "https://smart-sheti-6512e-default-rtdb.firebaseio.com",
+        projectId: "smart-sheti-6512e",
+        storageBucket: "smart-sheti-6512e.firebasestorage.app",
+        messagingSenderId: "1086459599128",
+        appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const questionsRef = ref(db, "community_questions");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const qRef = ref(db, "community_questions");
 
-// Real-time listener
-onValue(questionsRef, (snapshot)=>{
-    const data = snapshot.val();
-    if(!data) return;
-    questions = Object.keys(data).map(k => ({id:k, ...data[k]})).sort((a,b)=>b.timestamp-a.timestamp);
-    renderQuestions();
-});
+    // १. प्रश्न विचारणे
+    document.getElementById("sendBtn").onclick = () => {
+        const text = document.getElementById("qInput").value.trim();
+        if (!text) return;
+        const userName = localStorage.getItem("userName") || "शेतकरी मित्र";
+        
+        push(qRef, {
+            sender: userName,
+            question: text,
+            timestamp: Date.now(),
+            likes: 0, 
+            reports: 0,
+            expert: false
+        }).then(() => {
+            document.getElementById("qInput").value = "";
+            sendNotification("नवीन प्रश्न", text);
+        });
+    };
 
+    // २. डेटा रेंडरिंग (Real-time)
+    onValue(qRef, (snapshot) => {
+        const container = document.getElementById("questionsContainer");
+        const data = snapshot.val();
+        if (!data) {
+            container.innerHTML = "<p style='text-align:center'>अद्याप कोणतेही प्रश्न नाहीत.</p>";
+            return;
+        }
+        
+        container.innerHTML = "";
+        window.allData = data; // सर्चसाठी डेटा ग्लोबल करणे
+
+        Object.keys(data).reverse().forEach(id => {
+            const q = data[id];
+            const card = document.createElement("div");
+            card.className = "card";
+            
+            let answersHTML = "";
+            if (q.answers) {
+                Object.values(q.answers).forEach(ans => {
+                    answersHTML += `<div class="answer-box"><b>उत्तर:</b> ${ans}</div>`;
+                });
+            }
+
+            card.innerHTML = `
+                <div style="font-size:13px; font-weight:bold; color:var(--primary)">
+                    👤 ${q.sender} ${q.expert ? '<span class="expert-badge">👨‍🌾 Expert</span>' : ''}
+                </div>
+                <div style="margin:10px 0; font-weight:600;">${q.question}</div>
+                <div>${answersHTML}</div>
+                <div class="actions">
+                    <button class="btn-act" onclick="window.likeQ('${id}', ${q.likes || 0})">👍 Helpful (${q.likes || 0})</button>
+                    <button class="btn-act" onclick="window.replyQ('${id}')">💬 उत्तर द्या</button>
+                    <button class="btn-act btn-report" onclick="window.reportQ('${id}', ${q.reports || 0})">🚨 रिपोर्ट (${q.reports || 0})</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    });
+
+    // ३. ग्लोबल फंक्शन्स (हँडलर्स)
+    window.likeQ = (id, count) => update(ref(db, `community_questions/${id}`), { likes: count + 1 });
+    window.reportQ = (id, count) => {
+        if(confirm("रिपोर्ट करायचे आहे का?")) update(ref(db, `community_questions/${id}`), { reports: count + 1 });
+    };
+    window.replyQ = (id) => {
+        const ans = prompt("तुमचे उत्तर लिहा:");
+        if (ans) push(ref(db, `community_questions/${id}/answers`), ans);
+    };
+
+    function sendNotification(title, msg) {
+        if (window.OneSignal) OneSignal.push(() => OneSignal.sendSelfNotification(title, msg));
+    }
 </script>
 
 <script>
-let questions = [];
-let helpers = [
-    {name:"Ramesh", score:10},
-    {name:"Sita", score:8},
-    {name:"Ganesh", score:5},
-];
+    // डार्क मोड
+    if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
 
-// OneSignal init
-window.OneSignal = window.OneSignal || [];
-OneSignal.push(function(){
-    OneSignal.init({
-        appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91"
+    function toggleTheme() {
+        document.body.classList.toggle("dark-theme");
+        localStorage.setItem("appTheme", document.body.classList.contains("dark-theme") ? "dark" : "light");
+    }
+
+    // व्हॉईस रिकग्निशन
+    function startVoice() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'mr-IN';
+        recognition.start();
+        recognition.onresult = (e) => document.getElementById("qInput").value = e.results[0][0].transcript;
+    }
+
+    // OneSignal Init
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({ appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91" });
     });
-});
 
-// Render helpers
-function renderHelpers() {
-    const list = document.getElementById("helpersList");
-    list.innerHTML="";
-    helpers.sort((a,b)=>b.score-a.score).forEach(h=>{
-        const li=document.createElement("li");
-        li.textContent=`${h.name} - ${h.score} points`;
-        list.appendChild(li);
-    });
-}
-
-// Render questions
-function renderQuestions() {
-    const container = document.getElementById("questionsContainer");
-    container.innerHTML="";
-    questions.forEach(q=>{
-        const card=document.createElement("div");
-        card.className="card";
-        card.dataset.id=q.id;
-        card.innerHTML=`
-            <h3>${q.question} ${q.expert?"👨‍🌾":""}</h3>
-            <p>${(q.answers||[]).join("<br>")}</p>
-            <div class="actions">
-                <button class="btn-like" onclick="likeQuestion('${q.id}')">👍 Like (${q.likes||0})</button>
-                <button class="btn-report" onclick="reportQuestion('${q.id}')">🚨 Report (${q.reports||0})</button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-// Add question
-function addQuestion(){
-    const input = document.getElementById("newQuestionInput");
-    const text = input.value.trim();
-    if(!text) return;
-    const newQ = {question:text, answers:[], likes:0, reports:0, timestamp:Date.now(), expert:false};
-    push(ref(firebase.database(), "community_questions"), newQ)
-        .then(()=>{
-            input.value="";
-            // Send push notification
-            OneSignal.push(function(){
-                OneSignal.sendSelfNotification(
-                    "📢 नवीन प्रश्न पोस्ट केले!",
-                    text,
-                    "https://yoursite.com",
-                    null,
-                    {action:"view-question"}
-                );
-            });
-        });
-}
-
-// Like & Report (local only)
-function likeQuestion(id){ const q=questions.find(x=>x.id===id); if(q) q.likes=(q.likes||0)+1; renderQuestions(); }
-function reportQuestion(id){ const q=questions.find(x=>x.id===id); if(q) q.reports=(q.reports||0)+1; renderQuestions(); }
-
-// Filter
-function filterQuestions(){
-    const val=document.getElementById("searchBar").value.toLowerCase();
-    questions.filter(q=>q.question.toLowerCase().includes(val)).forEach(q=>{}); // optional: filter UI
-}
-
-// Theme toggle
-function toggleTheme(){ document.body.classList.toggle("dark-theme"); }
-
-// Init
-renderHelpers();
-renderQuestions();
+    // सर्च फिल्टर
+    function filterQuestions() {
+        const val = document.getElementById("searchBar").value.toLowerCase();
+        const cards = document.getElementsByClassName("card");
+        for (let card of cards) {
+            card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
+        }
+    }
 </script>
 
 </body>
