@@ -1,233 +1,231 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings - Smart Sheti</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Smart Sheti</title>
+    <style>
+        :root {
+            --green-main: #2e7d32;
+            --bg-body: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --input-bg: #eeeeee;
+        }
 
-<style>
-:root{
-  --green:#2e7d32;
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#222;
-  --shadow:0 4px 12px rgba(0,0,0,.08);
-}
+        /* डार्क मोड कलर्स */
+        body.dark-theme {
+            --bg-body: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --input-bg: #333333;
+        }
 
-body.dark{
-  --bg:#121212;
-  --card:#1e1e1e;
-  --text:#ffffff;
-}
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: 0.3s;
+        }
 
-*{
-  box-sizing:border-box;
-  font-family: system-ui, sans-serif;
-}
+        /* ग्रीन हेडर */
+        .header {
+            background-color: var(--green-main);
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-}
+        .back-btn {
+            margin-right: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
 
-/* HEADER */
-.header{
-  background:var(--green);
-  color:#fff;
-  padding:14px;
-  font-size:18px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
+        .container { padding: 15px; }
 
-/* CONTAINER */
-.container{
-  padding:16px;
-}
+        /* कार्ड डिझाईन */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
 
-/* CARD */
-.card{
-  background:var(--card);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  padding:18px;
-  margin-bottom:18px;
-}
+        /* प्रोफाइल फोटो */
+        .profile-section { position: relative; display: inline-block; }
+        .avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 3px solid var(--green-main);
+            object-fit: cover;
+            background-color: #ddd;
+        }
+        .cam-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--green-main);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            cursor: pointer;
+        }
 
-/* PROFILE */
-.profile{
-  text-align:center;
-}
+        /* इनपुट आणि लेबल्स */
+        input, select {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
 
-.avatar{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  border:4px solid var(--green);
-  background:#ccc;
-  margin:0 auto 12px;
-  position:relative;
-  overflow:hidden;
-}
+        .label-group { text-align: left; margin-bottom: 15px; }
+        .label-text { font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; }
 
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.camera{
-  position:absolute;
-  bottom:4px;
-  right:4px;
-  background:var(--green);
-  color:#fff;
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-}
-
-/* INPUT */
-input, select{
-  width:100%;
-  height:44px;
-  padding:8px 12px;
-  border-radius:12px;
-  border:1px solid #ccc;
-  background:transparent;
-  color:var(--text);
-  font-size:15px;
-}
-
-/* BUTTON */
-.btn{
-  width:100%;
-  height:46px;
-  border:none;
-  border-radius:12px;
-  font-size:16px;
-  margin-top:12px;
-  cursor:pointer;
-}
-
-.btn-edit{background:#666;color:#fff;}
-.btn-logout{background:#f9a825;color:#fff;}
-.btn-delete{background:#f44336;color:#fff;}
-
-.label{
-  font-weight:600;
-  margin-bottom:6px;
-  color:var(--green);
-}
-</style>
+        /* बटन्स */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn-edit { background-color: #555; color: white; }
+        .btn-logout { background-color: #ff9800; color: white; margin-bottom: 10px; }
+        .btn-delete { background-color: #f44336; color: white; }
+    </style>
 </head>
-
 <body>
 
-<div class="header">⚙️ अ‍ॅप सेटिंग</div>
-
-<div class="container">
-
-  <!-- PROFILE -->
-  <div class="card profile">
-    <div class="avatar" onclick="pickPhoto()">
-      <img id="profilePic">
-      <div class="camera">📷</div>
-    </div>
-
-    <input id="username" placeholder="तुमचं नाव">
-
-    <button class="btn btn-edit" onclick="saveProfile()">एडिट (Edit)</button>
-  </div>
-
-  <!-- SETTINGS -->
-  <div class="card">
-    <div class="label">🎨 थीम (Theme)</div>
-    <select onchange="changeTheme(this.value)">
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="card">
-    <button class="btn btn-logout" onclick="logout()">बाहेर पडा (Logout)</button>
-    <button class="btn btn-delete" onclick="deleteAccount()">खाते हटवा</button>
-  </div>
-
+<div class="header">
+    <a href="home.html" class="back-btn">←</a>
+    अ‍ॅप सेटिंग
 </div>
 
-<input type="file" id="fileInput" accept="image/*" hidden>
+<div class="container">
+    <div class="card">
+        <div class="profile-section" onclick="document.getElementById('fileInput').click()">
+            <img id="profilePic" src="https://via.placeholder.com/150" class="avatar">
+            <div class="cam-icon">📷</div>
+        </div>
+        <input type="file" id="fileInput" hidden accept="image/*">
+        
+        <input type="text" id="userNameInput" placeholder="तुमचं नाव टाका">
+        <button class="btn btn-edit" onclick="saveProfile()">एडिट (Edit)</button>
+    </div>
 
-<script>
-/* LOGIN CHECK */
-if(localStorage.getItem("loggedIn") !== "true"){
-  window.location.href = "login.html";
-}
+    <div class="card">
+        <div class="label-group">
+            <div class="label-text">🌐 भाषा / Language</div>
+            <select id="langSelect" onchange="changeLanguage(this.value)">
+                <option value="mr">मराठी</option>
+                <option value="hi">हिंदी</option>
+                <option value="en">English</option>
+            </select>
+        </div>
 
-/* LOAD DATA */
-window.onload = ()=>{
-  document.getElementById("username").value =
-    localStorage.getItem("name") || "";
+        <div class="label-group">
+            <div class="label-text">🎨 थीम (Theme)</div>
+            <select id="themeSelect" onchange="toggleTheme(this.value)">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </div>
+    </div>
 
-  const img = localStorage.getItem("photo");
-  if(img) document.getElementById("profilePic").src = img;
+    <div class="card">
+        <button class="btn btn-logout" id="logoutBtn">बाहेर पडा (Logout)</button>
+        <button class="btn btn-delete" id="deleteBtn">खाते हटवा (Delete Account)</button>
+    </div>
+</div>
 
-  const theme = localStorage.getItem("theme") || "light";
-  if(theme==="dark") document.body.classList.add("dark");
-}
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signOut, deleteUser, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* SAVE PROFILE */
-function saveProfile(){
-  localStorage.setItem("name",
-    document.getElementById("username").value);
-  alert("Saved ✅");
-}
+    const firebaseConfig = {
+        apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+        authDomain: "smart-sheti-6512e.firebaseapp.com",
+        projectId: "smart-sheti-6512e",
+        storageBucket: "smart-sheti-6512e.firebasestorage.app",
+        messagingSenderId: "1086459599128",
+        appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+    };
 
-/* PHOTO PICK */
-function pickPhoto(){
-  document.getElementById("fileInput").click();
-}
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-fileInput.onchange = ()=>{
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    localStorage.setItem("photo", reader.result);
-    profilePic.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-};
+    window.onload = () => {
+        const savedTheme = localStorage.getItem("appTheme") || "light";
+        document.getElementById("themeSelect").value = savedTheme;
+        if(savedTheme === "dark") document.body.classList.add("dark-theme");
 
-/* THEME */
-function changeTheme(val){
-  if(val==="dark"){
-    document.body.classList.add("dark");
-  }else{
-    document.body.classList.remove("dark");
-  }
-  localStorage.setItem("theme", val);
-}
+        document.getElementById("langSelect").value = localStorage.getItem("appLang") || "mr";
 
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("loggedIn");
-  window.location.href="login.html";
-}
+        const savedImg = localStorage.getItem("userPhoto");
+        if(savedImg) document.getElementById("profilePic").src = savedImg;
+        document.getElementById("userNameInput").value = localStorage.getItem("userName") || "";
+    };
 
-/* DELETE */
-function deleteAccount(){
-  if(confirm("खाते कायमचं हटवायचं आहे का?")){
-    localStorage.clear();
-    window.location.href="login.html";
-  }
-}
+    window.saveProfile = () => {
+        const name = document.getElementById("userNameInput").value;
+        localStorage.setItem("userName", name);
+        alert("माहिती साठवली! ✅");
+    };
+
+    document.getElementById('fileInput').onchange = function(e) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            localStorage.setItem("userPhoto", reader.result);
+            document.getElementById("profilePic").src = reader.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    window.toggleTheme = (val) => {
+        localStorage.setItem("appTheme", val);
+        location.reload();
+    };
+
+    window.changeLanguage = (val) => {
+        localStorage.setItem("appLang", val);
+        alert("भाषा बदलली आहे: " + val);
+    };
+
+    document.getElementById("logoutBtn").onclick = () => {
+        if(confirm("लॉगआउट करायचे आहे का?")) {
+            signOut(auth).then(() => window.location.replace("index.html"));
+        }
+    };
+
+    document.getElementById("deleteBtn").onclick = () => {
+        if(confirm("सावधान! खाते कायमचे हटवायचे का?")) {
+            deleteUser(auth.currentUser).then(() => window.location.replace("index.html"));
+        }
+    };
 </script>
 
 </body>
