@@ -8,26 +8,155 @@
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
     <style>
-        :root { --primary: #2e7d32; --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #e4e6eb; }
-        body.dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e4e6eb; --border: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; transition: 0.3s; }
+        :root {
+            --primary: #2e7d32;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1c1e21;
+            --border: #e4e6eb;
+            --ans-bg: #f7f8fa;
+        }
 
-        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .container { max-width: 600px; margin: auto; padding: 10px; }
+        body.dark-theme {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #e4e6eb;
+            --border: #333;
+            --ans-bg: #2a2a2a;
+        }
 
-        /* UI Elements */
-        .search-bar { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; background: var(--card); color: var(--text); outline: none; }
-        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
-        .expert-badge { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-left: 10px; }
-        .answer-box { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; border-left: 4px solid var(--primary); }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 90px;
+            transition: 0.3s;
+        }
 
-        .actions { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; flex-wrap: wrap; }
-        .btn-act { background: none; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text); font-size: 12px; }
-        .btn-report { color: #d32f2f; border-color: #ffcdd2; }
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
-        .input-area input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
-        .circle-btn { width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 10px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+            background: var(--card);
+            color: var(--text);
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        /* Question Card */
+        .card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .expert-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* Answer Box - स्पष्ट फरक दिसण्यासाठी */
+        .answer-box {
+            background: var(--ans-bg);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 14px;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-act {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-report {
+            color: #d32f2f;
+            border-color: #ffcdd2;
+        }
+
+        /* Input Area */
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+
+        .circle-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -46,13 +175,13 @@
 
 <div class="input-area">
     <button class="circle-btn" style="background:#1565c0" onclick="startVoice()">🎤</button>
-    <input type="text" id="qInput" placeholder="तुमचा प्रश्न लिहा...">
+    <input type="text" id="qInput" placeholder="तुमचा प्रश्न येथे लिहा...">
     <button class="circle-btn" style="background:var(--primary)" id="sendBtn">🚀</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
@@ -83,11 +212,11 @@
             expert: false
         }).then(() => {
             document.getElementById("qInput").value = "";
-            sendNotification("नवीन प्रश्न", text);
+            sendNotification("🌾 नवीन प्रश्न", text);
         });
     };
 
-    // २. डेटा रेंडरिंग (Real-time)
+    // २. डेटा रेंडरिंग (प्रश्न आणि उत्तर स्पष्ट दिसण्यासाठी)
     onValue(qRef, (snapshot) => {
         const container = document.getElementById("questionsContainer");
         const data = snapshot.val();
@@ -97,44 +226,61 @@
         }
         
         container.innerHTML = "";
-        window.allData = data; // सर्चसाठी डेटा ग्लोबल करणे
-
         Object.keys(data).reverse().forEach(id => {
             const q = data[id];
             const card = document.createElement("div");
             card.className = "card";
             
+            // उत्तरांचा विभाग (Answers List)
             let answersHTML = "";
             if (q.answers) {
                 Object.values(q.answers).forEach(ans => {
-                    answersHTML += `<div class="answer-box"><b>उत्तर:</b> ${ans}</div>`;
+                    answersHTML += `
+                        <div class="answer-box">
+                            <span style="color:var(--primary); font-size:12px; font-weight:bold;">💡 उत्तर:</span>
+                            <div style="margin-top:4px;">${ans}</div>
+                        </div>`;
                 });
+            } else {
+                answersHTML = `<div style="color:#888; font-size:13px; margin-top:10px;">💬 अद्याप कोणीही उत्तर दिलेले नाही.</div>`;
             }
 
             card.innerHTML = `
-                <div style="font-size:13px; font-weight:bold; color:var(--primary)">
+                <div style="font-size:13px; font-weight:bold; color:var(--primary); display:flex; align-items:center;">
                     👤 ${q.sender} ${q.expert ? '<span class="expert-badge">👨‍🌾 Expert</span>' : ''}
                 </div>
-                <div style="margin:10px 0; font-weight:600;">${q.question}</div>
-                <div>${answersHTML}</div>
+
+                <div style="margin:12px 0; font-size:16px; font-weight:600; line-height:1.4;">
+                    ❓ ${q.question}
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top:10px;">
+                    ${answersHTML}
+                </div>
+
                 <div class="actions">
                     <button class="btn-act" onclick="window.likeQ('${id}', ${q.likes || 0})">👍 Helpful (${q.likes || 0})</button>
-                    <button class="btn-act" onclick="window.replyQ('${id}')">💬 उत्तर द्या</button>
-                    <button class="btn-act btn-report" onclick="window.reportQ('${id}', ${q.reports || 0})">🚨 रिपोर्ट (${q.reports || 0})</button>
+                    <button class="btn-act" onclick="window.replyQ('${id}')">📝 उत्तर द्या</button>
+                    <button class="btn-act btn-report" onclick="window.reportQ('${id}', ${q.reports || 0})">🚨 रिपोर्ट</button>
                 </div>
             `;
             container.appendChild(card);
         });
     });
 
-    // ३. ग्लोबल फंक्शन्स (हँडलर्स)
+    // ३. ग्लोबल हँडलर्स
     window.likeQ = (id, count) => update(ref(db, `community_questions/${id}`), { likes: count + 1 });
     window.reportQ = (id, count) => {
-        if(confirm("रिपोर्ट करायचे आहे का?")) update(ref(db, `community_questions/${id}`), { reports: count + 1 });
+        if(confirm("हा प्रश्न किंवा उत्तर रिपोर्ट करायचे आहे का?")) 
+            update(ref(db, `community_questions/${id}`), { reports: count + 1 });
     };
     window.replyQ = (id) => {
-        const ans = prompt("तुमचे उत्तर लिहा:");
-        if (ans) push(ref(db, `community_questions/${id}/answers`), ans);
+        const ans = prompt("तुमचे उत्तर येथे लिहा:");
+        if (ans && ans.trim() !== "") {
+            push(ref(db, `community_questions/${id}/answers`), ans).then(() => {
+                sendNotification("📢 नवीन उत्तर", "तुमच्या प्रश्नाला एक नवीन उत्तर मिळाले आहे!");
+            });
+        }
     };
 
     function sendNotification(title, msg) {
@@ -143,7 +289,7 @@
 </script>
 
 <script>
-    // डार्क मोड
+    // डार्क मोड आणि थीम कंट्रोल
     if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
 
     function toggleTheme() {
@@ -151,7 +297,7 @@
         localStorage.setItem("appTheme", document.body.classList.contains("dark-theme") ? "dark" : "light");
     }
 
-    // व्हॉईस रिकग्निशन
+    // व्हॉईस रिकग्निशन (मराठी)
     function startVoice() {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'mr-IN';
@@ -159,13 +305,13 @@
         recognition.onresult = (e) => document.getElementById("qInput").value = e.results[0][0].transcript;
     }
 
-    // OneSignal Init
+    // OneSignal Setup
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({ appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91" });
     });
 
-    // सर्च फिल्टर
+    // सर्च फंक्शन
     function filterQuestions() {
         const val = document.getElementById("searchBar").value.toLowerCase();
         const cards = document.getElementsByClassName("card");
@@ -177,3 +323,4 @@
 
 </body>
 </html>
+
