@@ -152,24 +152,5 @@ body {
     alert("हवामान तपासत आहे...");
   }
 </script>
-
-<script>
-  let lastBackTime = 0;
-
-  document.addEventListener("backbutton", function (e) {
-    e.preventDefault();
-
-    const now = new Date().getTime();
-
-    if (now - lastBackTime < 2000) {
-      if (navigator.app && navigator.app.exitApp) {
-        navigator.app.exitApp();   // ✅ WebIntoApp exit
-      }
-    } else {
-      lastBackTime = now;
-      alert("ॲप बंद करण्यासाठी पुन्हा BACK दाबा");
-    }
-  }, false);
-</script>
 </body>
 </html>
