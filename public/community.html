@@ -6,187 +6,84 @@
     <title>Smart Sheti Community</title>
     
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+        });
+        await OneSignal.Notifications.requestPermission();
+      });
+    </script>
     
     <style>
-        :root {
-            --primary: #2e7d32;
-            --bg: #f0f2f5;
-            --card: #ffffff;
-            --text: #1c1e21;
-            --border: #e4e6eb;
-            --ans-bg: #f7f8fa;
-        }
+        :root { --primary: #2e7d32; --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #e4e6eb; --ans-bg: #f7f8fa; }
+        body.dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e4e6eb; --border: #333; --ans-bg: #2a2a2a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; transition: 0.3s; }
 
-        body.dark-theme {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #e4e6eb;
-            --border: #333;
-            --ans-bg: #2a2a2a;
-        }
+        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .container { max-width: 600px; margin: auto; padding: 10px; }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding-bottom: 90px;
-            transition: 0.3s;
-        }
-
-        /* Header */
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 10px;
-        }
-
-        /* Search Bar */
-        .search-bar {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 15px;
-            background: var(--card);
-            color: var(--text);
-            outline: none;
-            box-sizing: border-box;
-        }
+        /* Top Helpers List */
+        .leaderboard { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; border: 1px dashed var(--primary); color: #1b5e20; }
 
         /* Question Card */
-        .card {
-            background: var(--card);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border: 1px solid var(--border);
-        }
-
-        .expert-badge {
-            background: #ffd700;
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 5px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        /* Answer Box - स्पष्ट फरक दिसण्यासाठी */
-        .answer-box {
-            background: var(--ans-bg);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 14px;
-            border-left: 4px solid var(--primary);
-        }
-
-        /* Actions */
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-            border-top: 1px solid var(--border);
-            padding-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-act {
-            background: none;
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .btn-report {
-            color: #d32f2f;
-            border-color: #ffcdd2;
-        }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .expert-badge { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-left: 8px; vertical-align: middle; }
+        
+        /* Reply Box (Custom Modal) - साध्या मेसेज ऐवजी नवीन लूक */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background: var(--card); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content textarea { width: 100%; height: 120px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); resize: none; box-sizing: border-box; outline: none; font-size: 15px; margin-top: 10px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-modal { flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
 
         /* Input Area */
-        .input-area {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card);
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-            border-top: 1px solid var(--border);
-        }
-
-        .input-area input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 25px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-            outline: none;
-        }
-
-        .circle-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-        }
+        .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
+        .input-area input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
+        .circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div onclick="location.href='home.html'" style="cursor:pointer">⬅️</div>
-    <h1>शेतकरी चर्चा मंच</h1>
+    <h2 style="margin:0; font-size:18px;">शेतकरी चर्चा मंच</h2>
     <div onclick="toggleTheme()" style="cursor:pointer">🌓</div>
 </div>
 
 <div class="container">
-    <input type="text" id="searchBar" class="search-bar" placeholder="🔍 प्रश्न शोधा..." onkeyup="filterQuestions()">
-    
+    <div class="leaderboard" id="topHelpers">🏆 टॉप मदतगार लोड होत आहेत...</div>
     <div id="questionsContainer">प्रश्न लोड होत आहेत...</div>
 </div>
 
+<div id="replyModal" class="modal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin:0; color:var(--primary);">📝 उत्तर द्या</h3>
+            <button class="circle-btn" style="background:#1565c0; width:35px; height:35px;" onclick="startVoice('replyText')">🎤</button>
+        </div>
+        <textarea id="replyText" placeholder="येथे माहिती किंवा उत्तर लिहा..."></textarea>
+        <div class="modal-btns">
+            <button class="btn-modal" style="background:#eee; color:#333;" onclick="closeReplyModal()">रद्द करा</button>
+            <button class="btn-modal" style="background:var(--primary); color:white;" id="saveReplyBtn">उत्तर पाठवा</button>
+        </div>
+    </div>
+</div>
+
 <div class="input-area">
-    <button class="circle-btn" style="background:#1565c0" onclick="startVoice()">🎤</button>
-    <input type="text" id="qInput" placeholder="तुमचा प्रश्न येथे लिहा...">
+    <button class="circle-btn" style="background:#1565c0" onclick="startVoice('qInput')">🎤</button>
+    <input type="text" id="qInput" placeholder="तुमचा प्रश्न येथे विचारा...">
     <button class="circle-btn" style="background:var(--primary)" id="sendBtn">🚀</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
         authDomain: "smart-sheti-6512e.firebaseapp.com",
-        databaseURL: "https://smart-sheti-6512e-default-rtdb.firebaseio.com",
         projectId: "smart-sheti-6512e",
         storageBucket: "smart-sheti-6512e.firebasestorage.app",
         messagingSenderId: "1086459599128",
@@ -194,133 +91,103 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const qRef = ref(db, "community_questions");
+    const db = getFirestore(app);
+    const qColl = collection(db, "community_questions");
 
-    // १. प्रश्न विचारणे
-    document.getElementById("sendBtn").onclick = () => {
-        const text = document.getElementById("qInput").value.trim();
-        if (!text) return;
-        const userName = localStorage.getItem("userName") || "शेतकरी मित्र";
-        
-        push(qRef, {
-            sender: userName,
-            question: text,
-            timestamp: Date.now(),
-            likes: 0, 
-            reports: 0,
-            expert: false
-        }).then(() => {
-            document.getElementById("qInput").value = "";
-            sendNotification("🌾 नवीन प्रश्न", text);
-        });
+    // १. प्रश्न पाठवणे
+    document.getElementById("sendBtn").onclick = async () => {
+        const input = document.getElementById("qInput");
+        const text = input.value.trim();
+        const isExpert = localStorage.getItem("userRole") === "expert"; // Expert badge साठी अट
+
+        if (text) {
+            await addDoc(qColl, {
+                sender: localStorage.getItem("userName") || "शेतकरी मित्र",
+                question: text,
+                timestamp: Date.now(),
+                likes: 0,
+                expert: isExpert,
+                answers: []
+            });
+            input.value = "";
+        }
     };
 
-    // २. डेटा रेंडरिंग (प्रश्न आणि उत्तर स्पष्ट दिसण्यासाठी)
-    onValue(qRef, (snapshot) => {
+    // २. डेटा रेंडरिंग (Real-time)
+    onSnapshot(query(qColl, orderBy("timestamp", "desc")), (snapshot) => {
         const container = document.getElementById("questionsContainer");
-        const data = snapshot.val();
-        if (!data) {
-            container.innerHTML = "<p style='text-align:center'>अद्याप कोणतेही प्रश्न नाहीत.</p>";
-            return;
-        }
-        
         container.innerHTML = "";
-        Object.keys(data).reverse().forEach(id => {
-            const q = data[id];
+        let likesCountMap = {};
+
+        snapshot.forEach((docSnap) => {
+            const q = docSnap.data();
+            const id = docSnap.id;
+            
+            // मदतगार लिस्ट अपडेट (likes नुसार)
+            if(q.likes > 0) likesCountMap[q.sender] = (likesCountMap[q.sender] || 0) + q.likes;
+
             const card = document.createElement("div");
             card.className = "card";
             
-            // उत्तरांचा विभाग (Answers List)
-            let answersHTML = "";
-            if (q.answers) {
-                Object.values(q.answers).forEach(ans => {
-                    answersHTML += `
-                        <div class="answer-box">
-                            <span style="color:var(--primary); font-size:12px; font-weight:bold;">💡 उत्तर:</span>
-                            <div style="margin-top:4px;">${ans}</div>
-                        </div>`;
-                });
-            } else {
-                answersHTML = `<div style="color:#888; font-size:13px; margin-top:10px;">💬 अद्याप कोणीही उत्तर दिलेले नाही.</div>`;
-            }
+            const answersHTML = q.answers.map(a => `<div style="background:var(--ans-bg); padding:10px; border-radius:8px; margin-top:8px; font-size:14px; border-left:4px solid var(--primary)">💡 <b>उत्तर:</b> ${a}</div>`).join("");
 
             card.innerHTML = `
                 <div style="font-size:13px; font-weight:bold; color:var(--primary); display:flex; align-items:center;">
-                    👤 ${q.sender} ${q.expert ? '<span class="expert-badge">👨‍🌾 Expert</span>' : ''}
+                    👤 ${q.sender} ${q.expert ? '<span class="expert-badge">⭐ Expert</span>' : ''}
                 </div>
-
-                <div style="margin:12px 0; font-size:16px; font-weight:600; line-height:1.4;">
-                    ❓ ${q.question}
-                </div>
-
+                <div style="margin:12px 0; font-size:16px; font-weight:600;">❓ ${q.question}</div>
                 <div style="border-top: 1px solid var(--border); padding-top:10px;">
-                    ${answersHTML}
+                    ${q.answers.length > 0 ? answersHTML : '<span style="color:#888; font-size:13px;">💬 अद्याप उत्तरे नाहीत.</span>'}
                 </div>
-
-                <div class="actions">
-                    <button class="btn-act" onclick="window.likeQ('${id}', ${q.likes || 0})">👍 Helpful (${q.likes || 0})</button>
-                    <button class="btn-act" onclick="window.replyQ('${id}')">📝 उत्तर द्या</button>
-                    <button class="btn-act btn-report" onclick="window.reportQ('${id}', ${q.reports || 0})">🚨 रिपोर्ट</button>
+                <div style="display:flex; gap:10px; margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+                    <button style="background:none; border:1px solid var(--border); padding:6px 12px; border-radius:8px; cursor:pointer; color:var(--text)" onclick="window.likeQ('${id}', ${q.likes})">👍 Helpful (${q.likes})</button>
+                    <button style="background:none; border:1px solid var(--border); padding:6px 12px; border-radius:8px; cursor:pointer; color:var(--text)" onclick="window.openReply('${id}')">📝 उत्तर द्या</button>
                 </div>
             `;
             container.appendChild(card);
         });
+        updateLeaderboard(likesCountMap);
     });
 
-    // ३. ग्लोबल हँडलर्स
-    window.likeQ = (id, count) => update(ref(db, `community_questions/${id}`), { likes: count + 1 });
-    window.reportQ = (id, count) => {
-        if(confirm("हा प्रश्न किंवा उत्तर रिपोर्ट करायचे आहे का?")) 
-            update(ref(db, `community_questions/${id}`), { reports: count + 1 });
-    };
-    window.replyQ = (id) => {
-        const ans = prompt("तुमचे उत्तर येथे लिहा:");
-        if (ans && ans.trim() !== "") {
-            push(ref(db, `community_questions/${id}/answers`), ans).then(() => {
-                sendNotification("📢 नवीन उत्तर", "तुमच्या प्रश्नाला एक नवीन उत्तर मिळाले आहे!");
-            });
+    // ३. रिप्लाय आणि लाईक लॉजिक
+    let activeQId = null;
+    window.openReply = (id) => { activeQId = id; document.getElementById("replyText").value = ""; document.getElementById("replyModal").style.display = "flex"; };
+    window.closeReplyModal = () => document.getElementById("replyModal").style.display = "none";
+
+    document.getElementById("saveReplyBtn").onclick = async () => {
+        const ans = document.getElementById("replyText").value.trim();
+        if (ans && activeQId) {
+            await updateDoc(doc(db, "community_questions", activeQId), { answers: arrayUnion(ans) });
+            closeReplyModal();
         }
     };
 
-    function sendNotification(title, msg) {
-        if (window.OneSignal) OneSignal.push(() => OneSignal.sendSelfNotification(title, msg));
+    window.likeQ = async (id, currentLikes) => {
+        await updateDoc(doc(db, "community_questions", id), { likes: currentLikes + 1 });
+    };
+
+    function updateLeaderboard(map) {
+        const sorted = Object.entries(map).sort((a,b) => b[1] - a[1]).slice(0, 3);
+        document.getElementById("topHelpers").innerHTML = "🏆 <b>टॉप मदतगार:</b> " + (sorted.map(h => `${h[0]} (${h[1]}👍)`).join(", ") || "अद्याप कोणी नाही");
     }
 </script>
 
 <script>
-    // डार्क मोड आणि थीम कंट्रोल
-    if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
-
-    function toggleTheme() {
-        document.body.classList.toggle("dark-theme");
-        localStorage.setItem("appTheme", document.body.classList.contains("dark-theme") ? "dark" : "light");
-    }
-
-    // व्हॉईस रिकग्निशन (मराठी)
-    function startVoice() {
+    // Voice Typing
+    function startVoice(targetId) {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'mr-IN';
         recognition.start();
-        recognition.onresult = (e) => document.getElementById("qInput").value = e.results[0][0].transcript;
+        recognition.onresult = (e) => document.getElementById(targetId).value = e.results[0][0].transcript;
     }
 
-    // OneSignal Setup
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({ appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91" });
-    });
-
-    // सर्च फंक्शन
-    function filterQuestions() {
-        const val = document.getElementById("searchBar").value.toLowerCase();
-        const cards = document.getElementsByClassName("card");
-        for (let card of cards) {
-            card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
-        }
+    // Theme Setup
+    if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
+    function toggleTheme() {
+        document.body.classList.toggle("dark-theme");
+        localStorage.setItem("appTheme", document.body.classList.contains("dark-theme") ? "dark" : "light");
     }
 </script>
 
 </body>
 </html>
-
