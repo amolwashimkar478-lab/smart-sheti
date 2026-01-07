@@ -9,9 +9,7 @@
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-        });
+        await OneSignal.init({ appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91" });
         await OneSignal.Notifications.requestPermission();
       });
     </script>
@@ -24,21 +22,20 @@
         .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .container { max-width: 600px; margin: auto; padding: 10px; }
 
-        /* Top Helpers List */
         .leaderboard { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; border: 1px dashed var(--primary); color: #1b5e20; }
-
-        /* Question Card */
         .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
         .expert-badge { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-left: 8px; vertical-align: middle; }
         
-        /* Reply Box (Custom Modal) - साध्या मेसेज ऐवजी नवीन लूक */
+        /* Edit/Delete Icons */
+        .action-icon { background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 8px; opacity: 0.7; }
+        .action-icon:hover { opacity: 1; }
+
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background: var(--card); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .modal-content textarea { width: 100%; height: 120px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); resize: none; box-sizing: border-box; outline: none; font-size: 15px; margin-top: 10px; }
         .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-modal { flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
 
-        /* Input Area */
         .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
         .input-area input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
         .circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -79,7 +76,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, arrayUnion, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
@@ -94,15 +91,17 @@
     const db = getFirestore(app);
     const qColl = collection(db, "community_questions");
 
+    const currentUser = localStorage.getItem("userName") || "शेतकरी मित्र";
+
     // १. प्रश्न पाठवणे
     document.getElementById("sendBtn").onclick = async () => {
         const input = document.getElementById("qInput");
         const text = input.value.trim();
-        const isExpert = localStorage.getItem("userRole") === "expert"; // Expert badge साठी अट
+        const isExpert = localStorage.getItem("userRole") === "expert";
 
         if (text) {
             await addDoc(qColl, {
-                sender: localStorage.getItem("userName") || "शेतकरी मित्र",
+                sender: currentUser,
                 question: text,
                 timestamp: Date.now(),
                 likes: 0,
@@ -113,7 +112,7 @@
         }
     };
 
-    // २. डेटा रेंडरिंग (Real-time)
+    // २. डेटा रेंडरिंग (Real-time with Edit/Delete Logic)
     onSnapshot(query(qColl, orderBy("timestamp", "desc")), (snapshot) => {
         const container = document.getElementById("questionsContainer");
         container.innerHTML = "";
@@ -122,18 +121,31 @@
         snapshot.forEach((docSnap) => {
             const q = docSnap.data();
             const id = docSnap.id;
+            const isOwner = q.sender === currentUser;
             
-            // मदतगार लिस्ट अपडेट (likes नुसार)
             if(q.likes > 0) likesCountMap[q.sender] = (likesCountMap[q.sender] || 0) + q.likes;
 
             const card = document.createElement("div");
             card.className = "card";
             
-            const answersHTML = q.answers.map(a => `<div style="background:var(--ans-bg); padding:10px; border-radius:8px; margin-top:8px; font-size:14px; border-left:4px solid var(--primary)">💡 <b>उत्तर:</b> ${a}</div>`).join("");
+            let answersHTML = q.answers.map((a, index) => `
+                <div style="background:var(--ans-bg); padding:10px; border-radius:8px; margin-top:8px; font-size:14px; border-left:4px solid var(--primary); display:flex; justify-content:space-between; align-items:start;">
+                    <span>💡 <b>उत्तर:</b> ${a}</span>
+                    ${isOwner ? `<div>
+                        <button class="action-icon" onclick="window.editReply('${id}', ${index}, '${a}')">✏️</button>
+                        <button class="action-icon" onclick="window.deleteReply('${id}', ${index})">🗑️</button>
+                    </div>` : ''}
+                </div>`).join("");
 
             card.innerHTML = `
-                <div style="font-size:13px; font-weight:bold; color:var(--primary); display:flex; align-items:center;">
-                    👤 ${q.sender} ${q.expert ? '<span class="expert-badge">⭐ Expert</span>' : ''}
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:13px; font-weight:bold; color:var(--primary); display:flex; align-items:center;">
+                        👤 ${q.sender} ${q.expert ? '<span class="expert-badge">⭐ Expert</span>' : ''}
+                    </div>
+                    ${isOwner ? `<div>
+                        <button class="action-icon" onclick="window.editQuestion('${id}', '${q.question}')">✏️</button>
+                        <button class="action-icon" onclick="window.deleteQuestion('${id}')">🗑️</button>
+                    </div>` : ''}
                 </div>
                 <div style="margin:12px 0; font-size:16px; font-weight:600;">❓ ${q.question}</div>
                 <div style="border-top: 1px solid var(--border); padding-top:10px;">
@@ -149,7 +161,42 @@
         updateLeaderboard(likesCountMap);
     });
 
-    // ३. रिप्लाय आणि लाईक लॉजिक
+    // ३. Edit/Delete फंक्शन्स
+    window.editQuestion = async (id, oldText) => {
+        const newText = prompt("प्रश्न सुधारा:", oldText);
+        if (newText && newText !== oldText) {
+            await updateDoc(doc(db, "community_questions", id), { question: newText });
+        }
+    };
+
+    window.deleteQuestion = async (id) => {
+        if (confirm("हा प्रश्न कायमचा डिलीट करायचा का?")) {
+            await deleteDoc(doc(db, "community_questions", id));
+        }
+    };
+
+    window.editReply = async (qId, index, oldAns) => {
+        const newAns = prompt("उत्तर सुधारा:", oldAns);
+        if (newAns && newAns !== oldAns) {
+            const docRef = doc(db, "community_questions", qId);
+            const docSnap = await getDoc(docRef);
+            let answers = docSnap.data().answers;
+            answers[index] = newAns;
+            await updateDoc(docRef, { answers: answers });
+        }
+    };
+
+    window.deleteReply = async (qId, index) => {
+        if (confirm("हे उत्तर डिलीट करायचे का?")) {
+            const docRef = doc(db, "community_questions", qId);
+            const docSnap = await getDoc(docRef);
+            let answers = docSnap.data().answers;
+            answers.splice(index, 1);
+            await updateDoc(docRef, { answers: answers });
+        }
+    };
+
+    // ४. रिप्लाय आणि लाईक लॉजिक
     let activeQId = null;
     window.openReply = (id) => { activeQId = id; document.getElementById("replyText").value = ""; document.getElementById("replyModal").style.display = "flex"; };
     window.closeReplyModal = () => document.getElementById("replyModal").style.display = "none";
@@ -173,7 +220,6 @@
 </script>
 
 <script>
-    // Voice Typing
     function startVoice(targetId) {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'mr-IN';
@@ -181,7 +227,6 @@
         recognition.onresult = (e) => document.getElementById(targetId).value = e.results[0][0].transcript;
     }
 
-    // Theme Setup
     if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
     function toggleTheme() {
         document.body.classList.toggle("dark-theme");
