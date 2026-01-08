@@ -20,28 +20,16 @@
 
         .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .container { max-width: 600px; margin: auto; padding: 10px; }
-        
-        /* 1. Search Bar */
         .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; background: var(--card); color: var(--text); outline: none; }
-
-        /* 2. Top Helpers */
         .leaderboard { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; border: 1px dashed var(--primary); color: #1b5e20; }
-        
         .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: 0.3s; }
-        
-        /* 3. Expert Badge */
         .expert-badge { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-left: 8px; }
-        
         .action-icon { background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 8px; opacity: 0.6; }
-        .action-icon:hover { opacity: 1; }
-
-        /* 4. Professional Modal */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background: var(--card); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .modal-content textarea { width: 100%; height: 120px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); resize: none; outline: none; margin-top: 10px; }
         .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-modal { flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
-
         .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
         .input-area input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
         .circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -103,7 +91,29 @@
     let targetId = null;
     let targetIndex = null;
 
-    // डेटा रेंडरिंग
+    // --- नवीन नोटिफिकेशन फंक्शन ---
+    async function sendNotification(questionText, senderName) {
+        const notificationData = {
+            app_id: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+            included_segments: ["All"],
+            headings: { "mr": "नवीन प्रश्न विचारला आहे! ❓", "en": "New Question Asked!" },
+            contents: { "mr": `${senderName}: ${questionText}`, "en": `${senderName}: ${questionText}` },
+            url: "https://smart-sheti.vercel.app/community.html"
+        };
+
+        try {
+            await fetch("https://onesignal.com/api/v1/notifications", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Authorization": "Basic YOUR_REST_API_KEY" // <--- os_v2_app_7w36icw4lrdcbbox3gpf3nxlsfavafkhqjoebqvbcddyzigyj
+urjy6i654p6dhhpw2srdyozxalxjyow3sh2rkikggi2mdkz5274a3y
+                },
+                body: JSON.stringify(notificationData)
+            });
+        } catch (error) { console.error("Notification Error:", error); }
+    }
+
     onSnapshot(query(qColl, orderBy("timestamp", "desc")), (snapshot) => {
         const container = document.getElementById("questionsContainer");
         container.innerHTML = "";
@@ -118,7 +128,7 @@
 
             const card = document.createElement("div");
             card.className = "card question-card";
-            card.id = "card-" + id; // ID for instant delete
+            card.id = "card-" + id;
             card.setAttribute("data-q", q.question.toLowerCase());
             
             let ansHTML = q.answers.map((a, i) => `
@@ -151,23 +161,15 @@
         updateLeaderboard(likesMap);
     });
 
-    // 9. प्रश्न डिलीट करणे (FIXED: वापस येणार नाही)
     window.deleteQuestion = async (id) => {
         if (confirm("हा प्रश्न कायमचा डिलीट करायचा का?")) {
-            // Optimistic Update: स्क्रीनवरून लगेच गायब करा
             const element = document.getElementById("card-" + id);
             if (element) element.style.display = 'none';
-
-            try {
-                await deleteDoc(doc(db, "community_questions", id));
-            } catch (e) {
-                if (element) element.style.display = 'block'; // एरर आल्यास परत दाखवा
-                alert("डिलीट होऊ शकला नाही.");
-            }
+            try { await deleteDoc(doc(db, "community_questions", id)); } 
+            catch (e) { if (element) element.style.display = 'block'; alert("त्रुटी आली."); }
         }
     };
 
-    // Modal लॉजिक
     window.openModal = (action, id, text = "", index = null) => {
         modalAction = action; targetId = id; targetIndex = index;
         document.getElementById("modalInput").value = text;
@@ -180,34 +182,28 @@
         const val = document.getElementById("modalInput").value.trim();
         if (!val) return;
         const docRef = doc(db, "community_questions", targetId);
-        
-        if (modalAction === 'reply') { 
-            await updateDoc(docRef, { answers: arrayUnion(val) }); 
-        } else if (modalAction === 'editQ') { 
-            await updateDoc(docRef, { question: val }); 
-        } else if (modalAction === 'editA') {
+        if (modalAction === 'reply') { await updateDoc(docRef, { answers: arrayUnion(val) }); } 
+        else if (modalAction === 'editQ') { await updateDoc(docRef, { question: val }); } 
+        else if (modalAction === 'editA') {
             const snap = await getDoc(docRef);
-            let arr = snap.data().answers;
-            arr[targetIndex] = val;
+            let arr = snap.data().answers; arr[targetIndex] = val;
             await updateDoc(docRef, { answers: arr });
         }
         closeModal();
     };
 
-    window.reportAns = (id, i) => alert("या उत्तराची तक्रार नोंदवली आहे. टीम तपासणी करेल.");
+    window.reportAns = (id, i) => alert("तक्रार नोंदवली आहे.");
     window.likeQ = async (id, count) => await updateDoc(doc(db, "community_questions", id), { likes: count + 1 });
 
     document.getElementById("sendBtn").onclick = async () => {
         const input = document.getElementById("qInput");
-        if (input.value.trim()) {
+        const qText = input.value.trim();
+        if (qText) {
             await addDoc(qColl, { 
-                sender: currentUser, 
-                question: input.value, 
-                timestamp: Date.now(), 
-                likes: 0, 
-                expert: localStorage.getItem("userRole") === 'expert', 
-                answers: [] 
+                sender: currentUser, question: qText, timestamp: Date.now(), 
+                likes: 0, expert: localStorage.getItem("userRole") === 'expert', answers: [] 
             });
+            sendNotification(qText, currentUser); // नोटिफिकेशन पाठवा
             input.value = "";
         }
     };
@@ -219,29 +215,22 @@
 </script>
 
 <script>
-    // 10. Search Logic
     function filterQuestions() {
         const val = document.getElementById("searchBar").value.toLowerCase();
         document.querySelectorAll(".question-card").forEach(card => {
             card.style.display = card.getAttribute("data-q").includes(val) ? "block" : "none";
         });
     }
-
-    // Voice Simulation
     function startVoice(id) {
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'mr-IN'; rec.start();
         rec.onresult = (e) => document.getElementById(id).value = e.results[0][0].transcript;
     }
-
-    // Theme Toggle
     if (localStorage.getItem("appTheme") === "dark") document.documentElement.classList.add("dark-theme");
     function toggleTheme() {
         document.body.classList.toggle("dark-theme");
         localStorage.setItem("appTheme", document.body.classList.contains("dark-theme") ? "dark" : "light");
     }
 </script>
-
 </body>
-        </html>
-    
+</html>
