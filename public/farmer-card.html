@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>स्मार्ट शेतकरी कार्ड - Smart Sheti</title>
+    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { --primary: #2e7d32; --gold: #ffd700; --dark: #1b5e20; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; text-align: center; }
+        
+        .setup-box { background: white; padding: 20px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; }
+        
+        /* कार्ड डिझाईन */
+        #farmerCard {
+            width: 350px; height: 210px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white; border-radius: 18px; margin: 25px auto;
+            position: relative; text-align: left; padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; overflow: hidden;
+        }
+        .card-header { font-weight: bold; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; letter-spacing: 1px; }
+        .chip { width: 40px; height: 30px; background: var(--gold); border-radius: 6px; margin: 15px 0; }
+        .photo-frame { position: absolute; right: 20px; top: 55px; width: 85px; height: 105px; border: 2px solid white; border-radius: 8px; background: #f9f9f9; overflow: hidden; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .details p { margin: 5px 0; font-size: 13px; font-weight: 500; }
+        .tag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; opacity: 0.7; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; cursor: pointer; font-weight: bold; width: 100%; max-width: 400px; margin-top: 15px; font-size: 16px; transition: 0.3s; }
+        .pay-btn { background: #1a73e8; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="setup-box" id="inputForm">
+        <h2 style="color: var(--primary); margin-top: 0;">🚜 शेतकरी ओळखपत्र</h2>
+        <p style="font-size: 13px; color: #666;">तुमची माहिती भरा आणि डिजिटल कार्ड मिळवा.</p>
+        <input type="text" id="userName" placeholder="पूर्ण नाव">
+        <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
+        <input type="text" id="userCrop" placeholder="मुख्य पिके (उदा. कापूस, तूर)">
+        <p style="font-size: 12px; text-align: left; margin-left: 5%; margin-bottom: 2px;">तुमचा फोटो निवडा:</p>
+        <input type="file" id="userPhoto" accept="image/*">
+        <button class="btn" onclick="previewCard()">प्रिव्ह्यू पहा</button>
+    </div>
+
+    <div id="farmerCard">
+        <div class="card-header">SMART SHETI MEMBER</div>
+        <div class="chip"></div>
+        <div class="details">
+            <p>NAME: <span id="cName"></span></p>
+            <p>VILLAGE: <span id="cVill"></span></p>
+            <p>CROPS: <span id="cCrop"></span></p>
+            <p>VALID UPTO: 12/2030</p>
+        </div>
+        <div class="photo-frame">
+            <img id="cImg" src="">
+        </div>
+        <div class="tag">Digitally Verified Member</div>
+    </div>
+
+    <button class="btn pay-btn" id="payBtn" onclick="startPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१०)</button>
+
+    <script>
+        function previewCard() {
+            const name = document.getElementById("userName").value;
+            const photo = document.getElementById("userPhoto").files[0];
+
+            if(!name || !photo) { alert("नाव आणि फोटो अनिवार्य आहे!"); return; }
+
+            document.getElementById("cName").innerText = name.toUpperCase();
+            document.getElementById("cVill").innerText = document.getElementById("userVill").value.toUpperCase();
+            document.getElementById("cCrop").innerText = document.getElementById("userCrop").value.toUpperCase();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById("cImg").src = e.target.result;
+                document.getElementById("farmerCard").style.display = "block";
+                document.getElementById("payBtn").style.display = "inline-block";
+                document.getElementById("inputForm").style.display = "none";
+            };
+            reader.readAsDataURL(photo);
+        }
+
+        function startPayment() {
+            var options = {
+                "key": "तुमचा_KEY_ID_येथे_टाका", // <--- तुमचा Key ID येथे टाका (उदा. rzp_test_...)
+                "amount": "1000", // ₹10 = 1000 पैसे
+                "currency": "INR",
+                "name": "Smart Sheti App",
+                "description": "Farmer Digital ID Card",
+                "handler": function (response){
+                    alert("पेमेंट यशस्वी! पेमेंट ID: " + response.razorpay_payment_id);
+                    downloadCard();
+                },
+                "prefill": {
+                    "name": document.getElementById("userName").value
+                },
+                "theme": { "color": "#2e7d32" }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+
+        function downloadCard() {
+            html2canvas(document.querySelector("#farmerCard")).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'Smart-Farmer-Card.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
