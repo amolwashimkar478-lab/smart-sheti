@@ -86,15 +86,15 @@ body {
 
 input, select {
     width: 100%;
-            background-color: var(--input-bg);
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 12px;
-            margin: 10px 0;
-            font-size: 16px;
-            color: var(--text-color);
-            box-sizing: border-box;
-        }
+    background-color: var(--input-bg);
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 16px;
+    color: var(--text-color);
+    box-sizing: border-box;
+}
 
 .label-group { text-align: left; margin-bottom: 15px; }
 .label-text { font-weight: bold; }
@@ -107,12 +107,39 @@ input, select {
     font-size: 16px;
     font-weight: bold;
     margin-top: 5px;
+    cursor: pointer;
 }
 
 .btn-edit { background: #555; color: white; }
 .btn-save { background: var(--green-main); color: white; display: none; }
 .btn-logout { background: #ff9800; color: white; }
 .btn-delete { background: #f44336; color: white; }
+
+/* नवीन Toast Notification Style */
+#toast {
+    visibility: hidden;
+    min-width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 50px;
+    padding: 12px;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    bottom: 50px;
+    transform: translateX(-50%);
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2s;
+}
+
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 50px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 50px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 </style>
 </head>
 
@@ -123,8 +150,9 @@ input, select {
     अ‍ॅप सेटिंग
 </div>
 
-<div class="container">
+<div id="toast">माहिती साठवली ✅</div>
 
+<div class="container">
 <div class="card">
     <div class="profile-section" onclick="fileInput.click()">
         <img id="profilePic" src="https://via.placeholder.com/150" class="avatar">
@@ -132,7 +160,6 @@ input, select {
     </div>
 
     <input type="file" id="fileInput" hidden accept="image/*">
-
     <input type="text" id="userNameInput" placeholder="तुमचं नाव टाका" disabled>
 
     <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
@@ -142,7 +169,7 @@ input, select {
 <div class="card">
     <div class="label-group">
         <div class="label-text">🌐 भाषा</div>
-        <select id="langSelect" onchange="changeLanguage(this.value)">
+        <select id="langSelect">
             <option value="mr">मराठी</option>
             <option value="hi">हिंदी</option>
             <option value="en">English</option>
@@ -151,7 +178,7 @@ input, select {
 
     <div class="label-group">
         <div class="label-text">🎨 थीम</div>
-        <select id="themeSelect" onchange="toggleTheme(this.value)">
+        <select id="themeSelect">
             <option value="light">Light</option>
             <option value="dark">Dark</option>
         </select>
@@ -162,7 +189,6 @@ input, select {
     <button class="btn btn-logout" id="logoutBtn">बाहेर पडा (Logout)</button>
     <button class="btn btn-delete" id="deleteBtn">खाते हटवा (Delete)</button>
 </div>
-
 </div>
 
 <script type="module">
@@ -181,22 +207,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+/* TOAST FUNCTION */
+function showToast(msg) {
+    const x = document.getElementById("toast");
+    x.innerText = msg;
+    x.className = "show";
+    setTimeout(() => { x.className = x.className.replace("show", ""); }, 2500);
+}
+
 /* LOAD */
-window.onload = () => {
+const loadData = () => {
     const theme = localStorage.getItem("appTheme") || "light";
-    themeSelect.value = theme;
+    document.getElementById('themeSelect').value = theme;
     if (theme === "dark") document.body.classList.add("dark-theme");
 
-    langSelect.value = localStorage.getItem("appLang") || "mr";
+    document.getElementById('langSelect').value = localStorage.getItem("appLang") || "mr";
 
     const img = localStorage.getItem("userPhoto");
-    if (img) profilePic.src = img;
+    if (img) document.getElementById('profilePic').src = img;
 
-    userNameInput.value = localStorage.getItem("userName") || "";
+    const savedName = localStorage.getItem("userName");
+    if (savedName) document.getElementById('userNameInput').value = savedName;
 };
 
+document.addEventListener("DOMContentLoaded", loadData);
+
 /* EDIT */
-editBtn.onclick = () => {
+document.getElementById('editBtn').onclick = () => {
     userNameInput.disabled = false;
     userNameInput.focus();
     editBtn.style.display = "none";
@@ -204,49 +241,49 @@ editBtn.onclick = () => {
 };
 
 /* SAVE */
-saveBtn.onclick = () => {
-    if (!userNameInput.value.trim()) {
-        alert("नाव टाका");
-        return;
-    }
+document.getElementById('saveBtn').onclick = () => {
+    if (!userNameInput.value.trim()) { return; }
     localStorage.setItem("userName", userNameInput.value);
     userNameInput.disabled = true;
     saveBtn.style.display = "none";
     editBtn.style.display = "block";
-    alert("माहिती साठवली ✅");
+    showToast("माहिती साठवली ✅"); // नवीन मेसेज पद्धत
 };
 
 /* PHOTO */
-fileInput.onchange = e => {
+document.getElementById('fileInput').onchange = e => {
     const r = new FileReader();
     r.onload = () => {
         localStorage.setItem("userPhoto", r.result);
         profilePic.src = r.result;
+        showToast("प्रोफाईल फोटो अपडेट झाला 📸");
     };
     r.readAsDataURL(e.target.files[0]);
 };
 
 /* THEME */
-window.toggleTheme = val => {
+document.getElementById('themeSelect').onchange = (e) => {
+    const val = e.target.value;
     localStorage.setItem("appTheme", val);
     document.body.classList.toggle("dark-theme", val === "dark");
+    showToast("थीम बदलली ✨");
 };
 
 /* LANGUAGE */
-window.changeLanguage = val => {
-    localStorage.setItem("appLang", val);
-    alert("भाषा बदलली");
+document.getElementById('langSelect').onchange = (e) => {
+    localStorage.setItem("appLang", e.target.value);
+    showToast("भाषा बदलली 🌐");
 };
 
 /* LOGOUT */
-logoutBtn.onclick = () => {
+document.getElementById('logoutBtn').onclick = () => {
     if (confirm("लॉगआउट करायचे आहे का?")) {
         signOut(auth).then(() => location.replace("index.html"));
     }
 };
 
 /* DELETE */
-deleteBtn.onclick = () => {
+document.getElementById('deleteBtn').onclick = () => {
     onAuthStateChanged(auth, user => {
         if (user && confirm("खाते हटवायचे आहे का?")) {
             deleteUser(user).then(() => location.replace("index.html"));
