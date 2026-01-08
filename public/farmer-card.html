@@ -13,15 +13,16 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; text-align: center; }
         
         .setup-box { background: white; padding: 20px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; }
+        input { width: 95%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; box-sizing: border-box; }
         
-        /* कार्ड डिझाईन */
+        /* प्रोफेशनल कार्ड डिझाईन */
         #farmerCard {
             width: 350px; height: 210px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
             color: white; border-radius: 18px; margin: 25px auto;
             position: relative; text-align: left; padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; overflow: hidden;
+            box-sizing: border-box;
         }
         .card-header { font-weight: bold; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; letter-spacing: 1px; }
         .chip { width: 40px; height: 30px; background: var(--gold); border-radius: 6px; margin: 15px 0; }
@@ -41,8 +42,8 @@
         <p style="font-size: 13px; color: #666;">तुमची माहिती भरा आणि डिजिटल कार्ड मिळवा.</p>
         <input type="text" id="userName" placeholder="पूर्ण नाव">
         <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
-        <input type="text" id="userCrop" placeholder="मुख्य पिके (उदा. कापूस, तूर)">
-        <p style="font-size: 12px; text-align: left; margin-left: 5%; margin-bottom: 2px;">तुमचा फोटो निवडा:</p>
+        <input type="text" id="userCrop" placeholder="मुख्य पिके (उदा. कापूस, सोयाबीन)">
+        <p style="font-size: 12px; text-align: left; margin-left: 2%; margin-bottom: 2px;">तुमचा फोटो निवडा:</p>
         <input type="file" id="userPhoto" accept="image/*">
         <button class="btn" onclick="previewCard()">प्रिव्ह्यू पहा</button>
     </div>
@@ -65,11 +66,15 @@
     <button class="btn pay-btn" id="payBtn" onclick="startPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१०)</button>
 
     <script>
+        // १. कार्डवर माहिती भरणे आणि दाखवणे
         function previewCard() {
             const name = document.getElementById("userName").value;
             const photo = document.getElementById("userPhoto").files[0];
 
-            if(!name || !photo) { alert("नाव आणि फोटो अनिवार्य आहे!"); return; }
+            if(!name || !photo) { 
+                alert("कृपया नाव आणि फोटो टाका!"); 
+                return; 
+            }
 
             document.getElementById("cName").innerText = name.toUpperCase();
             document.getElementById("cVill").innerText = document.getElementById("userVill").value.toUpperCase();
@@ -85,15 +90,17 @@
             reader.readAsDataURL(photo);
         }
 
+        // २. Razorpay पेमेंट सिस्टिम
         function startPayment() {
             var options = {
-                "key": "rzp_test_S1L2H81c9a5LlZ", // <--- तुमचा Key ID येथे टाका (उदा. rzp_test_...)
+                "key": "rzp_test_S1L2H81c9a5UZ", // तुमचा अचूक Test Key ID
                 "amount": "1000", // ₹10 = 1000 पैसे
                 "currency": "INR",
                 "name": "Smart Sheti App",
-                "description": "Farmer Digital ID Card",
+                "description": "Digital Farmer ID Card",
                 "handler": function (response){
-                    alert("पेमेंट यशस्वी! पेमेंट ID: " + response.razorpay_payment_id);
+                    // पेमेंट झाल्यावर हे घडेल
+                    alert("पेमेंट यशस्वी! कार्ड डाऊनलोड होत आहे...");
                     downloadCard();
                 },
                 "prefill": {
@@ -102,14 +109,20 @@
                 "theme": { "color": "#2e7d32" }
             };
             var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert("पेमेंट फेल झाले: " + response.error.description);
+            });
             rzp1.open();
         }
 
+        // ३. कार्ड फोटो म्हणून सेव्ह करणे
         function downloadCard() {
-            html2canvas(document.querySelector("#farmerCard")).then(canvas => {
+            html2canvas(document.querySelector("#farmerCard"), {
+                scale: 3 // फोटो क्लिअर येण्यासाठी क्वालिटी वाढवली आहे
+            }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = 'Smart-Farmer-Card.png';
-                link.href = canvas.toDataURL();
+                link.download = 'Maza-Shetkari-Card.png';
+                link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         }
