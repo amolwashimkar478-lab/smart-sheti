@@ -107,7 +107,7 @@
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                     "Authorization": "Basic os_v2_app_7w36icw4lrdcbbox3gpf3nxlsfavafkhqjoebqvbcddyzigyjurjy6i654p6dhhpw2srdyozxalxjyow3sh2rkikggi2mdkz5274a3y"
-                        
+                },
                 body: JSON.stringify(notificationData)
             });
         } catch (error) { console.error("Notification Error:", error); }
@@ -202,7 +202,7 @@
                 sender: currentUser, question: qText, timestamp: Date.now(), 
                 likes: 0, expert: localStorage.getItem("userRole") === 'expert', answers: [] 
             });
-            sendNotification(qText, currentUser); // नोटिफिकेशन पाठवा
+            sendNotification(qText, currentUser);
             input.value = "";
         }
     };
