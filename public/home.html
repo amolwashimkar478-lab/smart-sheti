@@ -199,6 +199,14 @@ body {
     // ॲप उघडल्यावर २ सेकंदाने चेक करा
     setTimeout(checkUpdate, 2000);
 </script>
-  
-</body>
+  <script>
+  // होम पेजवरून बॅक बटण दाबल्यावर लॉगिन पेजवर जाणे ब्लॉक करा
+  (function() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function() {
+      window.history.go(1);
+    };
+  })();
+  </script>
+  </body>
 </html>
