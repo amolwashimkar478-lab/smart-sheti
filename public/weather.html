@@ -37,12 +37,16 @@ body{
   color:#1b5e20;
 }
 
-.forecast{
-  display:flex;
-  justify-content:space-between;
-  font-size:15px;
-  margin:6px 0;
+/* पुढील ५ दिवसांच्या माहितीसाठी स्टाईल */
+.forecast-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
 }
+
+.forecast-row:last-child { border-bottom: none; }
 
 .btn{
   width:100%;
@@ -54,10 +58,7 @@ body{
   background:#1565c0;
   color:white;
   cursor:pointer;
-}
-
-.btn:hover{
-  background:#0d47a1;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -67,122 +68,108 @@ body{
 <div class="header">🌦 आजचं हवामान</div>
 
 <div class="card" id="todayCard">
-  <h3>⏳ माहिती घेत आहे...</h3>
+  <h3>⏳ लोकेशन शोधत आहे...</h3>
 </div>
 
 <div class="card" id="forecastCard" style="display:none">
-  <h3>📅 पुढील 5 दिवस</h3>
+  <h3 style="border-bottom: 2px solid #2e7d32; padding-bottom: 5px;">📅 पुढील ५ दिवसांचा अंदाज</h3>
   <div id="forecastData"></div>
 </div>
 
-<button class="btn" onclick="goBack()">
-⬅️ मुख्य पेजवर जा
-</button>
+<button class="btn" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
 
 <script>
 const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
-let hasSpoken = false; // 🔒 only once
+let hasSpoken = false;
 
-// 🔊 STOP voice when leaving page
 function stopVoice(){
-  if("speechSynthesis" in window){
-    speechSynthesis.cancel();
-  }
+  if("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
-// ⬅️ Back
 function goBack(){
   stopVoice();
   window.location.href = "home.html";
 }
 
-// 🔔 Notification permission
-if("Notification" in window){
-  Notification.requestPermission();
-}
+window.onload = () => {
+    // कॅशमधून लोकेशन तपासणे (स्पीड वाढवण्यासाठी)
+    const savedLat = localStorage.getItem("userLat");
+    const savedLon = localStorage.getItem("userLon");
 
-window.onload = getWeather;
+    if (savedLat && savedLon) {
+        fetchWeatherData(savedLat, savedLon);
+    }
+    
+    // नवीन लोकेशन अपडेट करणे (एकदाच परवानगी विचारेल)
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            localStorage.setItem("userLat", lat);
+            localStorage.setItem("userLon", lon);
+            fetchWeatherData(lat, lon);
+        },
+        err => {
+            if(!savedLat) document.getElementById("todayCard").innerHTML = "<h3>📍 कृपया लोकेशन सुरू करा</h3>";
+        },
+        { enableHighAccuracy: false, timeout: 10000 }
+    );
+};
 
-function getWeather(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-
-    // TODAY
+function fetchWeatherData(lat, lon) {
+    // आजचे हवामान
     fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
         const desc = data.weather[0].description;
-        const temp = data.main.temp;
-        const humidity = data.main.humidity;
-
+        const temp = Math.round(data.main.temp);
         document.getElementById("todayCard").innerHTML = `
           <h3>📍 ${data.name}</h3>
           🌡 तापमान: <b>${temp}°C</b><br>
-          💧 आर्द्रता: ${humidity}%<br>
+          💧 आर्द्रता: ${data.main.humidity}%<br>
           🌥 हवामान: ${desc}
         `;
 
-        // 🌧️ Rain alert
-        if(desc.includes("पाऊस") || desc.toLowerCase().includes("rain")){
-          alert("🚨 आज पावसाची शक्यता आहे");
-          showRainNotification();
-        }
-
-        // 🔊 AUTO SPEAK (ONLY ONCE)
         if(!hasSpoken){
-          speakMarathi(
-            `आज ${data.name} येथे हवामान ${desc} आहे. तापमान ${temp} अंश सेल्सिअस आहे.`
-          );
+          speakMarathi(`आज ${data.name} येथे हवामान ${desc} आहे.`);
           hasSpoken = true;
         }
       });
 
-    // 5 DAY
+    // ५ दिवसांचे हवामान अंदाज
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
-        const days = {};
-        data.list.forEach(item=>{
-          const date = item.dt_txt.split(" ")[0];
-          if(!days[date]) days[date] = item;
+        const dailyData = {};
+        // प्रत्येक दिवसाचा फक्त एक रिपोर्ट निवडणे (दुपारी १२ चा)
+        data.list.forEach(item => {
+            const date = new Date(item.dt * 1000).toLocaleDateString('mr-IN', {weekday: 'long'});
+            if (!dailyData[date] && Object.keys(dailyData).length < 5) {
+                dailyData[date] = item;
+            }
         });
 
-        let html="";
-        Object.keys(days).slice(1,6).forEach(d=>{
-          html += `
-            <div class="forecast">
-              <span>${d}</span>
-              <span>${days[d].weather[0].description}</span>
-              <span>${days[d].main.temp}°C</span>
-            </div>
-          `;
-        });
-
-        document.getElementById("forecastCard").style.display="block";
+        let html = "";
+        for (const day in dailyData) {
+            const item = dailyData[day];
+            html += `
+                <div class="forecast-row">
+                    <span style="font-weight:bold; width:80px;">${day}</span>
+                    <span style="color:#555; flex-grow:1; text-align:center;">${item.weather[0].description}</span>
+                    <span style="font-weight:bold; color:#1565c0;">${Math.round(item.main.temp)}°C</span>
+                </div>
+            `;
+        }
+        document.getElementById("forecastCard").style.display = "block";
         document.getElementById("forecastData").innerHTML = html;
       });
-
-  },()=>{
-    alert("📍 Location access द्या");
-  });
 }
 
-// 🔊 Marathi voice
 function speakMarathi(text){
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "mr-IN";
-  msg.rate = 0.9;
+  msg.rate = 1;
   speechSynthesis.speak(msg);
-}
-
-// 🌧️ Notification
-function showRainNotification(){
-  if(Notification.permission === "granted"){
-    new Notification("🌧️ पावसाचा इशारा", {
-      body: "आज पावसाची शक्यता आहे. शेतीची काळजी घ्या 🌾"
-    });
-  }
 }
 </script>
 
