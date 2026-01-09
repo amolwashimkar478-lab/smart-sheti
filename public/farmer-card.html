@@ -11,7 +11,6 @@
         :root { --gold: #D4AF37; --dark-green: #1b5e20; --light-green: #4caf50; }
         body { font-family: 'Arial', sans-serif; background: #f4f4f4; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
-        /* कार्ड डिझाइन - ओव्हरलॅप फिक्स */
         #farmerCard {
             width: 350px; height: 215px;
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://img.freepik.com/free-photo/green-rice-farm-with-sunrise-light-morning-chiang-mai-thailand_335224-956.jpg');
@@ -23,43 +22,29 @@
 
         .card-overlay { position: absolute; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.85) 45%, transparent); }
         .card-header { position: absolute; top: 12px; left: 15px; font-size: 16px; font-weight: bold; color: var(--gold); text-shadow: 1px 1px 3px black; letter-spacing: 1px; }
-        
         .photo-frame { position: absolute; right: 15px; top: 38px; width: 85px; height: 105px; border: 2px solid var(--gold); border-radius: 5px; background: #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* डिटेल्स - जागा वाढवली */
         .details { position: absolute; top: 40px; left: 15px; font-size: 11px; line-height: 1.2; width: 220px; }
         .details b { color: var(--gold); font-size: 8.5px; text-transform: uppercase; display: block; margin-top: 4px; }
         .details p { margin: 1px 0 2px 0; font-weight: 600; text-shadow: 1px 1px 2px black; font-size: 11.5px; }
-
-        /* सूचना - सर्वात तळाला आणि बारीक */
-        .gov-warning { 
-            position: absolute; 
-            bottom: 4px; 
-            left: 15px; 
-            font-size: 6px; 
-            color: rgba(255,255,255,0.7); 
-            width: 200px; 
-            line-height: 1; 
-            text-shadow: none;
-            font-style: italic;
-        }
-
+        .gov-warning { position: absolute; bottom: 4px; left: 15px; font-size: 6.5px; color: rgba(255,255,255,0.8); width: 220px; line-height: 1.1; text-shadow: none; }
         .footer-logo { position: absolute; bottom: 10px; right: 15px; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; color: black; font-size: 9px; font-weight: bold; border-left: 3px solid var(--gold); }
 
-        /* Form Styles */
         .form-box { background: white; padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
-        .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 10px; border: 1px solid #ef9a9a; display: none; }
+        
+        /* १. LockNotice विभाग: लाल रंगाची सूचना */
+        .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 15px; border: 1px solid #ef9a9a; display: none; }
     </style>
 </head>
 <body>
 
     <div class="form-box" id="inputForm">
-        <h2 style="color: var(--dark-green); text-align: center;">स्मार्ट शेतकरी कार्ड</h2>
+        <h2 style="color: var(--dark-green); text-align: center; margin-bottom: 10px;">स्मार्ट शेतकरी कार्ड</h2>
+        
         <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा ₹१० शुल्क लागेल.</div>
         
         <input type="text" id="userName" placeholder="तुमचे पूर्ण नाव">
@@ -92,11 +77,20 @@
     <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
+        /* ४. Automatic Filling & DOMContentLoaded */
         document.addEventListener("DOMContentLoaded", () => {
             const isLocked = localStorage.getItem("isCardLocked");
+            const lockedName = localStorage.getItem("lockedUserName");
+            const lockedPhone = localStorage.getItem("lockedUserPhone");
+            const lockedVill = localStorage.getItem("lockedUserVill");
+            const lockedCrop = localStorage.getItem("lockedUserCrop");
+
             if (isLocked === "true") {
                 document.getElementById("lockNotice").style.display = "block";
-                document.getElementById("userName").value = localStorage.getItem("lockedUserName");
+                document.getElementById("userName").value = lockedName;
+                document.getElementById("userPhone").value = lockedPhone;
+                document.getElementById("userVill").value = lockedVill;
+                document.getElementById("userCrop").value = lockedCrop;
             }
         });
 
@@ -105,7 +99,7 @@
             const phone = document.getElementById("userPhone").value;
             const photo = document.getElementById("userPhoto").files[0];
             
-            if(!name || !phone || !photo) { alert("माहिती आणि फोटो आवश्यक आहे!"); return; }
+            if(!name || !phone || !photo) { alert("नाव, मोबाईल आणि फोटो अनिवार्य आहे!"); return; }
 
             document.getElementById("cName").innerText = name.toUpperCase();
             document.getElementById("cPhone").innerText = phone;
@@ -137,8 +131,12 @@
                 "currency": "INR",
                 "name": "Smart Sheti App",
                 "handler": function (response){
+                    /* २. localStorage लॉक: पेमेंट यशस्वी झाल्यावर डेटा सेव्ह करणे */
                     localStorage.setItem("isCardLocked", "true");
                     localStorage.setItem("lockedUserName", document.getElementById("userName").value);
+                    localStorage.setItem("lockedUserPhone", document.getElementById("userPhone").value);
+                    localStorage.setItem("lockedUserVill", document.getElementById("userVill").value);
+                    localStorage.setItem("lockedUserCrop", document.getElementById("userCrop").value);
                     downloadCard();
                 }
             };
@@ -149,7 +147,7 @@
         function downloadCard() {
             html2canvas(document.querySelector("#farmerCard"), { scale: 3, useCORS: true }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = 'Smart-Sheti-Card.png';
+                link.download = 'Smart-Sheti-Member-Card.png';
                 link.href = canvas.toDataURL();
                 link.click();
             });
