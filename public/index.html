@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // तुमचा खरा Firebase Config कोड
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+      authDomain: "smart-sheti-6512e.firebaseapp.com",
+      projectId: "smart-sheti-6512e",
+      storageBucket: "smart-sheti-6512e.firebasestorage.app",
+      messagingSenderId: "1086459599128",
+      appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // जर आधीच लॉगिन असेल तर थेट होम पेजवर न्या
+        window.location.replace("home.html");
+      } else {
+        // लॉगिन नसल्यास बॉडी दाखवा (लॉगिन स्क्रीन दिसेल)
+        document.body.style.display = "block";
+      }
+    });
+  </script>
+
+  <style>
+    /* सुरुवातीला पेज लपवून ठेवा जेणेकरून फ्लिकर होणार नाही */
+    body { display: none; }
+  </style>
+    </head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Sheti - Login</title>
