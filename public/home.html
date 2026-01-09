@@ -162,5 +162,43 @@ body {
     alert("हवामान तपासत आहे...");
   }
 </script>
+  <div id="updateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; width:80%; max-width:300px; padding:20px; border-radius:15px; text-align:center; font-family:sans-serif;">
+        <h3 style="margin-top:0; color:#2e7d32;">नवीन अपडेट उपलब्ध! 🚀</h3>
+        <p id="updateMsg" style="color:#555; font-size:14px;">आम्ही तुमच्यासाठी काही नवीन फीचर्स जोडले आहेत. आताच अपडेट करा!</p>
+        <button onclick="closeUpdate()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">आता वापरून पहा</button>
+    </div>
+</div>
+
+<script>
+    // १. तुमचे सध्याचे ॲप व्हर्जन
+    const currentVersion = "1.0"; 
+
+    // २. भविष्यात तुम्ही फक्त ही खालची लिंक बदलली की सर्वांना मेसेज जाईल
+    // ही लिंक तुमच्या GitHub वरील एका छोट्या version.json फाईलची असेल
+    async function checkUpdate() {
+        try {
+            // उदाहरणार्थ: तुमच्या व्हर्जन फाईलची लिंक
+            // तूर्तास मी मॅन्युअली चेक दाखवत आहे
+            const latestVersion = "1.1"; // भविष्यात हे तुम्ही GitHub वरून बदलाल
+
+            if (latestVersion > currentVersion) {
+                document.getElementById("updateModal").style.display = "flex";
+            }
+        } catch (error) {
+            console.log("Update check failed");
+        }
+    }
+
+    function closeUpdate() {
+        document.getElementById("updateModal").style.display = "none";
+        // एकदा मेसेज दाखवला की पुन्हा पुन्हा त्रास नको म्हणून सेव्ह करा
+        localStorage.setItem("lastUpdateShown", "1.1");
+    }
+
+    // ॲप उघडल्यावर २ सेकंदाने चेक करा
+    setTimeout(checkUpdate, 2000);
+</script>
+  
 </body>
 </html>
