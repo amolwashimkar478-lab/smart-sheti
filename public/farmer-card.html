@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>प्रीमियम शेतकरी कार्ड</title>
+    <title>प्रीमियम शेतकरी कार्ड - स्मार्ट शेती</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -11,7 +11,7 @@
         :root { --gold: #D4AF37; --dark-green: #1b5e20; --light-green: #4caf50; }
         body { font-family: 'Arial', sans-serif; background: #f4f4f4; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
-        /* कार्डचे प्रीमियम डिझाइन */
+        /* कार्ड डिझाइन */
         #farmerCard {
             width: 350px; height: 215px;
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://img.freepik.com/free-photo/green-rice-farm-with-sunrise-light-morning-chiang-mai-thailand_335224-956.jpg');
@@ -21,64 +21,49 @@
             overflow: hidden; display: none;
         }
 
-        .card-overlay {
-            position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(to right, rgba(0,0,0,0.8) 40%, transparent);
-        }
-
-        .card-header {
-            position: absolute; top: 10px; left: 15px;
-            font-size: 18px; font-weight: bold; color: var(--gold);
-            text-shadow: 1px 1px 3px black;
-        }
-
-        .photo-frame {
-            position: absolute; right: 15px; top: 45px;
-            width: 90px; height: 110px;
-            border: 3px solid var(--gold); border-radius: 5px;
-            background: #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
+        .card-overlay { position: absolute; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 40%, transparent); }
+        .card-header { position: absolute; top: 10px; left: 15px; font-size: 16px; font-weight: bold; color: var(--gold); text-shadow: 1px 1px 3px black; letter-spacing: 1px; }
+        .photo-frame { position: absolute; right: 15px; top: 40px; width: 85px; height: 105px; border: 2px solid var(--gold); border-radius: 5px; background: #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .details { position: absolute; top: 45px; left: 15px; font-size: 11px; line-height: 1.4; }
+        .details b { color: var(--gold); font-size: 9px; text-transform: uppercase; }
+        .details p { margin: 2px 0 6px 0; font-weight: 600; text-shadow: 1px 1px 2px black; }
+        .footer-logo { position: absolute; bottom: 10px; right: 15px; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; color: black; font-size: 9px; font-weight: bold; border-left: 3px solid var(--gold); }
+        .gov-warning { position: absolute; bottom: 6px; left: 15px; font-size: 7px; color: rgba(255,255,255,0.7); width: 200px; line-height: 1; text-shadow: none; }
 
-        .details {
-            position: absolute; top: 55px; left: 15px;
-            font-size: 12px; line-height: 1.6;
-        }
-        .details b { color: var(--gold); font-size: 11px; text-transform: uppercase; }
-        .details p { margin: 4px 0; font-weight: 600; text-shadow: 1px 1px 2px black; }
-
-        .footer-logo {
-            position: absolute; bottom: 10px; right: 15px;
-            background: rgba(255,255,255,0.9); padding: 3px 8px;
-            border-radius: 5px; color: black; font-size: 10px;
-            font-weight: bold; border-left: 4px solid var(--gold);
-        }
-
-        /* Input Form Styles */
+        /* Form Styles */
         .form-box { background: white; padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
+        
+        /* Edit Notice */
+        .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 10px; border: 1px solid #ef9a9a; display: none; }
     </style>
 </head>
 <body>
 
     <div class="form-box" id="inputForm">
-        <h2 style="color: var(--dark-green); text-align: center;">डिजिटल शेतकरी कार्ड</h2>
+        <h2 style="color: var(--dark-green); text-align: center;">स्मार्ट शेतकरी कार्ड</h2>
+        
+        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा ₹१० शुल्क लागेल.</div>
+        
         <input type="text" id="userName" placeholder="तुमचे पूर्ण नाव">
+        <input type="number" id="userPhone" placeholder="मोबाईल नंबर">
         <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
         <input type="text" id="userCrop" placeholder="मुख्य पिके">
-        <label style="font-size: 12px;">तुमचा फोटो अपलोड करा:</label>
+        <label style="font-size: 12px; font-weight: bold; margin-top: 10px; display: block;">फोटो अपलोड करा:</label>
         <input type="file" id="userPhoto" accept="image/*">
         <button class="btn btn-preview" onclick="previewCard()">प्रिव्ह्यू पहा</button>
     </div>
 
     <div id="farmerCard">
         <div class="card-overlay"></div>
-        <div class="card-header">DIGITAL SHETKARI</div>
+        <div class="card-header">SMART SHETI MEMBER</div>
         <div class="details">
             <b>NAME</b> <p id="cName"></p>
+            <b>PHONE</b> <p id="cPhone"></p>
             <b>VILLAGE</b> <p id="cVill"></p>
             <b>CROPS</b> <p id="cCrop"></p>
             <b>VALID UPTO</b> <p>12/2030</p>
@@ -86,18 +71,37 @@
         <div class="photo-frame">
             <img id="cImg" src="">
         </div>
+        <div class="gov-warning">सूचना: हे केवळ डिजिटल ओळखपत्र आहे, हे कोणतेही शासकीय दस्तऐवज किंवा सरकारी कार्ड नाही.</div>
         <div class="footer-logo">Verified Member 2026</div>
     </div>
 
     <button class="btn btn-pay" id="payBtn" onclick="startPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१०)</button>
+    <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
+        // १. लॉक सिस्टीम तपासणे
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedName = localStorage.getItem("isCardLocked");
+            const userNameField = localStorage.getItem("lockedUserName");
+            
+            if (savedName === "true") {
+                document.getElementById("lockNotice").style.display = "block";
+                document.getElementById("userName").value = userNameField;
+            }
+        });
+
         function previewCard() {
             const name = document.getElementById("userName").value;
+            const phone = document.getElementById("userPhone").value;
             const photo = document.getElementById("userPhoto").files[0];
-            if(!name || !photo) { alert("नाव आणि फोटो अनिवार्य आहे!"); return; }
+            
+            if(!name || !phone || !photo) { 
+                alert("नाव, मोबाईल नंबर आणि फोटो अनिवार्य आहे!"); 
+                return; 
+            }
 
             document.getElementById("cName").innerText = name.toUpperCase();
+            document.getElementById("cPhone").innerText = phone;
             document.getElementById("cVill").innerText = document.getElementById("userVill").value.toUpperCase();
             document.getElementById("cCrop").innerText = document.getElementById("userCrop").value.toUpperCase();
 
@@ -106,19 +110,30 @@
                 document.getElementById("cImg").src = e.target.result;
                 document.getElementById("farmerCard").style.display = "block";
                 document.getElementById("payBtn").style.display = "block";
+                document.getElementById("editBtn").style.display = "block";
                 document.getElementById("inputForm").style.display = "none";
             };
             reader.readAsDataURL(photo);
         }
 
+        function backToEdit() {
+            document.getElementById("farmerCard").style.display = "none";
+            document.getElementById("payBtn").style.display = "none";
+            document.getElementById("editBtn").style.display = "none";
+            document.getElementById("inputForm").style.display = "block";
+        }
+
         function startPayment() {
             var options = {
-                "key": "rzp_test_S1L2H81c9a5UZ",
+                "key": "rzp_test_S1L2H81c9a5UZ", 
                 "amount": "1000",
                 "currency": "INR",
                 "name": "Smart Sheti App",
                 "description": "Premium Farmer Digital ID",
                 "handler": function (response){
+                    // २. पेमेंट झाल्यावर लॉक करणे
+                    localStorage.setItem("isCardLocked", "true");
+                    localStorage.setItem("lockedUserName", document.getElementById("userName").value);
                     downloadCard();
                 },
                 "theme": { "color": "#1b5e20" }
@@ -128,11 +143,15 @@
         }
 
         function downloadCard() {
-            html2canvas(document.querySelector("#farmerCard"), { scale: 3 }).then(canvas => {
+            html2canvas(document.querySelector("#farmerCard"), { 
+                scale: 3,
+                useCORS: true 
+            }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = 'Premium-Farmer-Card.png';
+                link.download = 'Smart-Sheti-Member-Card.png';
                 link.href = canvas.toDataURL();
                 link.click();
+                alert("कार्ड यशस्वीरित्या डाऊनलोड झाले आहे!");
             });
         }
     </script>
