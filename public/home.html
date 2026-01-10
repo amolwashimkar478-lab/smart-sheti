@@ -170,25 +170,6 @@ body {
     }
 
     window.addEventListener('load', checkAutoUpdate);
-
-    // २. दुरुस्त केलेले बॅक बटन आणि एक्झिट लॉजिक
-    (function() {
-        window.history.pushState(null, null, window.location.href);
-        window.onpopstate = function() {
-            // कंफर्मेशन विचारणे
-            let exitApp = confirm("तुम्हाला स्मार्ट शेती ॲपमधून बाहेर पडायचे आहे का?");
-            if (exitApp) {
-                // जर 'Yes' दाबलं तर बाहेर जा
-                window.history.back(); 
-                // Appilix साठी खालचा कोड काम करतो
-                if (navigator.app) { navigator.app.exitApp(); }
-            } else {
-                // जर 'No' दाबलं तर इथेच राहा
-                window.history.pushState(null, null, window.location.href);
-            }
-        };
-    })();
 </script>
-
 </body>
 </html>
