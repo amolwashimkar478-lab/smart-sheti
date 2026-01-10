@@ -30,6 +30,7 @@ body{
   border-radius:16px;
   margin-bottom:16px;
   box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  box-sizing: border-box;
 }
 
 .card h3{
@@ -37,7 +38,6 @@ body{
   color:#1b5e20;
 }
 
-/* पुढील ५ दिवसांच्या माहितीसाठी स्टाईल */
 .forecast-row {
   display: flex;
   justify-content: space-between;
@@ -59,6 +59,7 @@ body{
   color:white;
   cursor:pointer;
   font-weight: bold;
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -68,7 +69,7 @@ body{
 <div class="header">🌦 आजचं हवामान</div>
 
 <div class="card" id="todayCard">
-  <h3>⏳ लोकेशन शोधत आहे...</h3>
+  <h3 id="statusText">⏳ लोकेशन शोधत आहे...</h3>
 </div>
 
 <div class="card" id="forecastCard" style="display:none">
@@ -76,7 +77,8 @@ body{
   <div id="forecastData"></div>
 </div>
 
-<button class="btn" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
+<button class="btn" onclick="requestLocation()">🔄 लोकेशन रिफ्रेश करा</button>
+<button class="btn" style="background:#555;" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
 
 <script>
 const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
@@ -91,33 +93,54 @@ function goBack(){
   window.location.href = "home.html";
 }
 
+// १. पेज लोड झाल्यावर आणि 'रिफ्रेश' बटण दाबल्यावर लोकेशन विचारणे
 window.onload = () => {
-    // कॅशमधून लोकेशन तपासणे (स्पीड वाढवण्यासाठी)
-    const savedLat = localStorage.getItem("userLat");
-    const savedLon = localStorage.getItem("userLon");
-
-    if (savedLat && savedLon) {
-        fetchWeatherData(savedLat, savedLon);
-    }
-    
-    // नवीन लोकेशन अपडेट करणे (एकदाच परवानगी विचारेल)
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            localStorage.setItem("userLat", lat);
-            localStorage.setItem("userLon", lon);
-            fetchWeatherData(lat, lon);
-        },
-        err => {
-            if(!savedLat) document.getElementById("todayCard").innerHTML = "<h3>📍 कृपया लोकेशन सुरू करा</h3>";
-        },
-        { enableHighAccuracy: false, timeout: 10000 }
-    );
+    requestLocation();
 };
 
+function requestLocation() {
+    document.getElementById("statusText").innerHTML = "⏳ लोकेशन शोधत आहे...";
+    
+    // २. Android App ला लोकेशन परवानगी मागण्यास भाग पाडणारा विशेष कोड
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                localStorage.setItem("userLat", lat);
+                localStorage.setItem("userLon", lon);
+                fetchWeatherData(lat, lon);
+            },
+            err => {
+                handleLocationError(err);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    } else {
+        document.getElementById("statusText").innerHTML = "❌ लोकेशन सपोर्ट नाही.";
+    }
+}
+
+function handleLocationError(error) {
+    let msg = "";
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            msg = "📍 लोकेशन परवानगी नाकारली आहे. कृपया मोबाईल सेटिंगमधून 'Permission Allow' करा.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            msg = "📍 लोकेशन माहिती उपलब्ध नाही.";
+            break;
+        case error.TIMEOUT:
+            msg = "📍 लोकेशन शोधण्यात वेळ लागत आहे. इंटरनेट सुरू आहे का तपासा.";
+            break;
+        default:
+            msg = "📍 लोकेशनमध्ये त्रुटी आली आहे.";
+            break;
+    }
+    document.getElementById("statusText").innerHTML = `<span style="color:red; font-size:14px;">${msg}</span>`;
+}
+
 function fetchWeatherData(lat, lon) {
-    // आजचे हवामान
     fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
@@ -136,12 +159,10 @@ function fetchWeatherData(lat, lon) {
         }
       });
 
-    // ५ दिवसांचे हवामान अंदाज
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
         const dailyData = {};
-        // प्रत्येक दिवसाचा फक्त एक रिपोर्ट निवडणे (दुपारी १२ चा)
         data.list.forEach(item => {
             const date = new Date(item.dt * 1000).toLocaleDateString('mr-IN', {weekday: 'long'});
             if (!dailyData[date] && Object.keys(dailyData).length < 5) {
@@ -166,10 +187,11 @@ function fetchWeatherData(lat, lon) {
 }
 
 function speakMarathi(text){
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "mr-IN";
-  msg.rate = 1;
-  speechSynthesis.speak(msg);
+  if("speechSynthesis" in window) {
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "mr-IN";
+    speechSynthesis.speak(msg);
+  }
 }
 </script>
 
