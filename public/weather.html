@@ -4,46 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>आजचं हवामान - Smart Sheti</title>
-<style>
-    body{ font-family: Arial, sans-serif; background:#e8f5e9; padding:20px; display:flex; flex-direction:column; align-items:center; }
-    .header{ font-size:26px; font-weight:bold; color:#2e7d32; margin-bottom:18px; }
-    .card{ width:100%; max-width:360px; background:#ffffff; padding:18px; border-radius:16px; margin-bottom:16px; box-shadow:0 4px 10px rgba(0,0,0,0.08); box-sizing: border-box; }
-    .card h3{ margin:0 0 10px; color:#1b5e20; }
-    
-    /* Custom Popup Style */
-    #locationModal {
-        display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
-    }
-    .modal-content {
-        background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 320px;
-        text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-    .modal-btn {
-        padding: 10px 25px; margin: 10px; border: none; border-radius: 10px;
-        font-weight: bold; cursor: pointer;
-    }
-    .btn-allow { background: #2e7d32; color: white; }
-    .btn-deny { background: #f44336; color: white; }
 
-    .btn-back { width:100%; max-width:360px; padding:18px; border:none; border-radius:14px; background:#1565c0; color:white; font-weight: bold; }
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#e8f5e9;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  font-size:26px;
+  font-weight:bold;
+  color:#2e7d32;
+  margin-bottom:18px;
+}
+
+.card{
+  width:100%;
+  max-width:360px;
+  background:#ffffff;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  box-sizing: border-box;
+}
+
+.card h3{
+  margin:0 0 10px;
+  color:#1b5e20;
+}
+
+.forecast-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.forecast-row:last-child { border-bottom: none; }
+
+.btn{
+  width:100%;
+  max-width:360px;
+  padding:18px;
+  font-size:18px;
+  border:none;
+  border-radius:14px;
+  background:#1565c0;
+  color:white;
+  cursor:pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
 </style>
 </head>
-<body>
 
-<div id="locationModal">
-    <div class="modal-content">
-        <h3 style="color:#2e7d32;">📍 लोकेशन परवानगी</h3>
-        <p>तुमच्या गावातील अचूक हवामान पाहण्यासाठी कृपया लोकेशनची परवानगी द्या.</p>
-        <button class="modal-btn btn-allow" onclick="grantPermission()">परवानगी द्या</button>
-        <button class="modal-btn btn-deny" onclick="denyPermission()">नको</button>
-    </div>
-</div>
+<body>
 
 <div class="header">🌦 आजचं हवामान</div>
 
 <div class="card" id="todayCard">
-  <h3 id="statusText">पॉप-अप मध्ये परवानगी द्या...</h3>
+  <h3 id="statusText">⏳ लोकेशन शोधत आहे...</h3>
 </div>
 
 <div class="card" id="forecastCard" style="display:none">
@@ -51,56 +77,69 @@
   <div id="forecastData"></div>
 </div>
 
-<button class="btn-back" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
+<button class="btn" style="background:#555;" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
 
 <script>
 const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
 let hasSpoken = false;
 
-function goBack(){
-    if("speechSynthesis" in window) speechSynthesis.cancel();
-    window.location.href = "home.html";
+function stopVoice(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
-// १. पेज उघडताच आमचा कस्टम पॉप-अप दाखवा
+function goBack(){
+  stopVoice();
+  window.location.href = "home.html";
+}
+
+// पेज लोड झाल्यावर आपोआप लोकेशन शोधणे
 window.onload = () => {
-    document.getElementById("locationModal").style.display = "flex";
+    requestLocation();
 };
 
-// २. युजरने 'परवानगी द्या' क्लिक केल्यावर
-function grantPermission() {
-    document.getElementById("locationModal").style.display = "none";
+function requestLocation() {
     document.getElementById("statusText").innerHTML = "⏳ लोकेशन शोधत आहे...";
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             pos => {
-                fetchWeatherData(pos.coords.latitude, pos.coords.longitude);
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                localStorage.setItem("userLat", lat);
+                localStorage.setItem("userLon", lon);
+                fetchWeatherData(lat, lon);
             },
             err => {
-                // जर GPS फेल झाला तर बॅकअप म्हणून IP वापरणे (तात्काळ रिझल्टसाठी)
-                fetchLocationByIP();
+                handleLocationError(err);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { 
+                enableHighAccuracy: true, 
+                timeout: 30000, 
+                maximumAge: 0 
+            }
         );
     } else {
-        fetchLocationByIP();
+        document.getElementById("statusText").innerHTML = "❌ लोकेशन सपोर्ट नाही.";
     }
 }
 
-// ३. युजरने 'नको' क्लिक केल्यावर (तरीही आपण IP वरून अंदाज दाखवू शकतो किंवा मेसेज देऊ शकतो)
-function denyPermission() {
-    document.getElementById("locationModal").style.display = "none";
-    document.getElementById("statusText").innerHTML = "📍 तुम्ही परवानगी नाकारली आहे. IP लोकेशन वापरत आहे...";
-    fetchLocationByIP();
-}
-
-function fetchLocationByIP() {
-    fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-            fetchWeatherData(data.latitude, data.longitude);
-        });
+function handleLocationError(error) {
+    let msg = "";
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            msg = "📍 लोकेशन परवानगी नाकारली आहे. कृपया सेटिंगमधून परवानगी द्या.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            msg = "📍 लोकेशन माहिती उपलब्ध नाही. कृपया GPS सुरू करा.";
+            break;
+        case error.TIMEOUT:
+            msg = "📍 लोकेशन शोधण्यात वेळ लागत आहे.";
+            break;
+        default:
+            msg = "📍 लोकेशनमध्ये त्रुटी आली आहे.";
+            break;
+    }
+    document.getElementById("statusText").innerHTML = `<span style="color:red; font-size:14px;">${msg}</span>`;
 }
 
 function fetchWeatherData(lat, lon) {
@@ -115,17 +154,16 @@ function fetchWeatherData(lat, lon) {
           💧 आर्द्रता: ${data.main.humidity}%<br>
           🌥 हवामान: ${desc}
         `;
+
         if(!hasSpoken){
           speakMarathi(`आज ${data.name} येथे हवामान ${desc} आहे.`);
           hasSpoken = true;
         }
       });
 
-    // ५ दिवसांचे अंदाज
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
-        let html = "";
         const dailyData = {};
         data.list.forEach(item => {
             const date = new Date(item.dt * 1000).toLocaleDateString('mr-IN', {weekday: 'long'});
@@ -133,13 +171,17 @@ function fetchWeatherData(lat, lon) {
                 dailyData[date] = item;
             }
         });
+
+        let html = "";
         for (const day in dailyData) {
             const item = dailyData[day];
-            html += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-                        <span><b>${day}</b></span>
-                        <span>${item.weather[0].description}</span>
-                        <span style="color:#1565c0;"><b>${Math.round(item.main.temp)}°C</b></span>
-                    </div>`;
+            html += `
+                <div class="forecast-row">
+                    <span style="font-weight:bold; width:80px;">${day}</span>
+                    <span style="color:#555; flex-grow:1; text-align:center;">${item.weather[0].description}</span>
+                    <span style="font-weight:bold; color:#1565c0;">${Math.round(item.main.temp)}°C</span>
+                </div>
+            `;
         }
         document.getElementById("forecastCard").style.display = "block";
         document.getElementById("forecastData").innerHTML = html;
@@ -154,5 +196,6 @@ function speakMarathi(text){
   }
 }
 </script>
+
 </body>
 </html>
