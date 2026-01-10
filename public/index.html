@@ -1,35 +1,6 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-      authDomain: "smart-sheti-6512e.firebaseapp.com",
-      projectId: "smart-sheti-6512e",
-      storageBucket: "smart-sheti-6512e.firebasestorage.app",
-      messagingSenderId: "1086459599128",
-      appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.replace("home.html");
-      } else {
-        document.body.style.display = "flex";
-      }
-    });
-  </script>
-
-  <style>
-    body { display: none; }
-  </style>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Sheti - Login</title>
@@ -40,14 +11,17 @@
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        /* १. सुरुवातीला लॉगिन पेज पूर्णपणे लपवून ठेवण्यासाठी */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
             height: 100vh;
-            display: flex;
+            display: none; /* फायरबेस चेक होईपर्यंत लपवलेले */
             justify-content: center;
             align-items: center;
         }
+        
         .box {
             background: #ffffff;
             width: 350px;
@@ -65,7 +39,8 @@
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
-<body>
+
+<body id="loginBody">
 
 <div class="box">
     <div style="display: flex; justify-content: center; margin-bottom: 15px;">
@@ -120,9 +95,14 @@ const provider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence);
 
+// २. लॉगिन चेक आणि पेज विजिबिलिटी कंट्रोल
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    // युजर लॉगिन असेल तर थेट होमवर पाठवा
     window.location.replace("home.html");
+  } else {
+    // युजर लॉगिन नसेल तरच लॉगिन पेज दाखवा
+    document.getElementById("loginBody").style.display = "flex";
   }
 });
 
@@ -147,7 +127,7 @@ document.getElementById("loginBtn").onclick = () => {
 
   signInWithEmailAndPassword(auth, email, password)
     .then(() => window.location.replace("home.html"))
-    .catch(err => alert(err.message));
+    .catch(err => alert("लॉगिन अयशस्वी: " + err.message));
 };
 
 document.getElementById("forgotBtn").onclick = () => {
