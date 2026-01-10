@@ -34,11 +34,6 @@
   --header-bg: #ffffff;
   --text-color: #2e7d32;
 }
-body.dark-theme {
-  --bg-color: #121212;
-  --header-bg: #1e1e1e;
-  --text-color: #81c784;
-}
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: var(--bg-color);
@@ -47,7 +42,7 @@ body {
 }
 .header {
   max-width: 400px;
-  margin: auto;
+  margin: 0 auto 20px auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -56,39 +51,20 @@ body {
   border-radius: 18px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
-.logo {
-  font-size: 22px;
-  font-weight: bold;
-  color: var(--text-color);
-}
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
+.logo { font-size: 22px; font-weight: bold; color: var(--text-color); }
+.header-actions { display: flex; gap: 12px; }
 .action-circle {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  background: white;
-  border: 1.5px solid #2e7d32;
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; cursor: pointer; background: white; border: 1.5px solid #2e7d32;
 }
 .btn {
-  width: 100%;
-  max-width: 300px;
-  margin: 10px auto;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  color: white;
-  display: block;
-  text-align: center;
+  width: 100%; max-width: 320px; margin: 10px auto;
+  padding: 14px; border: none; border-radius: 12px;
+  font-size: 16px; color: white; display: block; text-align: center;
+  text-decoration: none; font-weight: bold; cursor: pointer;
 }
+/* Colors */
 .weather-btn { background: #1565c0; }
 .spray-btn { background: #00796b; }
 .ai-btn { background: #2e7d32; }
@@ -111,30 +87,31 @@ body {
 </div>
 
 <button class="btn weather-btn" onclick="location.href='weather.html'">🌦 आजचं हवामान</button>
-<button class="btn spray-btn" onclick="checkWeatherForSpray()">🚿 फवारणी सल्ला</button>
+<button class="btn spray-btn" onclick="alert('हवामान तपासत आहे...')">🚿 फवारणी सल्ला</button>
 <button class="btn ai-btn" onclick="location.href='ai.html'">🤖 AI सल्ला</button>
 <button class="btn ai-btn" onclick="location.href='disease.html'">📸 रोग ओळख</button>
-<button class="btn" 
-        style="background:#1565c0; color:white;"
-        onclick="location.href='community.html'">
-🤝 गाव चर्चा
-<button onclick="location.href='farmer-card.html'" style="width:100%; max-width:300px; margin:10px auto; padding:14px; border:none; border-radius:12px; font-size:16px; font-weight:bold; background:#FFD700; color:#000; display:block; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+<button class="btn weather-btn" onclick="location.href='community.html'">🤝 गाव चर्चा</button>
+
+<button onclick="location.href='farmer-card.html'" style="width:100%; max-width:320px; margin:10px auto; padding:14px; border:none; border-radius:12px; font-size:16px; font-weight:bold; background:#FFD700; color:#000; display:block; box-shadow:0 4px 10px rgba(0,0,0,0.2); cursor:pointer;">
     🪪 शेतकरी कार्ड तयार करा
 </button>
   
-  
-  
 <button class="btn ai-btn" onclick="location.href='crop-calendar.html'">🌱 पीक वेळापत्रक</button>
 <button class="btn notify-btn" onclick="location.href='news.html'">📰 शेती बातम्या</button>
-
 <button class="btn market-btn" onclick="window.open('https://www.krushikranti.com/bajarbhav','_blank')">📈 आजचे बाजारभाव</button>
-
 <button class="btn calc-btn" onclick="location.href='calculator.html'">🧪 खत कॅल्क्युलेटर</button>
 <button class="btn schedule-btn" onclick="location.href='spray-schedule.html'">🚜 फवारणी वेळापत्रक</button>
-
 <button class="btn satbara-btn" onclick="window.open('https://digitalsatbara.mahabhumi.gov.in/','_blank')">📄 डिजिटल सातबारा / ८अ</button>
 <button class="btn" onclick="window.open('https://pmfby.gov.in/', '_blank')" style="background:#607d8b;">📑 पीक विमा स्टेटस</button>
 <button class="btn" onclick="window.open('https://pmkisan.gov.in/BeneficiaryStatus_New.aspx', '_blank')" style="background:#546e7a;">💸 PM-Kisan हप्ता चेक</button>
+
+<div id="updateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; width:85%; max-width:320px; padding:25px; border-radius:20px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <h3 style="margin-top:0; color:#2e7d32; font-size:22px;">नवीन अपडेट! 🚀</h3>
+        <p style="color:#555; font-size:15px; line-height:1.5;">आम्ही ॲपमध्ये काही सुधारणा केल्या आहेत. नवीन बदल पाहण्यासाठी खालील बटणावर क्लिक करा.</p>
+        <button onclick="closeUpdatePopup()" style="width:100%; padding:14px; background:#2e7d32; color:white; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">आता वापरून पहा</button>
+    </div>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -158,83 +135,42 @@ body {
 </script>
 
 <script>
-  function checkWeatherForSpray() {
-    alert("हवामान तपासत आहे...");
-  }
-</script>
-  <div id="updateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; width:80%; max-width:300px; padding:20px; border-radius:15px; text-align:center; font-family:sans-serif;">
-        <h3 style="margin-top:0; color:#2e7d32;">नवीन अपडेट उपलब्ध! 🚀</h3>
-        <p id="updateMsg" style="color:#555; font-size:14px;">आम्ही तुमच्यासाठी काही नवीन फीचर्स जोडले आहेत. आताच अपडेट करा!</p>
-        <button onclick="closeUpdate()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">आता वापरून पहा</button>
-    </div>
-</div>
-
-<script>
-    // १. तुमचे सध्याचे ॲप व्हर्जन
-    const currentVersion = "1.0"; 
-
-    // २. भविष्यात तुम्ही फक्त ही खालची लिंक बदलली की सर्वांना मेसेज जाईल
-    // ही लिंक तुमच्या GitHub वरील एका छोट्या version.json फाईलची असेल
-    async function checkUpdate() {
+    // १. ऑटोमॅटिक अपडेट लॉजिक (Vercel Last-Modified तपासेल)
+    async function checkAutoUpdate() {
         try {
-            // उदाहरणार्थ: तुमच्या व्हर्जन फाईलची लिंक
-            // तूर्तास मी मॅन्युअली चेक दाखवत आहे
-            const latestVersion = "1.1"; // भविष्यात हे तुम्ही GitHub वरून बदलाल
-
-            if (latestVersion > currentVersion) {
-                document.getElementById("updateModal").style.display = "flex";
-            }
-        } catch (error) {
-            console.log("Update check failed");
-        }
-    }
-
-    function closeUpdate() {
-        document.getElementById("updateModal").style.display = "none";
-        // एकदा मेसेज दाखवला की पुन्हा पुन्हा त्रास नको म्हणून सेव्ह करा
-        localStorage.setItem("lastUpdateShown", "1.1");
-    }
-
-    // ॲप उघडल्यावर २ सेकंदाने चेक करा
-    setTimeout(checkUpdate, 2000);
-</script>
-  <script>
-  // होम पेजवरून बॅक बटण दाबल्यावर लॉगिन पेजवर जाणे ब्लॉक करा
-  (function() {
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = function() {
-      window.history.go(1);
-    };
-  })();
-  </script>
-  <script>
-    // आधीचा जो काही कोड असेल तो इथे राहू द्या...
-
-    // आता हा नवीन 'ऑटोमॅटिक अपडेट' कोड इथे पेस्ट करा
-    window.onload = async () => {
-        try {
-            const response = await fetch(window.location.href, { method: 'HEAD' });
+            const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
             const lastModifiedOnServer = response.headers.get('Last-Modified');
             const lastSeenUpdate = localStorage.getItem("last_seen_update");
 
-            if (lastModifiedOnServer && lastSeenUpdate !== lastModifiedOnServer) {
+            if (lastModifiedOnServer && lastSeenUpdate && lastSeenUpdate !== lastModifiedOnServer) {
                 document.getElementById("updateModal").style.display = "flex";
+            }
+            
+            // पहिली वेळ असेल तर वेळ सेव्ह करा
+            if(!lastSeenUpdate) {
+                localStorage.setItem("last_seen_update", lastModifiedOnServer);
             }
 
             window.closeUpdatePopup = function() {
                 localStorage.setItem("last_seen_update", lastModifiedOnServer);
                 document.getElementById("updateModal").style.display = "none";
-                location.reload(true);
+                location.reload(true); // नवीन फाईल्स फोर्स रिफ्रेश करा
             };
         } catch (error) {
             console.log("Update check failed", error);
         }
-    };
+    }
+
+    window.addEventListener('load', checkAutoUpdate);
+
+    // २. बॅक बटण डिसेबल करणे
+    (function() {
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function() {
+            window.history.go(1);
+        };
+    })();
 </script>
 
 </body>
-</html>
-
-  </body>
 </html>
