@@ -208,5 +208,33 @@ body {
     };
   })();
   </script>
+  <script>
+    // आधीचा जो काही कोड असेल तो इथे राहू द्या...
+
+    // आता हा नवीन 'ऑटोमॅटिक अपडेट' कोड इथे पेस्ट करा
+    window.onload = async () => {
+        try {
+            const response = await fetch(window.location.href, { method: 'HEAD' });
+            const lastModifiedOnServer = response.headers.get('Last-Modified');
+            const lastSeenUpdate = localStorage.getItem("last_seen_update");
+
+            if (lastModifiedOnServer && lastSeenUpdate !== lastModifiedOnServer) {
+                document.getElementById("updateModal").style.display = "flex";
+            }
+
+            window.closeUpdatePopup = function() {
+                localStorage.setItem("last_seen_update", lastModifiedOnServer);
+                document.getElementById("updateModal").style.display = "none";
+                location.reload(true);
+            };
+        } catch (error) {
+            console.log("Update check failed", error);
+        }
+    };
+</script>
+
+</body>
+</html>
+
   </body>
 </html>
