@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Home</title>
 
+<script>
+  if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+  }
+</script>
+
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -64,7 +70,6 @@ body {
   font-size: 16px; color: white; display: block; text-align: center;
   text-decoration: none; font-weight: bold; cursor: pointer;
 }
-/* Colors */
 .weather-btn { background: #1565c0; }
 .spray-btn { background: #00796b; }
 .ai-btn { background: #2e7d32; }
@@ -135,7 +140,7 @@ body {
 </script>
 
 <script>
-    // १. ऑटोमॅटिक अपडेट लॉजिक (Vercel Last-Modified तपासेल)
+    // १. ऑटोमॅटिक अपडेट लॉजिक
     async function checkAutoUpdate() {
         try {
             const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
@@ -145,8 +150,6 @@ body {
             if (lastModifiedOnServer && lastSeenUpdate && lastSeenUpdate !== lastModifiedOnServer) {
                 document.getElementById("updateModal").style.display = "flex";
             }
-            
-            // पहिली वेळ असेल तर वेळ सेव्ह करा
             if(!lastSeenUpdate) {
                 localStorage.setItem("last_seen_update", lastModifiedOnServer);
             }
@@ -154,20 +157,30 @@ body {
             window.closeUpdatePopup = function() {
                 localStorage.setItem("last_seen_update", lastModifiedOnServer);
                 document.getElementById("updateModal").style.display = "none";
-                location.reload(true); // नवीन फाईल्स फोर्स रिफ्रेश करा
+                location.reload(true);
             };
         } catch (error) {
-            console.log("Update check failed", error);
+            console.log("Update check failed");
         }
     }
 
     window.addEventListener('load', checkAutoUpdate);
 
-    // २. बॅक बटण डिसेबल करणे
+    // २. दुरुस्त केलेले बॅक बटन आणि एक्झिट लॉजिक
     (function() {
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function() {
-            window.history.go(1);
+            // कंफर्मेशन विचारणे
+            let exitApp = confirm("तुम्हाला स्मार्ट शेती ॲपमधून बाहेर पडायचे आहे का?");
+            if (exitApp) {
+                // जर 'Yes' दाबलं तर बाहेर जा
+                window.history.back(); 
+                // Appilix साठी खालचा कोड काम करतो
+                if (navigator.app) { navigator.app.exitApp(); }
+            } else {
+                // जर 'No' दाबलं तर इथेच राहा
+                window.history.pushState(null, null, window.location.href);
+            }
         };
     })();
 </script>
