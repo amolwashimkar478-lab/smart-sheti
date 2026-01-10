@@ -4,23 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>आजचं हवामान - Smart Sheti</title>
+
 <style>
-    body{ font-family: Arial, sans-serif; background:#e8f5e9; padding:20px; display:flex; flex-direction:column; align-items:center; }
-    .header{ font-size:26px; font-weight:bold; color:#2e7d32; margin-bottom:18px; }
-    .card{ width:100%; max-width:360px; background:#ffffff; padding:18px; border-radius:16px; margin-bottom:16px; box-shadow:0 4px 10px rgba(0,0,0,0.08); box-sizing: border-box; }
-    .card h3{ margin:0 0 10px; color:#1b5e20; }
-    .forecast-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-    .btn-back { width:100%; max-width:360px; padding:18px; border:none; border-radius:14px; background:#1565c0; color:white; font-weight: bold; cursor:pointer; }
-    .loading-spinner { color: #555; font-size: 14px; margin-top: 10px; }
+body{
+  font-family: Arial, sans-serif;
+  background:#e8f5e9;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  font-size:26px;
+  font-weight:bold;
+  color:#2e7d32;
+  margin-bottom:18px;
+}
+
+.card{
+  width:100%;
+  max-width:360px;
+  background:#ffffff;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  box-sizing: border-box;
+}
+
+.card h3{
+  margin:0 0 10px;
+  color:#1b5e20;
+}
+
+.forecast-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.forecast-row:last-child { border-bottom: none; }
+
+.btn{
+  width:100%;
+  max-width:360px;
+  padding:18px;
+  font-size:18px;
+  border:none;
+  border-radius:14px;
+  background:#1565c0;
+  color:white;
+  cursor:pointer;
+  font-weight: bold;
+}
 </style>
 </head>
+
 <body>
 
 <div class="header">🌦 आजचं हवामान</div>
 
 <div class="card" id="todayCard">
   <h3 id="statusText">⏳ तुमचे लोकेशन शोधत आहे...</h3>
-  <p id="loadingHint" style="font-size: 12px; color: #666;">(कृपया वर 'Allow' वर क्लिक करा किंवा GPS सुरू ठेवा)</p>
+  <p id="subStatus" style="font-size: 13px; color: #666;">कृपया वर येणाऱ्या 'Allow' बटणावर क्लिक करा.</p>
 </div>
 
 <div class="card" id="forecastCard" style="display:none">
@@ -28,57 +77,71 @@
   <div id="forecastData"></div>
 </div>
 
-<button class="btn-back" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
+<button class="btn" onclick="goBack()">⬅️ मुख्य पेजवर जा</button>
 
 <script>
 const API_KEY = "f24d69cb16d56c33b2bb58ff57f3ea6e";
 let hasSpoken = false;
 
+function stopVoice(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+}
+
 function goBack(){
-    if("speechSynthesis" in window) speechSynthesis.cancel();
-    window.location.href = "home.html";
+  stopVoice();
+  window.location.href = "home.html";
 }
 
 window.onload = () => {
-    getPerfectLocation();
-};
+    // १. कॅशमधून जुने लोकेशन तपासा
+    const savedLat = localStorage.getItem("userLat");
+    const savedLon = localStorage.getItem("userLon");
 
-function getPerfectLocation() {
+    if (savedLat && savedLon) {
+        fetchWeatherData(savedLat, savedLon);
+    }
+    
+    // २. नवीन अचूक लोकेशनसाठी विनंती (पॉप-अप विचारेल)
     if (navigator.geolocation) {
-        // High Accuracy मुळे ॲपला गावाचं अचूक लोकेशन मिळतं
         navigator.geolocation.getCurrentPosition(
             pos => {
-                document.getElementById("loadingHint").style.display = "none";
-                fetchWeatherData(pos.coords.latitude, pos.coords.longitude);
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                localStorage.setItem("userLat", lat);
+                localStorage.setItem("userLon", lon);
+                document.getElementById("subStatus").style.display = "none";
+                fetchWeatherData(lat, lon);
             },
             err => {
-                console.log("GPS Failed, Using IP Backup");
-                fetchLocationByIP(); // जर GPS बंद असेल तर IP वरून जिल्हा दाखवेल
+                handleLocationError(err, savedLat);
             },
             { 
                 enableHighAccuracy: true, // गावासाठी हे अत्यंत गरजेचे आहे
-                timeout: 10000, 
+                timeout: 15000, 
                 maximumAge: 0 
             }
         );
     } else {
-        fetchLocationByIP();
+        document.getElementById("statusText").innerHTML = "❌ लोकेशन सपोर्ट नाही.";
+    }
+};
+
+function handleLocationError(error, hasCache) {
+    let msg = "";
+    if (error.code === 1) {
+        msg = "📍 परवानगी नाकारली! कृपया सेटिंगमध्ये जाऊन लोकेशन सुरू करा.";
+    } else {
+        msg = "📍 लोकेशन शोधण्यात अडचण येत आहे. इंटरनेट/GPS तपासा.";
+    }
+    
+    if(!hasCache) {
+        document.getElementById("statusText").innerHTML = `<span style="color:red; font-size:16px;">${msg}</span>`;
+        document.getElementById("subStatus").style.display = "none";
     }
 }
 
-function fetchLocationByIP() {
-    document.getElementById("loadingHint").innerText = "(GPS बंद आहे, इंटरनेटवरून शोधत आहे...)";
-    fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-            fetchWeatherData(data.latitude, data.longitude);
-        })
-        .catch(e => {
-            document.getElementById("statusText").innerHTML = "❌ लोकेशन सापडले नाही.";
-        });
-}
-
 function fetchWeatherData(lat, lon) {
+    // आजचे हवामान
     fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
@@ -90,6 +153,7 @@ function fetchWeatherData(lat, lon) {
           💧 आर्द्रता: ${data.main.humidity}%<br>
           🌥 हवामान: ${desc}
         `;
+
         if(!hasSpoken){
           speakMarathi(`आज ${data.name} येथे हवामान ${desc} आहे.`);
           hasSpoken = true;
@@ -100,7 +164,6 @@ function fetchWeatherData(lat, lon) {
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=mr&appid=${API_KEY}`)
       .then(res=>res.json())
       .then(data=>{
-        let html = "";
         const dailyData = {};
         data.list.forEach(item => {
             const date = new Date(item.dt * 1000).toLocaleDateString('mr-IN', {weekday: 'long'});
@@ -108,13 +171,17 @@ function fetchWeatherData(lat, lon) {
                 dailyData[date] = item;
             }
         });
+
+        let html = "";
         for (const day in dailyData) {
             const item = dailyData[day];
-            html += `<div class="forecast-row">
-                        <span><b>${day}</b></span>
-                        <span style="color:#444;">${item.weather[0].description}</span>
-                        <span style="color:#1565c0;"><b>${Math.round(item.main.temp)}°C</b></span>
-                    </div>`;
+            html += `
+                <div class="forecast-row">
+                    <span style="font-weight:bold; width:80px;">${day}</span>
+                    <span style="color:#555; flex-grow:1; text-align:center;">${item.weather[0].description}</span>
+                    <span style="font-weight:bold; color:#1565c0;">${Math.round(item.main.temp)}°C</span>
+                </div>
+            `;
         }
         document.getElementById("forecastCard").style.display = "block";
         document.getElementById("forecastData").innerHTML = html;
@@ -125,9 +192,11 @@ function speakMarathi(text){
   if("speechSynthesis" in window) {
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "mr-IN";
+    msg.rate = 1;
     speechSynthesis.speak(msg);
   }
 }
 </script>
+
 </body>
 </html>
