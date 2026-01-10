@@ -7,6 +7,7 @@
 
 <script>
   if (window.history.replaceState) {
+      // बॅक गेल्यावर इतिहासामध्ये लॉगिन पेज न ठेवता थेट होम पेजच ठेवा
       window.history.replaceState(null, null, window.location.href);
   }
 </script>
@@ -134,8 +135,12 @@ body {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  // २. फायरबेस चेक (होम पेजवर)
   onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.replace("index.html");
+    if (!user) {
+      // जर युजर चुकून लॉगआउट झाला असेल तरच इंडेक्सवर पाठवा
+      window.location.replace("index.html");
+    }
   });
 </script>
 
