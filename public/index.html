@@ -11,17 +11,14 @@
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        /* १. सुरुवातीला लॉगिन पेज पूर्णपणे लपवून ठेवण्यासाठी */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
             height: 100vh;
-            display: none; /* फायरबेस चेक होईपर्यंत लपवलेले */
+            display: none; 
             justify-content: center;
             align-items: center;
         }
-        
         .box {
             background: #ffffff;
             width: 350px;
@@ -50,22 +47,14 @@
                  style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     </div>
-
     <h2>Smart Sheti</h2>
-
     <input id="email" type="email" placeholder="ईमेल पत्ता">
     <input id="password" type="password" placeholder="पासवर्ड">
-
     <button class="btn-login" id="loginBtn">लॉगिन करा</button>
-
     <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
     <br>
-    <div class="link" onclick="location.href='signup.html'">
-        नवीन वापरकर्ता? नोंदणी करा
-    </div>
-
+    <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
     <hr>
-
     <button class="btn-google" id="googleBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
         Google सह पुढे जा
@@ -95,13 +84,10 @@ const provider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence);
 
-// २. लॉगिन चेक आणि पेज विजिबिलिटी कंट्रोल
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // युजर लॉगिन असेल तर थेट होमवर पाठवा
     window.location.replace("home.html");
   } else {
-    // युजर लॉगिन नसेल तरच लॉगिन पेज दाखवा
     document.getElementById("loginBody").style.display = "flex";
   }
 });
@@ -119,12 +105,10 @@ document.getElementById("googleBtn").onclick = () => {
 document.getElementById("loginBtn").onclick = () => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-
   if (!email || !password) {
     alert("कृपया ईमेल आणि पासवर्ड टाका");
     return;
   }
-
   signInWithEmailAndPassword(auth, email, password)
     .then(() => window.location.replace("home.html"))
     .catch(err => alert("लॉगिन अयशस्वी: " + err.message));
@@ -136,20 +120,10 @@ document.getElementById("forgotBtn").onclick = () => {
     alert("आधी ईमेल टाका");
     return;
   }
-
   sendPasswordResetEmail(auth, email)
     .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे"))
     .catch(err => alert(err.message));
 };
 </script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js');
-  });
-}
-</script>
-
 </body>
 </html>
