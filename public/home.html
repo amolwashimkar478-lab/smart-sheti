@@ -10,13 +10,7 @@
   if (window.history.replaceState) {
       window.history.replaceState(null, null, window.location.href);
   }
-  
-  // एक बनावट इतिहास तयार करणे जेणेकरून 'No' दाबल्यावर ॲप बंद होणार नाही
-  window.history.pushState(null, null, window.location.href);
-  window.onpopstate = function() {
-      window.history.pushState(null, null, window.location.href);
-  };
-</script>
+  </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
