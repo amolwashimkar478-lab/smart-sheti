@@ -4,21 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Sheti - Login</title>
+
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2e7d32">
-    <link rel="manifest" href="/manifest.json" />
+
+    <!-- FIX: relative path -->
+    <link rel="manifest" href="manifest.json" />
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
             height: 100vh;
-            display: none; 
+            display: flex; /* FIX */
             justify-content: center;
             align-items: center;
         }
+
         .box {
             background: #ffffff;
             width: 350px;
@@ -27,34 +32,90 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
         }
-        h2 { color: #2e7d32; margin-bottom: 20px; font-size: 24px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; font-size: 16px; font-weight: bold; border: none; cursor: pointer; }
-        .btn-login { background: #2e7d32; color: white; }
-        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .link { font-size: 14px; color: #2e7d32; cursor: pointer; margin-top: 10px; display: inline-block; }
-        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+
+        h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-login {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-google {
+            background: white;
+            color: #444;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .link {
+            font-size: 14px;
+            color: #2e7d32;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 
-<body id="loginBody">
+<body>
 
 <div class="box">
-    <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-        <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid #2e7d32; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-            <img src="https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/refs/heads/main/public/icon-512.png" 
-                 alt="Logo" 
-                 style="width: 100%; height: 100%; object-fit: cover;">
+    <div style="display:flex; justify-content:center; margin-bottom:15px;">
+        <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #2e7d32;">
+            <img src="https://raw.githubusercontent.com/amolwashimkar478-lab/smart-sheti/refs/heads/main/public/icon-512.png"
+                 style="width:100%;height:100%;object-fit:cover;">
         </div>
     </div>
+
     <h2>Smart Sheti</h2>
+
     <input id="email" type="email" placeholder="ईमेल पत्ता">
     <input id="password" type="password" placeholder="पासवर्ड">
+
     <button class="btn-login" id="loginBtn">लॉगिन करा</button>
+
     <div class="link" id="forgotBtn">पासवर्ड विसरलात?</div>
     <br>
-    <div class="link" onclick="location.href='signup.html'">नवीन वापरकर्ता? नोंदणी करा</div>
+    <div class="link" onclick="location.href='signup.html'">
+        नवीन वापरकर्ता? नोंदणी करा
+    </div>
+
     <hr>
+
     <button class="btn-google" id="googleBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
         Google सह पुढे जा
@@ -64,9 +125,14 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult,
-  signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged,
-  setPersistence, browserLocalPersistence
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -84,46 +150,46 @@ const provider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence);
 
+/* SINGLE redirect logic (SAFE) */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.replace("home.html");
-  } else {
-    document.getElementById("loginBody").style.display = "flex";
   }
 });
 
-getRedirectResult(auth).then((result) => {
-  if (result && result.user) {
-    window.location.replace("home.html");
-  }
-});
-
+/* Google login */
 document.getElementById("googleBtn").onclick = () => {
   signInWithRedirect(auth, provider);
 };
 
+/* Email login */
 document.getElementById("loginBtn").onclick = () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = email.value;
+  const password = password.value;
+
   if (!email || !password) {
     alert("कृपया ईमेल आणि पासवर्ड टाका");
     return;
   }
+
   signInWithEmailAndPassword(auth, email, password)
     .then(() => window.location.replace("home.html"))
     .catch(err => alert("लॉगिन अयशस्वी: " + err.message));
 };
 
+/* Password reset */
 document.getElementById("forgotBtn").onclick = () => {
-  const email = document.getElementById("email").value;
-  if (!email) {
+  const emailVal = email.value;
+  if (!emailVal) {
     alert("आधी ईमेल टाका");
     return;
   }
-  sendPasswordResetEmail(auth, email)
+
+  sendPasswordResetEmail(auth, emailVal)
     .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे"))
     .catch(err => alert(err.message));
 };
 </script>
+
 </body>
 </html>
