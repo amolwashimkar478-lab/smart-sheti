@@ -115,7 +115,6 @@ input, select {
 .btn-logout { background: #ff9800; color: white; }
 .btn-delete { background: #f44336; color: white; }
 
-/* नवीन Toast Notification Style */
 #toast {
     visibility: hidden;
     min-width: 200px;
@@ -130,7 +129,6 @@ input, select {
     bottom: 50px;
     transform: translateX(-50%);
     font-size: 14px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 #toast.show {
@@ -150,7 +148,7 @@ input, select {
     अ‍ॅप सेटिंग
 </div>
 
-<div id="toast">माहिती साठवली ✅</div>
+<div id="toast"></div>
 
 <div class="container">
 <div class="card">
@@ -160,7 +158,7 @@ input, select {
     </div>
 
     <input type="file" id="fileInput" hidden accept="image/*">
-    <input type="text" id="userNameInput" placeholder="तुमचं नाव टाका" disabled>
+    <input type="text" id="userNameInput" placeholder="तुमचं नाव टाका" readonly>
 
     <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
     <button class="btn btn-save" id="saveBtn">सेव्ह (Save)</button>
@@ -204,89 +202,90 @@ const firebaseConfig = {
   appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+initializeApp(firebaseConfig);
+const auth = getAuth();
 
-/* TOAST FUNCTION */
-function showToast(msg) {
-    const x = document.getElementById("toast");
-    x.innerText = msg;
-    x.className = "show";
-    setTimeout(() => { x.className = x.className.replace("show", ""); }, 2500);
+/* ELEMENTS */
+const userNameInput = document.getElementById('userNameInput');
+const editBtn = document.getElementById('editBtn');
+const saveBtn = document.getElementById('saveBtn');
+const profilePic = document.getElementById('profilePic');
+const toast = document.getElementById('toast');
+
+/* TOAST */
+function showToast(msg){
+    toast.innerText = msg;
+    toast.className = "show";
+    setTimeout(()=>toast.className="", 2500);
 }
 
 /* LOAD */
-const loadData = () => {
+document.addEventListener("DOMContentLoaded", ()=>{
     const theme = localStorage.getItem("appTheme") || "light";
-    document.getElementById('themeSelect').value = theme;
-    if (theme === "dark") document.body.classList.add("dark-theme");
-
-    document.getElementById('langSelect').value = localStorage.getItem("appLang") || "mr";
-
-    const img = localStorage.getItem("userPhoto");
-    if (img) document.getElementById('profilePic').src = img;
-
-    const savedName = localStorage.getItem("userName");
-    if (savedName) document.getElementById('userNameInput').value = savedName;
-};
-
-document.addEventListener("DOMContentLoaded", loadData);
+    document.body.classList.toggle("dark-theme", theme==="dark");
+    themeSelect.value = theme;
+    langSelect.value = localStorage.getItem("appLang") || "mr";
+    if(localStorage.getItem("userPhoto")) profilePic.src = localStorage.getItem("userPhoto");
+    if(localStorage.getItem("userName")) userNameInput.value = localStorage.getItem("userName");
+});
 
 /* EDIT */
-document.getElementById('editBtn').onclick = () => {
-    userNameInput.disabled = false;
+editBtn.onclick = ()=>{
+    userNameInput.readOnly = false;
     userNameInput.focus();
-    editBtn.style.display = "none";
-    saveBtn.style.display = "block";
+    editBtn.style.display="none";
+    saveBtn.style.display="block";
 };
 
 /* SAVE */
-document.getElementById('saveBtn').onclick = () => {
-    if (!userNameInput.value.trim()) { return; }
-    localStorage.setItem("userName", userNameInput.value);
-    userNameInput.disabled = true;
-    saveBtn.style.display = "none";
-    editBtn.style.display = "block";
-    showToast("माहिती साठवली ✅"); // नवीन मेसेज पद्धत
+saveBtn.onclick = ()=>{
+    if(!userNameInput.value.trim()){
+        showToast("नाव टाका ❗");
+        return;
+    }
+    localStorage.setItem("userName", userNameInput.value.trim());
+    userNameInput.readOnly = true;
+    saveBtn.style.display="none";
+    editBtn.style.display="block";
+    showToast("माहिती साठवली ✅");
 };
 
 /* PHOTO */
-document.getElementById('fileInput').onchange = e => {
+fileInput.onchange = e=>{
     const r = new FileReader();
-    r.onload = () => {
+    r.onload=()=>{
         localStorage.setItem("userPhoto", r.result);
         profilePic.src = r.result;
-        showToast("प्रोफाईल फोटो अपडेट झाला 📸");
+        showToast("फोटो अपडेट झाला 📸");
     };
     r.readAsDataURL(e.target.files[0]);
 };
 
 /* THEME */
-document.getElementById('themeSelect').onchange = (e) => {
-    const val = e.target.value;
-    localStorage.setItem("appTheme", val);
-    document.body.classList.toggle("dark-theme", val === "dark");
+themeSelect.onchange = e=>{
+    localStorage.setItem("appTheme", e.target.value);
+    document.body.classList.toggle("dark-theme", e.target.value==="dark");
     showToast("थीम बदलली ✨");
 };
 
 /* LANGUAGE */
-document.getElementById('langSelect').onchange = (e) => {
+langSelect.onchange = e=>{
     localStorage.setItem("appLang", e.target.value);
     showToast("भाषा बदलली 🌐");
 };
 
 /* LOGOUT */
-document.getElementById('logoutBtn').onclick = () => {
-    if (confirm("लॉगआउट करायचे आहे का?")) {
-        signOut(auth).then(() => location.replace("index.html"));
+logoutBtn.onclick = ()=>{
+    if(confirm("लॉगआउट करायचे आहे का?")){
+        signOut(auth).then(()=>location.replace("index.html"));
     }
 };
 
 /* DELETE */
-document.getElementById('deleteBtn').onclick = () => {
-    onAuthStateChanged(auth, user => {
-        if (user && confirm("खाते हटवायचे आहे का?")) {
-            deleteUser(user).then(() => location.replace("index.html"));
+deleteBtn.onclick = ()=>{
+    onAuthStateChanged(auth, user=>{
+        if(user && confirm("खाते हटवायचे आहे का?")){
+            deleteUser(user).then(()=>location.replace("index.html"));
         }
     });
 };
