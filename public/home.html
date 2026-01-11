@@ -5,62 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Home</title>
 
-<!-- ✅ OneSignal (SAFE) -->
+<!-- ✅ OneSignal SAFE -->
 <script>
-  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-    var s = document.createElement("script");
-    s.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
-    s.defer = true;
-    document.head.appendChild(s);
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  var s=document.createElement("script");
+  s.src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
+  s.defer=true;
+  document.head.appendChild(s);
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-        notifyButton: { enable: false },
-        allowLocalhostAsSecureOrigin: true
-      });
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId:"fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+      notifyButton:{enable:false},
+      allowLocalhostAsSecureOrigin:true
     });
-  }
+  });
+}
 </script>
 
 <style>
-:root {
-  --bg-color: #e8f5e9;
-  --header-bg: #ffffff;
-  --text-color: #2e7d32;
-}
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: var(--bg-color);
-  margin: 0; padding: 20px;
-}
-.header {
-  max-width: 400px; margin: 0 auto 20px auto;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px; background: var(--header-bg);
-  border-radius: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-.logo { font-size: 22px; font-weight: bold; color: var(--text-color); }
-.header-actions { display: flex; gap: 12px; }
-.action-circle {
-  width: 42px; height: 42px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; cursor: pointer;
-  background: white; border: 1.5px solid #2e7d32;
-}
-.btn {
-  width: 100%; max-width: 320px; margin: 10px auto;
-  padding: 14px; border: none; border-radius: 12px;
-  font-size: 16px; color: white; display: block;
-  font-weight: bold; cursor: pointer;
-}
-.weather-btn { background: #1565c0; }
-.ai-btn { background: #2e7d32; }
-.notify-btn { background: #ef6c00; }
-.calc-btn { background: linear-gradient(135deg,#2e7d32,#43a047); }
-.schedule-btn { background: linear-gradient(135deg,#ef6c00,#fb8c00); }
-.satbara-btn { background: linear-gradient(135deg,#004d40,#00695c); }
+:root { --bg:#e8f5e9; --head:#fff; --green:#2e7d32; }
+body{font-family:'Segoe UI';background:var(--bg);margin:0;padding:20px;}
+.header{max-width:400px;margin:auto  auto 20px;display:flex;justify-content:space-between;align-items:center;
+background:var(--head);padding:16px;border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.15);}
+.logo{font-size:22px;font-weight:bold;color:var(--green);}
+.header-actions{display:flex;gap:12px;}
+.action-circle{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+font-size:20px;background:#fff;border:1.5px solid var(--green);cursor:pointer;}
+.btn{width:100%;max-width:320px;margin:10px auto;padding:14px;border:none;border-radius:12px;
+font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
+.weather-btn{background:#1565c0;}
+.spray-btn{background:#00796b;}
+.ai-btn{background:#2e7d32;}
+.notify-btn{background:#ef6c00;}
+.market-btn{background:#2e7d32;}
+.calc-btn{background:linear-gradient(135deg,#2e7d32,#43a047);}
+.schedule-btn{background:linear-gradient(135deg,#ef6c00,#fb8c00);}
+.satbara-btn{background:linear-gradient(135deg,#004d40,#00695c);}
 </style>
 </head>
 
@@ -75,55 +57,56 @@ body {
 </div>
 
 <button class="btn weather-btn" onclick="location.href='weather.html'">🌦 आजचं हवामान</button>
+<button class="btn spray-btn" onclick="alert('हवामान तपासत आहे...')">🚿 फवारणी सल्ला</button>
 <button class="btn ai-btn" onclick="location.href='ai.html'">🤖 AI सल्ला</button>
 <button class="btn ai-btn" onclick="location.href='disease.html'">📸 रोग ओळख</button>
-<button class="btn ai-btn" onclick="location.href='community.html'">🤝 गाव चर्चा</button>
+<button class="btn weather-btn" onclick="location.href='community.html'">🤝 गाव चर्चा</button>
 
+<button class="btn" style="background:#FFD700;color:#000"
+ onclick="location.href='farmer-card.html'">🪪 शेतकरी कार्ड तयार करा</button>
+
+<button class="btn ai-btn" onclick="location.href='crop-calendar.html'">🌱 पीक वेळापत्रक</button>
 <button class="btn notify-btn" onclick="location.href='news.html'">📰 शेती बातम्या</button>
+
+<button class="btn market-btn"
+ onclick="location.href='https://www.krushikranti.com/bajarbhav'">
+📈 आजचे बाजारभाव</button>
+
 <button class="btn calc-btn" onclick="location.href='calculator.html'">🧪 खत कॅल्क्युलेटर</button>
 <button class="btn schedule-btn" onclick="location.href='spray-schedule.html'">🚜 फवारणी वेळापत्रक</button>
 
 <button class="btn satbara-btn"
  onclick="location.href='https://digitalsatbara.mahabhumi.gov.in/'">
-📄 डिजिटल सातबारा / ८अ
-</button>
+📄 डिजिटल सातबारा / ८अ</button>
 
 <button class="btn" style="background:#607d8b"
- onclick="location.href='https://pmfby.gov.in/'">
-📑 पीक विमा स्टेटस
-</button>
+ onclick="location.href='https://pmfby.gov.in/'">📑 पीक विमा स्टेटस</button>
 
 <button class="btn" style="background:#546e7a"
  onclick="location.href='https://pmkisan.gov.in/BeneficiaryStatus_New.aspx'">
-💸 PM-Kisan हप्ता चेक
-</button>
+💸 PM-Kisan हप्ता चेक</button>
 
-<!-- ✅ Firebase Auth SAFE -->
+<!-- ✅ Firebase SAFE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-  authDomain: "smart-sheti-6512e.firebaseapp.com",
-  projectId: "smart-sheti-6512e",
-  storageBucket: "smart-sheti-6512e.firebasestorage.app",
-  messagingSenderId: "1086459599128",
-  appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
-};
+const app=initializeApp({
+ apiKey:"AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+ authDomain:"smart-sheti-6512e.firebaseapp.com",
+ projectId:"smart-sheti-6512e",
+ storageBucket:"smart-sheti-6512e.firebasestorage.app",
+ messagingSenderId:"1086459599128",
+ appId:"1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+});
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-let authChecked = false;
-
-onAuthStateChanged(auth, (user) => {
-  if (!authChecked) {
-    authChecked = true;
-    if (!user) {
-      location.replace("index.html");
-    }
-  }
+const auth=getAuth(app);
+let checked=false;
+onAuthStateChanged(auth,u=>{
+ if(!checked){
+  checked=true;
+  if(!u) location.replace("index.html");
+ }
 });
 </script>
 
