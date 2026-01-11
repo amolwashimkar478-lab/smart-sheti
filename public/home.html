@@ -6,10 +6,16 @@
 <title>Smart Sheti - Home</title>
 
 <script>
+  // १. लॉगिन फ्लॅश रोखण्यासाठी आणि Appilix च्या 'No' बटणासाठी बॅकग्राउंड लॉजिक
   if (window.history.replaceState) {
-      // बॅक गेल्यावर इतिहासामध्ये लॉगिन पेज न ठेवता थेट होम पेजच ठेवा
       window.history.replaceState(null, null, window.location.href);
   }
+  
+  // एक बनावट इतिहास तयार करणे जेणेकरून 'No' दाबल्यावर ॲप बंद होणार नाही
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function() {
+      window.history.pushState(null, null, window.location.href);
+  };
 </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -44,19 +50,13 @@
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: var(--bg-color);
-  margin: 0;
-  padding: 20px;
+  margin: 0; padding: 20px;
 }
 .header {
-  max-width: 400px;
-  margin: 0 auto 20px auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: var(--header-bg);
-  border-radius: 18px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  max-width: 400px; margin: 0 auto 20px auto;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px; background: var(--header-bg);
+  border-radius: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 .logo { font-size: 22px; font-weight: bold; color: var(--text-color); }
 .header-actions { display: flex; gap: 12px; }
@@ -83,7 +83,6 @@ body {
 </head>
 
 <body>
-
 <div class="header">
   <div class="logo">🌾 Smart Sheti</div>
   <div class="header-actions">
@@ -114,7 +113,7 @@ body {
 <div id="updateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
     <div style="background:white; width:85%; max-width:320px; padding:25px; border-radius:20px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
         <h3 style="margin-top:0; color:#2e7d32; font-size:22px;">नवीन अपडेट! 🚀</h3>
-        <p style="color:#555; font-size:15px; line-height:1.5;">आम्ही ॲपमध्ये काही सुधारणा केल्या आहेत. नवीन बदल पाहण्यासाठी खालील बटणावर क्लिक करा.</p>
+        <p style="color:#555; font-size:15px; line-height:1.5;">आम्ही ॲपमध्ये काही सुधारणा केल्या आहेत.</p>
         <button onclick="closeUpdatePopup()" style="width:100%; padding:14px; background:#2e7d32; color:white; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">आता वापरून पहा</button>
     </div>
 </div>
@@ -135,40 +134,32 @@ body {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // २. फायरबेस चेक (होम पेजवर)
   onAuthStateChanged(auth, (user) => {
     if (!user) {
-      // जर युजर चुकून लॉगआउट झाला असेल तरच इंडेक्सवर पाठवा
       window.location.replace("index.html");
     }
   });
 </script>
 
 <script>
-    // १. ऑटोमॅटिक अपडेट लॉजिक
     async function checkAutoUpdate() {
         try {
             const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
             const lastModifiedOnServer = response.headers.get('Last-Modified');
             const lastSeenUpdate = localStorage.getItem("last_seen_update");
-
             if (lastModifiedOnServer && lastSeenUpdate && lastSeenUpdate !== lastModifiedOnServer) {
                 document.getElementById("updateModal").style.display = "flex";
             }
             if(!lastSeenUpdate) {
                 localStorage.setItem("last_seen_update", lastModifiedOnServer);
             }
-
             window.closeUpdatePopup = function() {
                 localStorage.setItem("last_seen_update", lastModifiedOnServer);
                 document.getElementById("updateModal").style.display = "none";
                 location.reload(true);
             };
-        } catch (error) {
-            console.log("Update check failed");
-        }
+        } catch (error) { console.log("Update check failed"); }
     }
-
     window.addEventListener('load', checkAutoUpdate);
 </script>
 </body>
