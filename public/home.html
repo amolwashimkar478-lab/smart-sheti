@@ -5,7 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Sheti - Home</title>
 
-<!-- ✅ OneSignal SAFE -->
+<script>
+  // लॉगिन फ्लॅश पूर्णपणे थांबवण्यासाठी
+  if (!sessionStorage.getItem("isLoggedIn")) {
+      document.documentElement.style.display = 'none';
+      window.location.replace("index.html");
+  }
+
+  // इतिहासामध्ये लॉगिन पेज न ठेवता थेट होम पेजच ठेवणे
+  if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+  }
+
+  // Appilix 'No' बटण फिक्स (बनावट इतिहास तयार करणे)
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function() {
+      window.history.pushState(null, null, window.location.href);
+  };
+</script>
+
 <script>
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   var s=document.createElement("script");
@@ -86,7 +104,6 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
  onclick="location.href='https://pmkisan.gov.in/BeneficiaryStatus_New.aspx'">
 💸 PM-Kisan हप्ता चेक</button>
 
-<!-- ✅ Firebase SAFE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -108,6 +125,16 @@ onAuthStateChanged(auth,u=>{
   if(!u) location.replace("index.html");
  }
 });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Home: Service Worker Registered!'))
+        .catch(err => console.log('Home: Service Worker Failed!', err));
+    });
+  }
 </script>
 
 </body>
