@@ -9,7 +9,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2e7d32">
 
-    <!-- FIX: relative path -->
     <link rel="manifest" href="manifest.json" />
 
     <style>
@@ -19,7 +18,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
             height: 100vh;
-            display: flex; /* FIX */
+            display: none; /* सुरुवातीला लपवून ठेवा, JS ठरवेल काय करायचे */
             justify-content: center;
             align-items: center;
         }
@@ -33,65 +32,17 @@
             text-align: center;
         }
 
-        h2 {
-            color: #2e7d32;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-login {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .btn-google {
-            background: white;
-            color: #444;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .link {
-            font-size: 14px;
-            color: #2e7d32;
-            cursor: pointer;
-            margin-top: 10px;
-            display: inline-block;
-        }
-
-        hr {
-            margin: 20px 0;
-            border: 0;
-            border-top: 1px solid #eee;
-        }
+        h2 { color: #2e7d32; margin-bottom: 20px; font-size: 24px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; font-size: 16px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-login { background: #2e7d32; color: white; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .link { font-size: 14px; color: #2e7d32; cursor: pointer; margin-top: 10px; display: inline-block; }
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
 
-<body>
+<body id="loginBody">
 
 <div class="box">
     <div style="display:flex; justify-content:center; margin-bottom:15px;">
@@ -128,6 +79,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -150,9 +102,21 @@ const provider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence);
 
-/* SINGLE redirect logic (SAFE) */
+/* १. लॉगिन चेक लॉजिक (Flash रोखण्यासाठी) */
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    sessionStorage.setItem("isLoggedIn", "true");
+    window.location.replace("home.html");
+  } else {
+    sessionStorage.removeItem("isLoggedIn");
+    document.getElementById("loginBody").style.display = "flex";
+  }
+});
+
+/* Google Redirect रिझल्ट चेक */
+getRedirectResult(auth).then((result) => {
+  if (result && result.user) {
+    sessionStorage.setItem("isLoggedIn", "true");
     window.location.replace("home.html");
   }
 });
@@ -164,22 +128,25 @@ document.getElementById("googleBtn").onclick = () => {
 
 /* Email login */
 document.getElementById("loginBtn").onclick = () => {
-  const email = email.value;
-  const password = password.value;
+  const emailVal = document.getElementById("email").value;
+  const passVal = document.getElementById("password").value;
 
-  if (!email || !password) {
+  if (!emailVal || !passVal) {
     alert("कृपया ईमेल आणि पासवर्ड टाका");
     return;
   }
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => window.location.replace("home.html"))
+  signInWithEmailAndPassword(auth, emailVal, passVal)
+    .then(() => {
+        sessionStorage.setItem("isLoggedIn", "true");
+        window.location.replace("home.html");
+    })
     .catch(err => alert("लॉगिन अयशस्वी: " + err.message));
 };
 
 /* Password reset */
 document.getElementById("forgotBtn").onclick = () => {
-  const emailVal = email.value;
+  const emailVal = document.getElementById("email").value;
   if (!emailVal) {
     alert("आधी ईमेल टाका");
     return;
@@ -189,6 +156,16 @@ document.getElementById("forgotBtn").onclick = () => {
     .then(() => alert("पासवर्ड रिसेट लिंक पाठवली आहे"))
     .catch(err => alert(err.message));
 };
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker Registered!', reg))
+        .catch(err => console.log('Service Worker Registration Failed!', err));
+    });
+  }
 </script>
 
 </body>
