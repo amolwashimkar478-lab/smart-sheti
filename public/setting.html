@@ -1,294 +1,294 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings - Smart Sheti</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text-main: #1a1a1a;
+            --text-sub: #757575;
+            --border: #eceff1;
+        }
 
-<style>
-:root {
-    --green-main: #2e7d32;
-    --bg-body: #f0f2f5;
-    --card-bg: #ffffff;
-    --text-color: #333;
-    --input-bg: #eeeeee;
-}
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
 
-body.dark-theme {
-    --bg-body: #121212;
-    --card-bg: #1e1e1e;
-    --text-color: #ffffff;
-    --input-bg: #333333;
-}
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: var(--bg-body);
-    color: var(--text-color);
-    margin: 0;
-    transition: 0.3s;
-}
+        .back-link {
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 24px;
+            margin-right: 20px;
+        }
 
-.header {
-    background-color: var(--green-main);
-    color: white;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    font-size: 20px;
-    font-weight: bold;
-}
+        .top-bar h2 {
+            font-size: 18px;
+            margin: 0;
+            font-weight: 600;
+        }
 
-.back-btn {
-    margin-right: 15px;
-    text-decoration: none;
-    color: white;
-}
+        /* Profile Section */
+        .profile-header {
+            background: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-.container { padding: 15px; }
+        .avatar-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+        }
 
-.card {
-    background-color: var(--card-bg);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    text-align: center;
-}
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            padding: 3px;
+        }
 
-.profile-section {
-    position: relative;
-    display: inline-block;
-}
+        .edit-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            font-size: 14px;
+        }
 
-.avatar {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    border: 3px solid var(--green-main);
-    object-fit: cover;
-}
+        /* Settings List */
+        .settings-group {
+            background: white;
+            margin-bottom: 20px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
 
-.cam-icon {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: var(--green-main);
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-}
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
 
-input, select {
-    width: 100%;
-    background-color: var(--input-bg);
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 12px;
-    margin: 10px 0;
-    font-size: 16px;
-    color: var(--text-color);
-    box-sizing: border-box;
-}
+        .setting-item:last-child { border-bottom: none; }
 
-.label-group { text-align: left; margin-bottom: 15px; }
-.label-text { font-weight: bold; }
+        .item-info label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
 
-.btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 5px;
-    cursor: pointer;
-}
+        .item-info input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: var(--text-main);
+            padding: 0;
+            width: 100%;
+            background: transparent;
+        }
 
-.btn-edit { background: #555; color: white; }
-.btn-save { background: var(--green-main); color: white; display: none; }
-.btn-logout { background: #ff9800; color: white; }
-.btn-delete { background: #f44336; color: white; }
+        .item-info input:read-only { color: #555; }
 
-#toast {
-    visibility: hidden;
-    min-width: 200px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 50px;
-    padding: 12px;
-    position: fixed;
-    z-index: 1000;
-    left: 50%;
-    bottom: 50px;
-    transform: translateX(-50%);
-    font-size: 14px;
-}
+        /* Buttons */
+        .btn-container {
+            padding: 0 20px;
+            margin-top: 20px;
+        }
 
-#toast.show {
-    visibility: visible;
-    animation: fadein 0.5s, fadeout 0.5s 2s;
-}
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
 
-@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 50px; opacity: 1;} }
-@keyframes fadeout { from {bottom: 50px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-</style>
+        .btn-save { background: var(--primary); color: white; display: none; }
+        .btn-edit { background: #e8f5e9; color: var(--primary); }
+        .btn-logout { background: white; color: #d32f2f; border: 1px solid #ffcdd2; }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="header">
-    <a href="home.html" class="back-btn">←</a>
-    अ‍ॅप सेटिंग
+<div class="top-bar">
+    <a href="home.html" class="back-link">←</a>
+    <h2>प्रोफाइल सेटिंग</h2>
 </div>
 
-<div id="toast"></div>
-
-<div class="container">
-<div class="card">
-    <div class="profile-section" onclick="fileInput.click()">
+<div class="profile-header">
+    <div class="avatar-wrapper" onclick="document.getElementById('fileInput').click()">
         <img id="profilePic" src="https://via.placeholder.com/150" class="avatar">
-        <div class="cam-icon">📷</div>
+        <div class="edit-badge">📷</div>
     </div>
-
     <input type="file" id="fileInput" hidden accept="image/*">
-    <input type="text" id="userNameInput" placeholder="तुमचं नाव टाका" readonly>
-
-    <button class="btn btn-edit" id="editBtn">एडिट (Edit)</button>
-    <button class="btn btn-save" id="saveBtn">सेव्ह (Save)</button>
+    <h3 id="displayUserName" style="margin:10px 0 5px; font-size:20px;">शेतकरी नाव</h3>
+    <p style="color:var(--text-sub); font-size:14px; margin:0;">स्मार्ट शेती प्रोफाइल</p>
 </div>
 
-<div class="card">
-    <div class="label-group">
-        <div class="label-text">🌐 भाषा</div>
-        <select id="langSelect">
-            <option value="mr">मराठी</option>
-            <option value="hi">हिंदी</option>
-            <option value="en">English</option>
-        </select>
+<div class="settings-group">
+    <div class="setting-item">
+        <div class="item-info">
+            <label>पूर्ण नाव</label>
+            <input type="text" id="userName" placeholder="तुमचे नाव" readonly>
+        </div>
     </div>
-
-    <div class="label-group">
-        <div class="label-text">🎨 थीम</div>
-        <select id="themeSelect">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-        </select>
+    <div class="setting-item">
+        <div class="item-info">
+            <label>गाव</label>
+            <input type="text" id="userVillage" placeholder="गावाचे नाव" readonly>
+        </div>
+    </div>
+    <div class="setting-item">
+        <div class="item-info">
+            <label>मुख्य पीक</label>
+            <input type="text" id="userCrop" placeholder="उदा. कापूस, सोयाबीन" readonly>
+        </div>
     </div>
 </div>
 
-<div class="card">
-    <button class="btn btn-logout" id="logoutBtn">बाहेर पडा (Logout)</button>
-    <button class="btn btn-delete" id="deleteBtn">खाते हटवा (Delete)</button>
+<div class="btn-container">
+    <button class="btn btn-edit" id="editBtn">प्रोफाइल एडिट करा</button>
+    <button class="btn btn-save" id="saveBtn">माहिती सेव्ह करा</button>
+    <button class="btn btn-logout" id="logoutBtn">लॉगआउट</button>
 </div>
-</div>
+
+<div id="toast">माहिती अपडेट झाली! ✅</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signOut, deleteUser, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
-  authDomain: "smart-sheti-6512e.firebaseapp.com",
-  projectId: "smart-sheti-6512e",
-  storageBucket: "smart-sheti-6512e.firebasestorage.app",
-  messagingSenderId: "1086459599128",
-  appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
-};
-
-initializeApp(firebaseConfig);
-const auth = getAuth();
-
-/* ELEMENTS */
-const userNameInput = document.getElementById('userNameInput');
-const editBtn = document.getElementById('editBtn');
-const saveBtn = document.getElementById('saveBtn');
-const profilePic = document.getElementById('profilePic');
-const toast = document.getElementById('toast');
-
-/* TOAST */
-function showToast(msg){
-    toast.innerText = msg;
-    toast.className = "show";
-    setTimeout(()=>toast.className="", 2500);
-}
-
-/* LOAD */
-document.addEventListener("DOMContentLoaded", ()=>{
-    const theme = localStorage.getItem("appTheme") || "light";
-    document.body.classList.toggle("dark-theme", theme==="dark");
-    themeSelect.value = theme;
-    langSelect.value = localStorage.getItem("appLang") || "mr";
-    if(localStorage.getItem("userPhoto")) profilePic.src = localStorage.getItem("userPhoto");
-    if(localStorage.getItem("userName")) userNameInput.value = localStorage.getItem("userName");
-});
-
-/* EDIT */
-editBtn.onclick = ()=>{
-    userNameInput.readOnly = false;
-    userNameInput.focus();
-    editBtn.style.display="none";
-    saveBtn.style.display="block";
-};
-
-/* SAVE */
-saveBtn.onclick = ()=>{
-    if(!userNameInput.value.trim()){
-        showToast("नाव टाका ❗");
-        return;
-    }
-    localStorage.setItem("userName", userNameInput.value.trim());
-    userNameInput.readOnly = true;
-    saveBtn.style.display="none";
-    editBtn.style.display="block";
-    showToast("माहिती साठवली ✅");
-};
-
-/* PHOTO */
-fileInput.onchange = e=>{
-    const r = new FileReader();
-    r.onload=()=>{
-        localStorage.setItem("userPhoto", r.result);
-        profilePic.src = r.result;
-        showToast("फोटो अपडेट झाला 📸");
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+      authDomain: "smart-sheti-6512e.firebaseapp.com",
+      projectId: "smart-sheti-6512e",
+      storageBucket: "smart-sheti-6512e.firebasestorage.app",
+      messagingSenderId: "1086459599128",
+      appId: "1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
     };
-    r.readAsDataURL(e.target.files[0]);
-};
 
-/* THEME */
-themeSelect.onchange = e=>{
-    localStorage.setItem("appTheme", e.target.value);
-    document.body.classList.toggle("dark-theme", e.target.value==="dark");
-    showToast("थीम बदलली ✨");
-};
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-/* LANGUAGE */
-langSelect.onchange = e=>{
-    localStorage.setItem("appLang", e.target.value);
-    showToast("भाषा बदलली 🌐");
-};
+    const inputs = ['userName', 'userVillage', 'userCrop'];
+    const fields = {};
+    inputs.forEach(id => fields[id] = document.getElementById(id));
+    
+    const profilePic = document.getElementById('profilePic');
+    const displayUserName = document.getElementById('displayUserName');
+    const editBtn = document.getElementById('editBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const toast = document.getElementById('toast');
 
-/* LOGOUT */
-logoutBtn.onclick = ()=>{
-    if(confirm("लॉगआउट करायचे आहे का?")){
-        signOut(auth).then(()=>location.replace("index.html"));
-    }
-};
+    // लोड डेटा
+    window.onload = () => {
+        inputs.forEach(id => {
+            const val = localStorage.getItem("prof_" + id);
+            if(val) fields[id].value = val;
+        });
+        if(localStorage.getItem("prof_photo")) profilePic.src = localStorage.getItem("prof_photo");
+        if(fields['userName'].value) displayUserName.innerText = fields['userName'].value;
+    };
 
-/* DELETE */
-deleteBtn.onclick = ()=>{
-    onAuthStateChanged(auth, user=>{
-        if(user && confirm("खाते हटवायचे आहे का?")){
-            deleteUser(user).then(()=>location.replace("index.html"));
+    // एडिट मोड
+    editBtn.onclick = () => {
+        inputs.forEach(id => fields[id].readOnly = false);
+        fields['userName'].focus();
+        editBtn.style.display = "none";
+        saveBtn.style.display = "block";
+        inputs.forEach(id => fields[id].style.borderBottom = "1px solid #2e7d32");
+    };
+
+    // सेव्ह डेटा
+    saveBtn.onclick = () => {
+        inputs.forEach(id => {
+            localStorage.setItem("prof_" + id, fields[id].value);
+            fields[id].readOnly = true;
+            fields[id].style.borderBottom = "none";
+        });
+        
+        displayUserName.innerText = fields['userName'].value || "शेतकरी नाव";
+        saveBtn.style.display = "none";
+        editBtn.style.display = "block";
+        
+        toast.style.display = "block";
+        setTimeout(() => toast.style.display = "none", 2000);
+    };
+
+    // फोटो बदलणे
+    document.getElementById('fileInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            profilePic.src = reader.result;
+            localStorage.setItem("prof_photo", reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // लॉगआउट
+    document.getElementById('logoutBtn').onclick = () => {
+        if(confirm("बाहेर पडायचे आहे का?")) {
+            signOut(auth).then(() => {
+                sessionStorage.removeItem("isLoggedIn");
+                window.location.replace("index.html");
+            });
         }
-    });
-};
+    };
 </script>
 
 </body>
