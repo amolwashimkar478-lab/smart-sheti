@@ -14,7 +14,6 @@
             --border: #eceff1;
         }
 
-        /* डार्क थीम व्हेरिएबल्स */
         body.dark-mode {
             --bg: #121212;
             --card: #1e1e1e;
@@ -27,21 +26,16 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             transition: 0.3s;
         }
 
         .top-bar {
             background: var(--card);
             padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: sticky; top: 0; z-index: 100;
         }
 
         .back-link { text-decoration: none; color: var(--text-main); font-size: 24px; }
@@ -49,25 +43,17 @@
         .profile-header {
             background: var(--card);
             padding: 30px 20px;
-            text-align: center;
-            margin-bottom: 10px;
+            text-align: center; margin-bottom: 10px;
         }
 
         .avatar-wrapper {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            margin: 0 auto 15px;
-            cursor: pointer;
+            position: relative; width: 110px; height: 110px;
+            margin: 0 auto 15px; cursor: pointer;
         }
 
         .avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary);
-            padding: 2px;
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; border: 3px solid var(--primary); padding: 2px;
         }
 
         .edit-badge {
@@ -79,10 +65,8 @@
         }
 
         .settings-group {
-            background: var(--card);
-            margin-bottom: 15px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
+            background: var(--card); margin-bottom: 15px;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
         .setting-item {
@@ -91,16 +75,12 @@
         }
 
         .item-info label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
-
         .item-info input {
             border: none; outline: none; font-size: 16px;
             color: var(--text-main); background: transparent; width: 100%;
         }
 
-        /* Toggle Switch for Theme */
-        .switch {
-            position: relative; display: inline-block; width: 45px; height: 24px;
-        }
+        .switch { position: relative; display: inline-block; width: 45px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
@@ -114,7 +94,6 @@
         input:checked + .slider:before { transform: translateX(21px); }
 
         .btn-container { padding: 15px 20px; }
-
         .btn {
             width: 100%; padding: 14px; border-radius: 12px;
             font-size: 16px; font-weight: 600; border: none;
@@ -124,7 +103,7 @@
         .btn-edit { background: #e8f5e9; color: var(--primary); }
         .btn-save { background: var(--primary); color: white; display: none; }
         .btn-logout { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
-        .btn-delete { background: transparent; color: #d32f2f; font-size: 14px; margin-top: 10px; }
+        .btn-delete { background: transparent; color: #d32f2f; font-size: 14px; }
 
         #toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -133,12 +112,12 @@
         }
     </style>
 </head>
-<body id="appBody">
+<body>
 
 <div class="top-bar">
     <a href="home.html" class="back-link">←</a>
     <h2 style="margin:0; font-size: 18px;">प्रोफाइल</h2>
-    <div style="font-size: 14px;">Edit</div>
+    <div style="font-size: 14px; color: var(--primary); font-weight:bold;">Smart Sheti</div>
 </div>
 
 <div class="profile-header">
@@ -148,7 +127,6 @@
     </div>
     <input type="file" id="fileInput" hidden accept="image/*">
     <h3 id="displayUserName" style="margin:10px 0 5px;">शेतकरी नाव</h3>
-    <p style="color:var(--text-sub); font-size:13px; margin:0;">@smartsheti_user</p>
 </div>
 
 <div class="settings-group">
@@ -172,7 +150,7 @@
     </div>
 </div>
 
-<div class="settings-group">
+<div class="settings-group" id="themeGroup">
     <div class="setting-item">
         <div style="font-size:16px;">डार्क मोड (Dark Mode)</div>
         <label class="switch">
@@ -185,8 +163,11 @@
 <div class="btn-container">
     <button class="btn btn-edit" id="editBtn">प्रोफाइल एडिट करा</button>
     <button class="btn btn-save" id="saveBtn">माहिती सेव्ह करा</button>
-    <button class="btn btn-logout" id="logoutBtn">लॉगआउट (Logout)</button>
-    <button class="btn btn-delete" id="deleteBtn">खाते कायमचे हटवा (Delete Account)</button>
+    
+    <div id="dangerZone">
+        <button class="btn btn-logout" id="logoutBtn">लॉगआउट (Logout)</button>
+        <button class="btn btn-delete" id="deleteBtn">खाते कायमचे हटवा (Delete Account)</button>
+    </div>
 </div>
 
 <div id="toast"></div>
@@ -214,51 +195,46 @@
     const userCrop = document.getElementById('userCrop');
     const displayUserName = document.getElementById('displayUserName');
     const profilePic = document.getElementById('profilePic');
-    const fileInput = document.getElementById('fileInput');
     const editBtn = document.getElementById('editBtn');
     const saveBtn = document.getElementById('saveBtn');
+    const dangerZone = document.getElementById('dangerZone');
+    const themeGroup = document.getElementById('themeGroup');
     const themeToggle = document.getElementById('themeToggle');
     const toast = document.getElementById('toast');
 
-    // १. थीम व्यवस्थापन (पेज लोड झाल्यावर)
-    const currentTheme = localStorage.getItem('appTheme');
-    if (currentTheme === 'dark') {
+    // थीम मॅनेजमेंट
+    if (localStorage.getItem('appTheme') === 'dark') {
         document.body.classList.add('dark-mode');
         themeToggle.checked = true;
     }
+    themeToggle.onchange = () => {
+        const theme = themeToggle.checked ? 'dark' : 'light';
+        document.body.classList.toggle('dark-mode', themeToggle.checked);
+        localStorage.setItem('appTheme', theme);
+    };
 
-    themeToggle.addEventListener('change', () => {
-        if (themeToggle.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('appTheme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('appTheme', 'light');
-        }
-    });
-
-    // २. डेटा लोड करणे (Firestore + LocalStorage)
+    // डेटा लोड करणे
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // आधी लोकल डेटा दाखवा
-            loadLocal();
-            // नंतर Firestore वरून रिफ्रेश करा
-            const docSnap = await getDoc(doc(db, "users", user.uid));
-            if (docSnap.exists()) {
-                const d = docSnap.data();
-                userName.value = d.name || "";
-                userVillage.value = d.village || "";
-                userCrop.value = d.crop || "";
-                if(d.photo) profilePic.src = d.photo;
-                displayUserName.innerText = d.name || "शेतकरी नाव";
-                saveLocal(d.name, d.village, d.crop, d.photo);
-            }
+            loadFromLocal();
+            try {
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    userName.value = d.name || "";
+                    userVillage.value = d.village || "";
+                    userCrop.value = d.crop || "";
+                    if(d.photo) profilePic.src = d.photo;
+                    displayUserName.innerText = d.name || "शेतकरी नाव";
+                    saveToLocal(d.name, d.village, d.crop, d.photo);
+                }
+            } catch(e) { console.log("Firestore load error"); }
         } else {
             window.location.replace("index.html");
         }
     });
 
-    function loadLocal() {
+    function loadFromLocal() {
         userName.value = localStorage.getItem("prof_name") || "";
         userVillage.value = localStorage.getItem("prof_village") || "";
         userCrop.value = localStorage.getItem("prof_crop") || "";
@@ -266,21 +242,26 @@
         displayUserName.innerText = userName.value || "शेतकरी नाव";
     }
 
-    function saveLocal(n, v, c, p) {
+    function saveToLocal(n, v, c, p) {
         localStorage.setItem("prof_name", n);
         localStorage.setItem("prof_village", v);
         localStorage.setItem("prof_crop", c);
         if(p) localStorage.setItem("prof_photo", p);
     }
 
-    // ३. एडिट आणि सेव्ह लॉजिक
+    // ✅ एडिट मोड (बटणे गायब करणे)
     editBtn.onclick = () => {
         [userName, userVillage, userCrop].forEach(i => i.readOnly = false);
         userName.focus();
         editBtn.style.display = "none";
         saveBtn.style.display = "block";
+        
+        // लॉगआउट, डिलीट आणि थीम ऑप्शन गायब करा
+        dangerZone.style.display = "none";
+        themeGroup.style.display = "none";
     };
 
+    // ✅ माहिती सेव्ह करणे (बटणे परत आणणे)
     saveBtn.onclick = async () => {
         const u = auth.currentUser;
         if(!u) return;
@@ -295,29 +276,37 @@
 
         try {
             await setDoc(doc(db, "users", u.uid), data);
-            saveLocal(data.name, data.village, data.crop, data.photo);
+            saveToLocal(data.name, data.village, data.crop, data.photo);
             displayUserName.innerText = data.name;
+            
             [userName, userVillage, userCrop].forEach(i => i.readOnly = true);
             saveBtn.style.display = "none";
             editBtn.style.display = "block";
-            showToast("माहिती अपडेट झाली! ✅");
-        } catch (e) { alert("Error: " + e.message); }
+            
+            // बटणे पुन्हा दाखवा
+            dangerZone.style.display = "block";
+            themeGroup.style.display = "block";
+            
+            showToast("माहिती सुरक्षित साठवली! ✅");
+        } catch (e) { 
+            alert("Permission Error: फायरबेस Rules अपडेट करा!"); 
+        }
     };
 
-    // ४. फोटो अपडेट
-    document.getElementById('profileTrigger').onclick = () => fileInput.click();
-    fileInput.onchange = e => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            profilePic.src = reader.result;
-            localStorage.setItem("prof_photo", reader.result);
+    // फोटो बदलणे
+    document.getElementById('profileTrigger').onclick = () => document.getElementById('fileInput').click();
+    document.getElementById('fileInput').onchange = e => {
+        const r = new FileReader();
+        r.onload = () => {
+            profilePic.src = r.result;
+            localStorage.setItem("prof_photo", r.result);
         };
-        reader.readAsDataURL(e.target.files[0]);
+        r.readAsDataURL(e.target.files[0]);
     };
 
-    // ५. लॉगआउट
+    // लॉगआउट आणि डिलीट
     document.getElementById('logoutBtn').onclick = () => {
-        if(confirm("तुम्ही लॉगआउट करू इच्छिता?")) {
+        if(confirm("लॉगआउट करायचे?")) {
             signOut(auth).then(() => {
                 sessionStorage.removeItem("isLoggedIn");
                 window.location.replace("index.html");
@@ -325,15 +314,13 @@
         }
     };
 
-    // ६. खाते हटवणे (Delete Account)
     document.getElementById('deleteBtn').onclick = () => {
         const user = auth.currentUser;
-        if(user && confirm("सावधान! तुमचे खाते आणि सर्व माहिती कायमची हटवली जाईल. तुम्ही खात्रीने हे करू इच्छिता?")) {
+        if(user && confirm("खाते कायमचे हटवायचे का?")) {
             deleteUser(user).then(() => {
-                localStorage.clear();
-                sessionStorage.clear();
+                localStorage.clear(); sessionStorage.clear();
                 window.location.replace("index.html");
-            }).catch(() => alert("सुरक्षेसाठी, खाते हटवण्यापूर्वी पुन्हा लॉगिन करणे आवश्यक आहे."));
+            }).catch(() => alert("सुरक्षेसाठी पुन्हा लॉगिन करा."));
         }
     };
 
