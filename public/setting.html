@@ -103,7 +103,7 @@
         .btn-edit { background: #e8f5e9; color: var(--primary); }
         .btn-save { background: var(--primary); color: white; display: none; }
         .btn-logout { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
-        .btn-delete { background: transparent; color: #d32f2f; font-size: 14px; }
+        .btn-delete { background: transparent; color: #d32f2f; font-size: 14px; margin-top: 5px; width: 100%; }
 
         #toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -213,7 +213,6 @@
         localStorage.setItem('appTheme', theme);
     };
 
-    // डेटा लोड करणे
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             loadFromLocal();
@@ -228,7 +227,7 @@
                     displayUserName.innerText = d.name || "शेतकरी नाव";
                     saveToLocal(d.name, d.village, d.crop, d.photo);
                 }
-            } catch(e) { console.log("Firestore load error"); }
+            } catch(e) { console.error("Firestore Load Error:", e); }
         } else {
             window.location.replace("index.html");
         }
@@ -249,32 +248,53 @@
         if(p) localStorage.setItem("prof_photo", p);
     }
 
-    // ✅ एडिट मोड (बटणे गायब करणे)
+    // फोटो कॉम्प्रेस फंक्शन (खूप महत्वाचे)
+    async function compressImage(base64Str) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 400; // फोटोची रुंदी कमी करणे
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% क्वालिटी
+            };
+        });
+    }
+
     editBtn.onclick = () => {
         [userName, userVillage, userCrop].forEach(i => i.readOnly = false);
         userName.focus();
         editBtn.style.display = "none";
         saveBtn.style.display = "block";
-        
-        // लॉगआउट, डिलीट आणि थीम ऑप्शन गायब करा
         dangerZone.style.display = "none";
         themeGroup.style.display = "none";
     };
 
-    // ✅ माहिती सेव्ह करणे (बटणे परत आणणे)
     saveBtn.onclick = async () => {
         const u = auth.currentUser;
         if(!u) return;
 
-        const data = {
-            name: userName.value,
-            village: userVillage.value,
-            crop: userCrop.value,
-            photo: profilePic.src,
-            uid: u.uid
-        };
+        saveBtn.innerText = "प्रतीक्षा करा...";
+        saveBtn.disabled = true;
 
         try {
+            // फोटो कॉम्प्रेस करून मगच डेटा तयार करा
+            const compressedPhoto = await compressImage(profilePic.src);
+
+            const data = {
+                name: userName.value,
+                village: userVillage.value,
+                crop: userCrop.value,
+                photo: compressedPhoto,
+                uid: u.uid,
+                lastUpdated: new Date().toISOString()
+            };
+
             await setDoc(doc(db, "users", u.uid), data);
             saveToLocal(data.name, data.village, data.crop, data.photo);
             displayUserName.innerText = data.name;
@@ -282,33 +302,34 @@
             [userName, userVillage, userCrop].forEach(i => i.readOnly = true);
             saveBtn.style.display = "none";
             editBtn.style.display = "block";
-            
-            // बटणे पुन्हा दाखवा
             dangerZone.style.display = "block";
             themeGroup.style.display = "block";
             
             showToast("माहिती सुरक्षित साठवली! ✅");
         } catch (e) { 
-            alert("Permission Error: फायरबेस Rules अपडेट करा!"); 
+            console.error(e);
+            alert("काहीतरी चूक झाली: " + e.message); 
+        } finally {
+            saveBtn.innerText = "माहिती सेव्ह करा";
+            saveBtn.disabled = false;
         }
     };
 
-    // फोटो बदलणे
     document.getElementById('profileTrigger').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('fileInput').onchange = e => {
+        if (!e.target.files[0]) return;
         const r = new FileReader();
-        r.onload = () => {
+        r.onload = async () => {
             profilePic.src = r.result;
-            localStorage.setItem("prof_photo", r.result);
         };
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // लॉगआउट आणि डिलीट
     document.getElementById('logoutBtn').onclick = () => {
         if(confirm("लॉगआउट करायचे?")) {
             signOut(auth).then(() => {
-                sessionStorage.removeItem("isLoggedIn");
+                sessionStorage.clear();
+                localStorage.removeItem("prof_photo"); // सुरक्षेसाठी फोटो काढणे
                 window.location.replace("index.html");
             });
         }
@@ -316,11 +337,11 @@
 
     document.getElementById('deleteBtn').onclick = () => {
         const user = auth.currentUser;
-        if(user && confirm("खाते कायमचे हटवायचे का?")) {
+        if(user && confirm("खाते कायमचे हटवायचे का? सर्व माहिती पुसली जाईल.")) {
             deleteUser(user).then(() => {
                 localStorage.clear(); sessionStorage.clear();
                 window.location.replace("index.html");
-            }).catch(() => alert("सुरक्षेसाठी पुन्हा लॉगिन करा."));
+            }).catch(e => alert("सुरक्षेसाठी पुन्हा लॉगिन करून मगच खाते हटवा."));
         }
     };
 
