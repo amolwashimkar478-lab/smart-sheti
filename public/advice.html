@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>पीक सल्ला</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
+        .advice-card { background: white; border-radius: 20px; padding: 25px; max-width: 500px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
+        .day-tag { background: #00b894; color: white; padding: 6px 18px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+        .advice-content { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 20px; border-radius: 15px; color: #2e7d32; font-size: 18px; line-height: 1.6; text-align: left; }
+        .back-btn { margin-top: 25px; background: #2d3436; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="advice-card">
+    <h2 id="cropTitle" style="color:#2d3436;">लोड होत आहे...</h2>
+    <div class="day-tag" id="dayDisplay">दिवस मोजत आहे...</div>
+    <div class="advice-content">
+        <strong>📢 आजचा सल्ला:</strong><br>
+        <span id="adviceText">कृपया थोडा वेळ थांबा...</span>
+    </div>
+    <button class="back-btn" onclick="location.href='myfarm.html'">🔙 डॅशबोर्डवर परत जा</button>
+</div>
+
+<script>
+    const rules = {
+        "कापूस": { 30: "🌱 खताचा पहिला हप्ता द्या.", 50: "⚠️ बोंडअळीसाठी कामगंध सापळे लावा.", 90: "🌸 पाते गळ रोखण्यासाठी फवारणी करा." },
+        "सोयाबीन": { 20: "🌿 कोळपणी किंवा खुरपणी करून तण नियंत्रण करा.", 45: "🌸 फुलधारणा अवस्था: पाणी द्या.", 75: "🐛 शेंगा पोखरणारी अळी तपासा." },
+        "गहू": { 21: "💧 पहिले पाणी (CRIs) द्या.", 45: "🌾 नत्र खताचा दुसरा हप्ता द्या.", 80: "🌾 दाणे भरताना पाणी कमी पडू देऊ नका." },
+        "हरभरा": { 30: "✂️ जास्त फुटवे फुटण्यासाठी शेंडा खुडा.", 60: "🐛 घाटे अळीसाठी फवारणी करा." },
+        "कांदा": { 45: "🧅 खत द्या आणि खुरपणी करा.", 90: "🌿 मान पडू लागल्यावर पाणी बंद करा." },
+        "हळद": { 90: "🚜 मोठी भरणी (माती चढवणे) करा.", 150: "⚠️ करपा रोगासाठी बुरशीनाशक वापरा." },
+        "कलिंगड": { 30: "🍉 फळ फुगवणीसाठी खते द्या.", 65: "🍉 काढणीची तयारी करा." }
+        // अधिक पिकांचे सल्ले येथे याच पद्धतीने वाढवू शकता...
+    };
+
+    function loadAdvice() {
+        const params = new URLSearchParams(window.location.search);
+        const crop = params.get('crop');
+        const date = params.get('date');
+
+        if(crop && date) {
+            document.getElementById('cropTitle').innerText = "🌾 " + crop;
+            const diff = Math.floor((new Date() - new Date(date)) / 86400000);
+            document.getElementById('dayDisplay').innerText = "लागवडीचा " + (diff < 0 ? 0 : diff) + " वा दिवस";
+
+            let msg = "पिकाचे नियमित निरीक्षण करा आणि आवश्यकतेनुसार पाणी द्या.";
+            if(rules[crop]) {
+                let keys = Object.keys(rules[crop]).map(Number).sort((a,b)=>b-a);
+                let best = keys.find(d => d <= diff);
+                if(best) msg = rules[crop][best];
+            }
+            document.getElementById('adviceText').innerText = msg;
+
+            // महत्त्वाचा दिवस असल्यास नोटिफिकेशन (Browser Only)
+            if(rules[crop] && rules[crop][diff]) {
+                if(Notification.permission === "granted") {
+                    new Notification("शेती सल्ला", {body: crop + ": " + rules[crop][diff]});
+                }
+            }
+        }
+    }
+    window.onload = loadAdvice;
+</script>
+</body>
+</html>
