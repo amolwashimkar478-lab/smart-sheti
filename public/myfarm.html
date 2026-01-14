@@ -1,6 +1,37 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
+    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+<script>
+  window.OneSignal = window.OneSignal || [];
+  OneSignal.push(function() {
+    OneSignal.init({
+      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
+      safari_web_id: "", // जर असेल तर टाका, अन्यथा रिकामे ठेवा
+      notifyButton: {
+        enable: true, // उजव्या कोपऱ्यात नोटिफिकेशनची छोटी घंटा दिसेल
+      },
+      allowLocalhostAsSecureOrigin: true,
+    });
+    
+    // युजरला सबस्क्राईब करण्यासाठी प्रॉम्प्ट दाखवणे
+    OneSignal.showNativePrompt();
+  });
+
+  // पिकाचा सल्ला पुश करण्यासाठी फंक्शन
+  function sendOneSignalNotification(cropName, message) {
+    OneSignal.push(function() {
+      OneSignal.sendSelfNotification(
+        "🌾 शेती सल्ला: " + cropName,
+        message,
+        null,
+        null,
+        { "en": message }
+      );
+    });
+  }
+</script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>माझा शेती डॅशबोर्ड</title>
