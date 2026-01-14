@@ -3,129 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>स्मार्ट शेतकरी - ऑटो अलर्ट</title>
+    <title>माझा शेती डॅशबोर्ड</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --whatsapp-green: #25D366; --dark-green: #075E54; }
-        body { font-family: 'Arial', sans-serif; background: #e5ddd5; margin: 0; padding: 10px; }
-        .app-bar { background: var(--dark-green); color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-radius: 0 0 15px 15px; margin-bottom: 15px; }
-        .add-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .crop-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--whatsapp-green); box-shadow: 0 1px 3px rgba(0,0,0,0.2); position: relative; }
-        .crop-name { font-size: 18px; font-weight: bold; color: var(--dark-green); }
-        .advice-msg { background: #dcf8c6; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; position: relative; }
-        .advice-msg::after { content: ''; position: absolute; left: -10px; top: 10px; border-width: 5px 10px 5px 0; border-style: solid; border-color: transparent #dcf8c6 transparent transparent; }
-        .btn-save { background: var(--whatsapp-green); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        .btn-home { background: #34b7f1; color: white; text-align: center; padding: 12px; border-radius: 5px; display: block; text-decoration: none; margin-top: 20px; font-weight: bold; }
-        .del-icon { position: absolute; top: 10px; right: 10px; color: red; cursor: pointer; font-size: 20px; }
+        :root { --primary: #00b894; --dark: #2d3436; --bg: #f4f7f6; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        .header { background: linear-gradient(135deg, #1e3799, #00b894); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 25px 25px; }
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        .add-card { background: white; border-radius: 15px; padding: 20px; margin-top: -20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: bold; color: #636e72; }
+        select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn-add { background: var(--dark); color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .crop-card { background: white; border-radius: 15px; padding: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); }
+        .crop-info h4 { margin: 0; color: var(--dark); }
+        .btn-view { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .delete-btn { color: #ff7675; cursor: pointer; font-weight: bold; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-<div class="app-bar">🚜 स्मार्ट शेतकरी अलर्ट</div>
-
-<div class="add-box">
-    <strong>➕ नवीन पीक नोंदवा (कमाल ४)</strong>
-    <select id="seasonSelect" onchange="syncCrops()" style="width:100%; padding:10px; margin: 10px 0;">
-        <option value="">हंगाम निवडा</option>
-        <option value="kh">खरीप</option>
-        <option value="rb">रब्बी</option>
-        <option value="sm">उन्हाळी</option>
-    </select>
-    <select id="cropSelect" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-    <input type="date" id="plantDate" style="width:100%; padding:10px; box-sizing: border-box;">
-    <button class="btn-save" onclick="addCrop()">वेळापत्रक सुरू करा</button>
+<div class="header">
+    <h2>🚜 माझी डिजिटल शेती</h2>
+    <p>तुमची पिके जोडा आणि व्यवस्थापन करा</p>
 </div>
 
-<div id="cropList"></div>
+<div class="container">
+    <div class="add-card">
+        <div class="input-group">
+            <label>हंगाम निवडा</label>
+            <select id="seasonSelect" onchange="updateCrops()">
+                <option value="">-- निवडा --</option>
+                <option value="Kharif">खरीप (पावसाळी)</option>
+                <option value="Rabi">रब्बी (हिवाळी)</option>
+                <option value="Summer">उन्हाळी</option>
+                <option value="Fruit">भाजीपाला/नगदी</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>पीक निवडा</label>
+            <select id="cropSelect"></select>
+        </div>
+        <div class="input-group">
+            <label>लागवड तारीख</label>
+            <input type="date" id="pDate">
+        </div>
+        <button class="btn-add" onclick="addCrop()">डॅशबोर्डवर जोडा</button>
+    </div>
 
-<a href="home.html" class="btn-home">🏠 होमवर जा</a>
+    <div id="displayArea" style="margin-top:20px;"></div>
+</div>
 
 <script>
-// डेटाबेस
-const crops = {
-    "kh": { "cotton": "कापूस", "soybean": "सोयाबीन", "tur": "तूर" },
-    "rb": { "wheat": "गहू", "gram": "हरभरा", "onion": "कांदा" }
-};
+    const cropData = {
+        "Kharif": ["कापूस", "सोयाबीन", "तूर", "भात", "मका", "मूग", "उडीद", "बाजरी", "ज्वारी", "भुईमूग", "तीळ", "सूर्यफूल"],
+        "Rabi": ["गहू", "हरभरा", "कांदा", "लसूण", "बटाटा", "मोहरी", "करडई", "ज्वारी (रब्बी)", "वाटाणा", "मसूर"],
+        "Summer": ["कलिंगड", "खरबूज", "काकडी", "भेंडी", "गवार", "भुईमूग (उन्हाळी)", "मूग (उन्हाळी)"],
+        "Fruit": ["हळद", "आले", "मिरची", "टोमॅटो", "वांगी", "कोबी", "फ्लॉवर", "शिमला मिरची", "दूधधुंद"]
+    };
 
-const schedules = {
-    "cotton": { 30: "खत देण्याची वेळ झाली आहे!", 50: "बोंडअळीसाठी सापळे तपासा.", 80: "आज फवारणीचे नियोजन करा." },
-    "soybean": { 20: "तणनाशक फवारणी करा.", 45: "फुलधारणेसाठी पाणी द्या.", 75: "शेंगा भरताना कीड तपासा." },
-    "wheat": { 21: "आज पहिले पाणी (मुकुटमुळे) द्या.", 45: "दुसरा हप्ता खत द्या." }
-};
+    function updateCrops() {
+        const s = document.getElementById('seasonSelect').value;
+        const c = document.getElementById('cropSelect');
+        c.innerHTML = '';
+        if(cropData[s]) cropData[s].forEach(p => c.add(new Option(p, p)));
+    }
 
-function syncCrops() {
-    const s = document.getElementById('seasonSelect').value;
-    const c = document.getElementById('cropSelect');
-    c.innerHTML = '';
-    if(crops[s]) Object.entries(crops[s]).forEach(([k,v]) => c.add(new Option(v,k)));
-}
+    function addCrop() {
+        const crop = document.getElementById('cropSelect').value;
+        const date = document.getElementById('pDate').value;
+        if(!crop || !date) return alert("कृपया सर्व माहिती भरा!");
 
-function addCrop() {
-    let myFarm = JSON.parse(localStorage.getItem("smartFarm") || "[]");
-    if(myFarm.length >= 4) return alert("मर्यादा संपली!");
+        let farm = JSON.parse(localStorage.getItem("farmList") || "[]");
+        farm.push({ id: Date.now(), crop, date });
+        localStorage.setItem("farmList", JSON.stringify(farm));
+        render();
+    }
 
-    const crop = document.getElementById('cropSelect').value;
-    const date = document.getElementById('plantDate').value;
-    if(!crop || !date) return alert("माहिती भरा!");
-
-    myFarm.push({ id: Date.now(), crop, date });
-    localStorage.setItem("smartFarm", JSON.stringify(myFarm));
-    
-    // नोटिफिकेशन परवानगी मागणे
-    Notification.requestPermission();
-    
-    render();
-}
-
-function render() {
-    const myFarm = JSON.parse(localStorage.getItem("smartFarm") || "[]");
-    const container = document.getElementById('cropList');
-    container.innerHTML = '';
-
-    myFarm.forEach(item => {
-        const diff = Math.floor((new Date() - new Date(item.date)) / 86400000);
-        const name = Object.values(crops).reduce((a,b) => b[item.crop] || a, "");
-        
-        let msg = "आज पीक निरीक्षणाचे काम करा.";
-        if(schedules[item.crop] && schedules[item.crop][diff]) {
-            msg = schedules[item.crop][diff];
-            // व्हॉट्सअँप स्टाईल नोटिफिकेशन ट्रिगर
-            triggerPush(name, msg);
-        } else {
-            let past = Object.keys(schedules[item.crop] || {}).filter(d => d <= diff).sort((a,b)=>b-a);
-            if(past.length > 0) msg = schedules[item.crop][past[0]];
-        }
-
-        container.innerHTML += `
-            <div class="crop-card">
-                <span class="del-icon" onclick="removeCrop(${item.id})">×</span>
-                <div class="crop-name">🌾 ${name}</div>
-                <div style="font-size:12px; color:#666;">लागवडीचा ${diff} वा दिवस</div>
-                <div class="advice-msg">💬 ${msg}</div>
-            </div>
-        `;
-    });
-}
-
-function triggerPush(cropName, message) {
-    if (Notification.permission === "granted") {
-        new Notification("🌾 शेती सल्ला: " + cropName, {
-            body: message,
-            icon: "https://cdn-icons-png.flaticon.com/512/2153/2153047.png", // शेतीचा आयकॉन
-            vibrate: [200, 100, 200]
+    function render() {
+        const farm = JSON.parse(localStorage.getItem("farmList") || "[]");
+        const area = document.getElementById('displayArea');
+        area.innerHTML = farm.length ? "" : "<p style='text-align:center; color:grey;'>अद्याप कोणतेही पीक जोडलेले नाही.</p>";
+        farm.forEach(item => {
+            area.innerHTML += `
+                <div class="crop-card">
+                    <div class="crop-info">
+                        <h4>🌾 ${item.crop}</h4>
+                        <span style="font-size:12px; color:grey;">तारीख: ${item.date}</span>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <button class="btn-view" onclick="location.href='advice.html?crop=${item.crop}&date=${item.date}'">पहा</button>
+                        <span class="delete-btn" onclick="remove(${item.id})">🗑️</span>
+                    </div>
+                </div>`;
         });
     }
-}
 
-function removeCrop(id) {
-    let myFarm = JSON.parse(localStorage.getItem("smartFarm") || "[]").filter(c => c.id !== id);
-    localStorage.setItem("smartFarm", JSON.stringify(myFarm));
-    render();
-}
-
-// दर १ तासाने ऑटो-चेक करण्यासाठी (ॲप उघडे असल्यास)
-setInterval(render, 3600000); 
-
-window.onload = render;
+    function remove(id) {
+        if(confirm("हे पीक काढून टाकायचे का?")) {
+            let farm = JSON.parse(localStorage.getItem("farmList") || "[]").filter(i => i.id !== id);
+            localStorage.setItem("farmList", JSON.stringify(farm));
+            render();
+        }
+    }
+    window.onload = render;
 </script>
 </body>
 </html>
