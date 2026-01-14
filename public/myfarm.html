@@ -3,136 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>माझं शेत - स्मार्ट सल्लागार</title>
+    <title>माझं स्मार्ट शेत</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2e7d32; text-align: center; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: #333; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        button:hover { background: #1b5e20; }
-        #autoAdviceBox { margin-top: 25px; }
-        .advice-card { background: #e8f5e9; padding: 15px; border-radius: 12px; border-left: 6px solid #2e7d32; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .day-count { font-size: 14px; color: #666; font-weight: bold; }
-        .advice-text { font-size: 16px; color: #1b5e20; margin-top: 8px; line-height: 1.5; }
-        .reset-btn { background: #f44336; margin-top: 20px; font-size: 14px; padding: 10px; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f0; margin: 0; padding: 15px; }
+        .card { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #2e7d32; text-align: center; margin-top: 0; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #444; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        .btn-start { width: 100%; margin-top: 25px; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-home { width: 100%; margin-top: 15px; padding: 15px; background: #2196F3; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; text-align: center; box-sizing: border-box; }
+        .btn-reset { background: #f44336; margin-top: 20px; font-size: 14px; padding: 10px; width: 100%; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        #adviceDisplay { display: none; margin-top: 20px; }
+        .advice-box { background: #e8f5e9; padding: 20px; border-radius: 15px; border-left: 8px solid #2e7d32; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🚜 माझं स्मार्ट शेत</h2>
-    
+<div class="card">
+    <h2>🚜 स्मार्ट सल्लागार</h2>
+
     <div id="setupForm">
-        <div class="form-group">
-            <label>१. चालू हंगाम निवडा</label>
-            <select id="seasonSelect" onchange="updateCropList()">
-                <option value="">-- निवडा --</option>
-                <option value="KHARIF_SEASON">🌧️ खरीप हंगाम</option>
-                <option value="RABI_SEASON">❄️ रब्बी हंगाम</option>
-                <option value="SUMMER_SEASON">☀️ उन्हाळी हंगाम</option>
-                <option value="CHARA_MASALE">🌿 चारा व मसाले पिके</option>
-            </select>
-        </div>
+        <label>हंगाम निवडा</label>
+        <select id="seasonSelect" onchange="loadCrops()">
+            <option value="">-- निवडा --</option>
+            <option value="KHARIF">🌧️ खरीप</option>
+            <option value="RABI">❄️ रब्बी</option>
+            <option value="SUMMER">☀️ उन्हाळी</option>
+            <option value="OTHER">🌿 चारा व मसाले</option>
+        </select>
 
-        <div class="form-group">
-            <label>२. तुमचं पीक निवडा</label>
-            <select id="cropSelect">
-                <option value="">आधी हंगाम निवडा</option>
-            </select>
-        </div>
+        <label>पीक निवडा</label>
+        <select id="cropSelect">
+            <option value="">आधी हंगाम निवडा</option>
+        </select>
 
-        <div class="form-group">
-            <label>३. लागवडीची तारीख</label>
-            <input type="date" id="plantDate">
-        </div>
+        <label>लागवड तारीख</label>
+        <input type="date" id="plantDate">
 
-        <button onclick="startSmartAdvisor()">🚀 स्मार्ट सल्ला सुरू करा</button>
+        <button class="btn-start" onclick="saveFarm()">🚀 सल्ला सुरू करा</button>
     </div>
 
-    <div id="autoAdviceBox"></div>
-    
-    <div id="actionArea" style="display:none;">
-        <button class="reset-btn" onclick="resetFarmData()">🔄 माहिती बदला / रीसेट करा</button>
+    <div id="adviceDisplay">
+        <div class="advice-box" id="adviceContent"></div>
+        <button class="btn-home" onclick="location.href='home.html'">🏠 होमवर जा</button>
+        <button class="btn-reset" onclick="resetData()">🔄 माहिती बदला</button>
     </div>
 </div>
 
 <script>
-    // टीप: येथे तो मोठा masterData (JSON) पेस्ट करा जो मी आधी दिला होता.
-    // मी नमुन्यासाठी खाली पुन्हा थोडा दिला आहे.
+// १२०+ पिकांचा मास्टर डेटा (संक्षिप्त नमुना - तुम्ही यात अधिक ओळी जोडू शकता)
+const cropData = {
+    "KHARIF": {
+        "rice": "भात", "jowar_kh": "ज्वारी", "bajra": "बाजरी", "maize_kh": "मका", "ragi": "नाचणी", "tur": "तूर", 
+        "moong_kh": "मूग", "urad_kh": "उडीद", "kulthi": "कुलथी", "cowpea": "चवळी", "soybean": "सोयाबीन", 
+        "groundnut_kh": "भुईमूग", "sunflower_kh": "सूर्यफूल", "sesame": "तीळ", "cotton": "कापूस", "sugarcane": "ऊस"
+        // ... (अशी एकूण ६० खरीप पिके)
+    },
+    "RABI": {
+        "wheat": "गहू", "jowar_rabi": "रब्बी ज्वारी", "gram": "हरभरा", "pea": "वाटाणा", "onion": "कांदा", 
+        "garlic": "लसूण", "potato": "बटाटा", "mustard": "मोहरी", "safflower": "करडई"
+        // ... (अशी एकूण ४० रब्बी पिके)
+    },
+    "SUMMER": {
+        "watermelon": "कलिंगड", "muskmelon": "खरबूज", "cucumber": "काकडी", "okra": "भेंडी", "summer_moong": "उन्हाळी मूग"
+    },
+    "OTHER": {
+        "turmeric": "हळद", "ginger": "आले", "chilli": "मिरची", "coriander": "कोथिंबीर", "napier": "नेपिअर गवत"
+    }
+};
 
-    const masterData = {
-        "KHARIF_SEASON": { "Groups": { "cotton": { "name": "कापूस", "day_30": "🌱 खत मात्रा द्या.", "day_55": "⚠️ बोंडअळीसाठी सापळे लावा." }, "soybean": { "name": "सोयाबीन", "day_20": "🌿 तण नियंत्रण करा.", "day_45": "🌸 फुलधारणा अवस्था." } } },
-        "RABI_SEASON": { "Groups": { "wheat": { "name": "गहू", "day_21": "💧 पहिले पाणी द्या.", "day_65": "🌾 कांडी धरताना पाणी द्या." } } },
-        "SUMMER_SEASON": { "Groups": { "watermelon": { "name": "कलिंगड", "day_30": "🍉 फळ फुगवणीसाठी खत द्या." } } },
-        "CHARA_MASALE": { "Groups": { "turmeric": { "name": "हळद", "day_90": "🚜 भरणी (माती चढवणे) करा." } } }
-    };
+// विशिष्ट दिवसांचे सल्ले
+const advices = {
+    "cotton": { 30: "🌱 खत द्या.", 50: "⚠️ बोंडअळी सापळे लावा.", 80: "🌸 फवारणी करा." },
+    "soybean": { 20: "🌿 तण नियंत्रण.", 45: "🌸 फुलधारणा पाणी द्या.", 70: "🐛 अळी नियंत्रण." },
+    "wheat": { 21: "💧 पहिले पाणी (मुकुटमुळे).", 45: "🌾 खत मात्रा द्या.", 80: "🌾 दाणे भरताना पाणी." }
+    // अशा प्रकारे सर्व १२० पिकांचे मुख्य 'Day' सल्ले इथे येतील.
+};
 
-    function updateCropList() {
-        const season = document.getElementById('seasonSelect').value;
-        const cropDropdown = document.getElementById('cropSelect');
-        cropDropdown.innerHTML = '<option value="">-- पीक निवडा --</option>';
-        if (masterData[season]) {
-            Object.keys(masterData[season].Groups).forEach(cropKey => {
-                let option = new Option(masterData[season].Groups[cropKey].name, cropKey);
-                cropDropdown.add(option);
-            });
+function loadCrops() {
+    const season = document.getElementById('seasonSelect').value;
+    const cropSelect = document.getElementById('cropSelect');
+    cropSelect.innerHTML = '<option value="">-- निवडा --</option>';
+    if(cropData[season]) {
+        for(let key in cropData[season]) {
+            cropSelect.add(new Option(cropData[season][key], key));
         }
     }
+}
 
-    function startSmartAdvisor() {
-        const season = document.getElementById('seasonSelect').value;
-        const cropKey = document.getElementById('cropSelect').value;
-        const date = document.getElementById('plantDate').value;
-        if (!season || !cropKey || !date) { alert("कृपया सर्व माहिती भरा!"); return; }
-        
-        const userData = { season, cropKey, date };
-        localStorage.setItem("userFarmData", JSON.stringify(userData));
-        showAdvice();
+function saveFarm() {
+    const season = document.getElementById('seasonSelect').value;
+    const crop = document.getElementById('cropSelect').value;
+    const date = document.getElementById('plantDate').value;
+    if(!date || !crop) { alert("सर्व माहिती भरा!"); return; }
+
+    localStorage.setItem("myFarm", JSON.stringify({season, crop, date}));
+    requestNotification(); // नोटिफिकेशन परवानगी मागणे
+    showAdvice();
+}
+
+function showAdvice() {
+    const data = JSON.parse(localStorage.getItem("myFarm"));
+    if(!data) return;
+
+    document.getElementById("setupForm").style.display = "none";
+    document.getElementById("adviceDisplay").style.display = "block";
+
+    const diff = Math.floor((new Date() - new Date(data.date)) / (86400000));
+    let msg = "🌿 पिकाची काळजी घ्या आणि रोज निरीक्षण करा.";
+    
+    if(advices[data.crop] && advices[data.crop][diff]) {
+        msg = advices[data.crop][diff];
+        sendPushNotification(msg); // ऑटोमॅटिक नोटिफिकेशन पाठवणे
     }
 
-    function showAdvice() {
-        const saved = JSON.parse(localStorage.getItem("userFarmData"));
-        const adviceBox = document.getElementById("autoAdviceBox");
-        const setupForm = document.getElementById("setupForm");
-        const actionArea = document.getElementById("actionArea");
+    document.getElementById("adviceContent").innerHTML = `
+        <h3 style="margin-top:0;">🚩 आजचा दिवस: ${diff}</h3>
+        <p><strong>पीक:</strong> ${cropData[data.season][data.crop]}</p>
+        <p><strong>📢 सल्ला:</strong> ${msg}</p>
+    `;
+}
 
-        if (!saved) return;
-
-        setupForm.style.display = "none"; // फॉर्म लपवा
-        actionArea.style.display = "block"; // रीसेट बटण दाखवा
-
-        const today = new Date();
-        const start = new Date(saved.date);
-        const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-        let advice = "🌿 पिकाची स्थिती उत्तम आहे. नियमित निरीक्षण करा.";
-        const cropGroup = masterData[saved.season].Groups[saved.cropKey];
-
-        // जवळचा सल्ला शोधणे
-        let daysKeys = Object.keys(cropGroup).filter(k => k.startsWith('day_')).map(k => parseInt(k.split('_')[1]));
-        let pastDays = daysKeys.filter(d => d <= diffDays).sort((a,b) => b-a);
-        if(pastDays.length > 0) { advice = cropGroup["day_" + pastDays[0]]; }
-
-        adviceBox.innerHTML = `
-            <div class="advice-card">
-                <div class="day-count">📅 आज लागवडीचा ${diffDays} वा दिवस आहे (${cropGroup.name})</div>
-                <div class="advice-text"><strong>📢 आजचा सल्ला:</strong> ${advice}</div>
-            </div>
-        `;
+function requestNotification() {
+    if ("Notification" in window) {
+        Notification.requestPermission();
     }
+}
 
-    function resetFarmData() {
-        if(confirm("तुम्हाला माहिती बदलायची आहे का?")) {
-            localStorage.removeItem("userFarmData");
-            location.reload();
-        }
+function sendPushNotification(text) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("शेती सल्ला", { body: text, icon: "logo.png" });
     }
+}
 
-    window.onload = showAdvice;
+function resetData() {
+    if(confirm("माहिती पुसायची आहे का?")) {
+        localStorage.removeItem("myFarm");
+        location.reload();
+    }
+}
+
+window.onload = showAdvice;
 </script>
-
 </body>
 </html>
