@@ -17,8 +17,8 @@
       window.history.replaceState(null, null, window.location.href);
   }
 
-  // Double Press Exit लॉजिकसाठी इतिहास तयार करणे
-  window.history.pushState(null, null, window.location.href);
+  // सुरुवातीला एक खोटा स्टेट ॲड करा (Exit लॉजिकसाठी)
+  window.history.pushState({ exit: true }, null, window.location.href);
 </script>
 
 <script>
@@ -59,7 +59,7 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 .schedule-btn{background:linear-gradient(135deg,#ef6c00,#fb8c00);}
 .satbara-btn{background:linear-gradient(135deg,#004d40,#00695c);}
 
-/* --- नवीन: Exit UI Styles --- */
+/* --- Exit UI Styles --- */
 #toastMessage {
     position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
     background: #333; color: white; padding: 10px 30px; border-radius: 50px;
@@ -73,10 +73,40 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 }
 .exit-emoji { font-size: 80px; margin-bottom: 20px; }
 .exit-text { font-size: 22px; font-weight: bold; padding: 0 20px; line-height: 1.5; }
+
+/* --- Update Popup Styles --- */
+#updatePopup {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; align-items: center;
+    justify-content: center; z-index: 30000;
+}
+.popup-content {
+    background: white; padding: 25px; border-radius: 20px;
+    width: 85%; max-width: 320px; text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    animation: popupAnim 0.3s ease-out;
+}
+@keyframes popupAnim {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.popup-btn {
+    background: var(--green); color: white; border: none; padding: 12px 25px;
+    border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; margin-top: 15px;
+}
 </style>
 </head>
 
 <body>
+
+<div id="updatePopup">
+    <div class="popup-content">
+        <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+        <h3 style="color:var(--green); margin:0;">नवीन अपडेट!</h3>
+        <p style="color:#555; font-size:15px; margin:10px 0;">आम्ही ॲपमध्ये काही नवीन बदल केले आहेत. अधिक चांगल्या अनुभवासाठी आत्ताच तपासा.</p>
+        <button class="popup-btn" onclick="closeUpdatePopup()">आताच वापरून पहा</button>
+    </div>
+</div>
 
 <div id="toastMessage">Exit ✅</div>
 <div id="fullExitScreen">
@@ -142,19 +172,20 @@ onAuthStateChanged(auth,u=>{
 </script>
 
 <script>
+  // --- सुधारीत Exit लॉजिक ---
   let backPressTime = 0;
-  window.onpopstate = function() {
+
+  window.onpopstate = function(event) {
       const currentTime = new Date().getTime();
       
-      // जर २ सेकंदांच्या आत पुन्हा बटन दाबले (दुसरा प्रेस)
       if (currentTime - backPressTime < 2000) {
+          // दुसरा प्रेस: पूर्ण स्क्रीन मेसेज दाखवा
           document.getElementById("toastMessage").style.display = "none";
           document.getElementById("fullExitScreen").style.display = "flex";
           
-          // २.५ सेकंद मेसेज दाखवून मग बाहेर पडणे
           setTimeout(() => {
-              // ॲप बंद करण्यासाठी मूळ इतिहास वापरणे
-              window.history.go(-2); 
+              // ॲपमधून बाहेर पडण्यासाठी सर्व इतिहास मागे नेणे
+              window.history.go(-10); 
           }, 2500);
       } else {
           // पहिला प्रेस: 'Exit ✅' पट्टी दाखवा
@@ -166,18 +197,34 @@ onAuthStateChanged(auth,u=>{
           }, 2000);
           
           backPressTime = currentTime;
-          // पुन्हा इतिहास ॲड करा जेणेकरून ॲप लगेच बंद होणार नाही
-          window.history.pushState(null, null, window.location.href);
+          // पुन्हा इतिहास ॲड करा जेणेकरून पुढच्या प्रेसला आपण पकडू शकू
+          window.history.pushState({ exit: true }, null, window.location.href);
       }
   };
-</script>
 
-<script>
+  // --- अपडेट पॉप-अप लॉजिक ---
+  const LATEST_VERSION = "1.0"; 
+
+  function checkAppUpdate() {
+      const savedVersion = localStorage.getItem("userAppVersion");
+      if (savedVersion !== LATEST_VERSION) {
+          document.getElementById("updatePopup").style.display = "flex";
+      }
+  }
+
+  function closeUpdatePopup() {
+      localStorage.setItem("userAppVersion", LATEST_VERSION);
+      document.getElementById("updatePopup").style.display = "none";
+  }
+
+  window.addEventListener('load', checkAppUpdate);
+
+  // --- Service Worker ---
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('Home: Service Worker Registered!'))
-        .catch(err => console.log('Home: Service Worker Failed!', err));
+        .then(reg => console.log('Home: Registered!'))
+        .catch(err => console.log('Home: Failed!', err));
     });
   }
 </script>
