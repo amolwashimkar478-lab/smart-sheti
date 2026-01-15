@@ -6,17 +6,16 @@
 <title>Smart Sheti - Home</title>
 
 <script>
+  // लॉगिन चेक
   if (!sessionStorage.getItem("isLoggedIn")) {
       document.documentElement.style.display = 'none';
       window.location.replace("index.html");
   }
 
+  // इतिहासामध्ये लॉगिन पेज न ठेवता थेट होम पेजच ठेवणे
   if (window.history.replaceState) {
       window.history.replaceState(null, null, window.location.href);
   }
-
-  // हा बदल महत्त्वाचा आहे: सुरुवातीला इतिहास पक्का करणे
-  window.history.pushState({ exit: true }, null, window.location.href);
 </script>
 
 <script>
@@ -57,21 +56,6 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 .schedule-btn{background:linear-gradient(135deg,#ef6c00,#fb8c00);}
 .satbara-btn{background:linear-gradient(135deg,#004d40,#00695c);}
 
-/* --- Exit UI Styles --- */
-#toastMessage {
-    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-    background: #333; color: white; padding: 10px 30px; border-radius: 50px;
-    font-size: 16px; display: none; z-index: 10000; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-#fullExitScreen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--green); color: white; display: none;
-    flex-direction: column; align-items: center; justify-content: center;
-    z-index: 10001; text-align: center;
-}
-.exit-emoji { font-size: 80px; margin-bottom: 20px; }
-.exit-text { font-size: 22px; font-weight: bold; padding: 0 20px; line-height: 1.5; }
-
 /* --- Update Popup Styles --- */
 #updatePopup {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -104,13 +88,6 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
         <p style="color:#555; font-size:15px; margin:10px 0;">आम्ही ॲपमध्ये काही नवीन बदल केले आहेत. अधिक चांगल्या अनुभवासाठी आत्ताच तपासा.</p>
         <button class="popup-btn" onclick="closeUpdatePopup()">आताच वापरून पहा</button>
     </div>
-</div>
-
-<div id="toastMessage">Exit ✅</div>
-<div id="fullExitScreen">
-    <div class="exit-emoji">🙏</div>
-    <div class="exit-text">स्मार्ट शेती वापरल्याबद्दल <br> धन्यवाद!</div>
-    <div style="margin-top: 40px; color: var(--gold); font-weight: bold; letter-spacing: 2px;">🌱 SMART SHETI</div>
 </div>
 
 <div class="header">
@@ -169,39 +146,6 @@ onAuthStateChanged(auth,u=>{
 </script>
 
 <script>
-  // --- सुधारीत Exit लॉजिक ---
-  let backPressTime = 0;
-
-  // सुरुवातीला एकदा इतिहास ढकलणे (Force Push)
-  window.history.pushState({ exit: true }, null, window.location.href);
-
-  window.onpopstate = function(event) {
-      const currentTime = new Date().getTime();
-      
-      if (currentTime - backPressTime < 2000) {
-          // दुसरा प्रेस
-          document.getElementById("toastMessage").style.display = "none";
-          document.getElementById("fullExitScreen").style.display = "flex";
-          
-          setTimeout(() => {
-              // ॲप पूर्णपणे बंद करण्यासाठी
-              window.history.go(-2); 
-          }, 2500);
-      } else {
-          // पहिला प्रेस
-          const toast = document.getElementById("toastMessage");
-          toast.style.display = "block";
-          
-          setTimeout(() => {
-              toast.style.display = "none";
-          }, 2000);
-          
-          backPressTime = currentTime;
-          // पुन्हा इतिहास लॉक करणे
-          window.history.pushState({ exit: true }, null, window.location.href);
-      }
-  };
-
   // --- अपडेट पॉप-अप लॉजिक ---
   const LATEST_VERSION = "1.0"; 
 
@@ -219,6 +163,7 @@ onAuthStateChanged(auth,u=>{
 
   window.addEventListener('load', checkAppUpdate);
 
+  // --- Service Worker ---
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
