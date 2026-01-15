@@ -11,17 +11,12 @@
       window.location.replace("index.html");
   }
 
-  // इतिहास मॅनेज करण्यासाठी फंक्शन
-  function manageHistory() {
-      window.history.pushState({page: 1}, null, window.location.href);
+  if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
   }
-  
-  manageHistory();
 
-  // युजर बॅक जाण्याचा प्रयत्न करत असल्यास त्याला रोखून धरण्यासाठी
-  window.addEventListener('popstate', function(event) {
-      manageHistory(); 
-  });
+  // हा बदल महत्त्वाचा आहे: सुरुवातीला इतिहास पक्का करणे
+  window.history.pushState({ exit: true }, null, window.location.href);
 </script>
 
 <script>
@@ -62,11 +57,11 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 .schedule-btn{background:linear-gradient(135deg,#ef6c00,#fb8c00);}
 .satbara-btn{background:linear-gradient(135deg,#004d40,#00695c);}
 
-/* Exit UI */
+/* --- Exit UI Styles --- */
 #toastMessage {
     position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
     background: #333; color: white; padding: 10px 30px; border-radius: 50px;
-    font-size: 16px; display: none; z-index: 10000; font-weight: bold;
+    font-size: 16px; display: none; z-index: 10000; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 #fullExitScreen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -77,7 +72,7 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 .exit-emoji { font-size: 80px; margin-bottom: 20px; }
 .exit-text { font-size: 22px; font-weight: bold; padding: 0 20px; line-height: 1.5; }
 
-/* Update Popup */
+/* --- Update Popup Styles --- */
 #updatePopup {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8); display: none; align-items: center;
@@ -85,7 +80,13 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 }
 .popup-content {
     background: white; padding: 25px; border-radius: 20px;
-    width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    width: 85%; max-width: 320px; text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    animation: popupAnim 0.3s ease-out;
+}
+@keyframes popupAnim {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 .popup-btn {
     background: var(--green); color: white; border: none; padding: 12px 25px;
@@ -143,7 +144,7 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
  onclick="location.href='myfarm.html'">
     🌾 माझं शेत (स्मार्ट सल्ला)
 </button>
-
+  
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -168,30 +169,26 @@ onAuthStateChanged(auth,u=>{
 </script>
 
 <script>
-  // --- नवीन शक्तिशाली Exit लॉजिक ---
-  let lastPressTime = 0;
+  // --- सुधारीत Exit लॉजिक ---
+  let backPressTime = 0;
 
-  // ही महत्त्वाची स्टेप आहे: दर ५०० मिलीसेकंदाला इतिहास पुन्हा सेट करणे
-  setInterval(function() {
-      window.history.pushState(null, null, window.location.href);
-  }, 500);
+  // सुरुवातीला एकदा इतिहास ढकलणे (Force Push)
+  window.history.pushState({ exit: true }, null, window.location.href);
 
-  window.addEventListener('popstate', function() {
-      let now = new Date().getTime();
+  window.onpopstate = function(event) {
+      const currentTime = new Date().getTime();
       
-      if (now - lastPressTime < 2000) {
-          // दुसरा प्रेस: पूर्ण स्क्रीन दाखवा आणि ॲप बंद करा
+      if (currentTime - backPressTime < 2000) {
+          // दुसरा प्रेस
           document.getElementById("toastMessage").style.display = "none";
           document.getElementById("fullExitScreen").style.display = "flex";
           
           setTimeout(() => {
-              // ॲप पूर्ण बंद करण्यासाठी
-              window.close(); 
-              // जर window.close काम नाही केलं तर बॅक जा
-              window.history.go(-20); 
+              // ॲप पूर्णपणे बंद करण्यासाठी
+              window.history.go(-2); 
           }, 2500);
       } else {
-          // पहिला प्रेस: 'Exit ✅' पट्टी दाखवा
+          // पहिला प्रेस
           const toast = document.getElementById("toastMessage");
           toast.style.display = "block";
           
@@ -199,18 +196,22 @@ onAuthStateChanged(auth,u=>{
               toast.style.display = "none";
           }, 2000);
           
-          lastPressTime = now;
+          backPressTime = currentTime;
+          // पुन्हा इतिहास लॉक करणे
+          window.history.pushState({ exit: true }, null, window.location.href);
       }
-  });
+  };
 
-  // अपडेट पॉप-अप
+  // --- अपडेट पॉप-अप लॉजिक ---
   const LATEST_VERSION = "1.0"; 
+
   function checkAppUpdate() {
       const savedVersion = localStorage.getItem("userAppVersion");
       if (savedVersion !== LATEST_VERSION) {
           document.getElementById("updatePopup").style.display = "flex";
       }
   }
+
   function closeUpdatePopup() {
       localStorage.setItem("userAppVersion", LATEST_VERSION);
       document.getElementById("updatePopup").style.display = "none";
