@@ -17,11 +17,8 @@
       window.history.replaceState(null, null, window.location.href);
   }
 
-  // Appilix 'No' बटण फिक्स (बनावट इतिहास तयार करणे)
+  // Double Press Exit लॉजिकसाठी इतिहास तयार करणे
   window.history.pushState(null, null, window.location.href);
-  window.onpopstate = function() {
-      window.history.pushState(null, null, window.location.href);
-  };
 </script>
 
 <script>
@@ -43,7 +40,7 @@ if (typeof window !== "undefined" && "serviceWorker" in navigator) {
 </script>
 
 <style>
-:root { --bg:#e8f5e9; --head:#fff; --green:#2e7d32; }
+:root { --bg:#e8f5e9; --head:#fff; --green:#2e7d32; --gold:#D4AF37; }
 body{font-family:'Segoe UI';background:var(--bg);margin:0;padding:20px;}
 .header{max-width:400px;margin:auto  auto 20px;display:flex;justify-content:space-between;align-items:center;
 background:var(--head);padding:16px;border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.15);}
@@ -61,10 +58,32 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 .calc-btn{background:linear-gradient(135deg,#2e7d32,#43a047);}
 .schedule-btn{background:linear-gradient(135deg,#ef6c00,#fb8c00);}
 .satbara-btn{background:linear-gradient(135deg,#004d40,#00695c);}
+
+/* --- नवीन: Exit UI Styles --- */
+#toastMessage {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: #333; color: white; padding: 10px 30px; border-radius: 50px;
+    font-size: 16px; display: none; z-index: 10000; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+#fullExitScreen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--green); color: white; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10001; text-align: center;
+}
+.exit-emoji { font-size: 80px; margin-bottom: 20px; }
+.exit-text { font-size: 22px; font-weight: bold; padding: 0 20px; line-height: 1.5; }
 </style>
 </head>
 
 <body>
+
+<div id="toastMessage">Exit ✅</div>
+<div id="fullExitScreen">
+    <div class="exit-emoji">🙏</div>
+    <div class="exit-text">स्मार्ट शेती वापरल्याबद्दल <br> धन्यवाद!</div>
+    <div style="margin-top: 40px; color: var(--gold); font-weight: bold; letter-spacing: 2px;">🌱 SMART SHETI</div>
+</div>
 
 <div class="header">
   <div class="logo">🌾 Smart Sheti</div>
@@ -99,7 +118,6 @@ font-size:16px;font-weight:bold;color:#fff;display:block;cursor:pointer;}
 </button>
   
   
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -121,6 +139,37 @@ onAuthStateChanged(auth,u=>{
   if(!u) location.replace("index.html");
  }
 });
+</script>
+
+<script>
+  let backPressTime = 0;
+  window.onpopstate = function() {
+      const currentTime = new Date().getTime();
+      
+      // जर २ सेकंदांच्या आत पुन्हा बटन दाबले (दुसरा प्रेस)
+      if (currentTime - backPressTime < 2000) {
+          document.getElementById("toastMessage").style.display = "none";
+          document.getElementById("fullExitScreen").style.display = "flex";
+          
+          // २.५ सेकंद मेसेज दाखवून मग बाहेर पडणे
+          setTimeout(() => {
+              // ॲप बंद करण्यासाठी मूळ इतिहास वापरणे
+              window.history.go(-2); 
+          }, 2500);
+      } else {
+          // पहिला प्रेस: 'Exit ✅' पट्टी दाखवा
+          const toast = document.getElementById("toastMessage");
+          toast.style.display = "block";
+          
+          setTimeout(() => {
+              toast.style.display = "none";
+          }, 2000);
+          
+          backPressTime = currentTime;
+          // पुन्हा इतिहास ॲड करा जेणेकरून ॲप लगेच बंद होणार नाही
+          window.history.pushState(null, null, window.location.href);
+      }
+  };
 </script>
 
 <script>
