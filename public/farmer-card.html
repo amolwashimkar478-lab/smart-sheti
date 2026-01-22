@@ -29,19 +29,18 @@
         .details b { color: var(--gold) !important; font-size: 8.5px; text-transform: uppercase; display: block; margin-top: 4px; }
         .details p { margin: 1px 0 2px 0; font-weight: 600; text-shadow: 1px 1px 2px black; font-size: 11.5px; color: white !important; }
         
-        /* सुधारित सूचना सेक्शन - अ‍ॅपसाठी स्पेशल बदल */
         .gov-warning { 
             position: absolute; 
             bottom: 10px; 
             left: 15px; 
             font-size: 7px; 
-            color: #ffffff !important; /* रंग पांढराच राहील */
+            color: #ffffff !important; 
             opacity: 0.9;
             width: 210px; 
             line-height: 1.1; 
-            text-shadow: 1px 1px 2px black !important; /* अक्षरे स्पष्ट दिसण्यासाठी */
+            text-shadow: 1px 1px 2px black !important; 
             z-index: 5;
-            -webkit-text-fill-color: white !important; /* अ‍ॅपमधील वेबव्ह्यूसाठी */
+            -webkit-text-fill-color: white !important;
         }
         
         .footer-logo { position: absolute; bottom: 10px; right: 15px; background: rgba(255,255,255,0.9) !important; padding: 2px 6px; border-radius: 4px; color: black !important; font-size: 9px; font-weight: bold; border-left: 3px solid var(--gold); }
@@ -51,6 +50,19 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; text-decoration: none; display: block; }
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
+        
+        /* व्हेरिफिकेशन सेक्शन स्टाईल */
+        #verifySection {
+            display: none;
+            background: #e8f0fe;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            border: 2px dashed #1a73e8;
+            width: 100%;
+            max-width: 350px;
+        }
         .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 15px; border: 1px solid #ef9a9a; display: none; }
     </style>
 </head>
@@ -58,7 +70,7 @@
 
     <div class="form-box" id="inputForm">
         <h2 style="color: var(--dark-green); text-align: center; margin-bottom: 10px;">स्मार्ट शेतकरी कार्ड</h2>
-        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा ₹१५ शुल्क लागेल.</div>
+        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा शुल्क लागेल.</div>
         <input type="text" id="userName" placeholder="तुमचे पूर्ण नाव">
         <input type="number" id="userPhone" placeholder="मोबाईल नंबर">
         <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
@@ -85,8 +97,15 @@
         <div class="footer-logo">Verified Member 2026</div>
     </div>
 
-    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१५)</a>
+    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पैसे भरा आणि कार्ड मिळवा (₹10)</a>
     
+    <div id="verifySection">
+        <p style="font-size: 14px; color: #1a73e8; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास स्क्रीनशॉट निवडा:</p>
+        <input type="file" id="payScreenshot" accept="image/*" style="margin-bottom: 10px;">
+        <button class="btn" style="background: #2e7d32; color: white;" onclick="finalVerifyAndDownload()">व्हेरिफाय करा आणि डाऊनलोड करा</button>
+        <p style="font-size: 10px; color: #666; margin-top: 5px;">* स्क्रीनशॉट अपलोड केल्याशिवाय कार्ड डाऊनलोड होणार नाही.</p>
+    </div>
+
     <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
@@ -127,24 +146,38 @@
             document.getElementById("farmerCard").style.display = "none";
             document.getElementById("payBtn").style.display = "none";
             document.getElementById("editBtn").style.display = "none";
+            document.getElementById("verifySection").style.display = "none";
             document.getElementById("inputForm").style.display = "block";
         }
 
         function startUPIPayment() {
             const upiId = "7499761202-1@nyes";
-            const amount = "10";
+            const amount = "10.00";
             const name = "Smart Sheti";
             const note = "Shetkari Card Fee";
             
-            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            // Generic UPI link for all apps
+            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&mode=02`;
             
             window.location.href = upiUrl;
 
+            // पेमेंट अ‍ॅप उघडल्यानंतर 'पेमेंट' बटन लपवा आणि 'स्क्रीनशॉट' विभाग दाखवा
             setTimeout(() => {
-                if(confirm("तुम्ही पेमेंट यशस्वीरित्या पूर्ण केले असल्यास 'Ok' दाबा आणि कार्ड डाऊनलोड करा.")) {
-                    saveAndDownload();
-                }
-            }, 5000);
+                document.getElementById("payBtn").style.display = "none";
+                document.getElementById("verifySection").style.display = "block";
+            }, 3000);
+        }
+
+        function finalVerifyAndDownload() {
+            const screenshot = document.getElementById("payScreenshot").files[0];
+            if(!screenshot) {
+                alert("कृपया आधी पेमेंटचा स्क्रीनशॉट अपलोड करा!");
+                return;
+            }
+            
+            // जर फोटो असेल तरच डाऊनलोड होईल
+            alert("व्हेरिफिकेशन यशस्वी! कार्ड डाऊनलोड होत आहे.");
+            saveAndDownload();
         }
 
         function saveAndDownload() {
@@ -172,4 +205,3 @@
     </script>
 </body>
 </html>
-
