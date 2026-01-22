@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>प्रीमियम शेतकरी कार्ड - स्मार्ट शेती</title>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
@@ -13,7 +12,7 @@
 
         #farmerCard {
             width: 350px; 
-            height: 230px; /* बदल १: उंची थोडी वाढवली जेणेकरून सूचना आत मावेल */
+            height: 230px; 
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://img.freepik.com/free-photo/green-rice-farm-with-sunrise-light-morning-chiang-mai-thailand_335224-956.jpg');
             background-size: cover; background-position: center;
             border-radius: 15px; position: relative; color: white;
@@ -29,7 +28,6 @@
         .details b { color: var(--gold); font-size: 8.5px; text-transform: uppercase; display: block; margin-top: 4px; }
         .details p { margin: 1px 0 2px 0; font-weight: 600; text-shadow: 1px 1px 2px black; font-size: 11.5px; }
         
-        /* बदल २: सूचनेला तळापासून थोडं वर सरकवलं आणि रुंदी सेट केली */
         .gov-warning { 
             position: absolute; 
             bottom: 10px; 
@@ -46,7 +44,7 @@
 
         .form-box { background: white; padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; text-decoration: none; display: block; }
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
         .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 15px; border: 1px solid #ef9a9a; display: none; }
@@ -56,7 +54,7 @@
 
     <div class="form-box" id="inputForm">
         <h2 style="color: var(--dark-green); text-align: center; margin-bottom: 10px;">स्मार्ट शेतकरी कार्ड</h2>
-        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा ₹१० शुल्क लागेल.</div>
+        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा ₹१५ शुल्क लागेल.</div>
         <input type="text" id="userName" placeholder="तुमचे पूर्ण नाव">
         <input type="number" id="userPhone" placeholder="मोबाईल नंबर">
         <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
@@ -83,7 +81,8 @@
         <div class="footer-logo">Verified Member 2026</div>
     </div>
 
-    <button class="btn btn-pay" id="payBtn" onclick="startPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१०)</button>
+    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पैसे भरा आणि कार्ड डाऊनलोड करा (₹१५)</a>
+    
     <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
@@ -127,27 +126,36 @@
             document.getElementById("inputForm").style.display = "block";
         }
 
-        function startPayment() {
-            var options = {
-                "key": "rzp_test_S1L2H81c9a5UZ", 
-                "amount": "1000",
-                "currency": "INR",
-                "name": "Smart Sheti App",
-                "handler": function (response){
-                    localStorage.setItem("isCardLocked", "true");
-                    localStorage.setItem("lockedUserName", document.getElementById("userName").value);
-                    localStorage.setItem("lockedUserPhone", document.getElementById("userPhone").value);
-                    localStorage.setItem("lockedUserVill", document.getElementById("userVill").value);
-                    localStorage.setItem("lockedUserCrop", document.getElementById("userCrop").value);
-                    downloadCard();
+        function startUPIPayment() {
+            const upiId = "7499761202@ybl";
+            const amount = "15";
+            const name = "Smart Sheti";
+            const note = "Shetkari Card Fee";
+            
+            // UPI Payment Link
+            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            
+            // पेमेंट अ‍ॅप उघडण्यासाठी
+            window.location.href = upiUrl;
+
+            // पेमेंट अ‍ॅपमधून परत आल्यावर डाऊनलोड सुरू करण्यासाठी थोडे थांबू
+            setTimeout(() => {
+                if(confirm("तुम्ही पेमेंट यशस्वीरित्या पूर्ण केले असल्यास 'Ok' दाबा आणि कार्ड डाऊनलोड करा.")) {
+                    saveAndDownload();
                 }
-            };
-            var rzp1 = new Razorpay(options);
-            rzp1.open();
+            }, 5000);
+        }
+
+        function saveAndDownload() {
+            localStorage.setItem("isCardLocked", "true");
+            localStorage.setItem("lockedUserName", document.getElementById("userName").value);
+            localStorage.setItem("lockedUserPhone", document.getElementById("userPhone").value);
+            localStorage.setItem("lockedUserVill", document.getElementById("userVill").value);
+            localStorage.setItem("lockedUserCrop", document.getElementById("userCrop").value);
+            downloadCard();
         }
 
         function downloadCard() {
-            // बदल ३: ॲपमध्ये नीट रेंडर होण्यासाठी सेटिंग्ज वाढवल्या आहेत
             html2canvas(document.querySelector("#farmerCard"), { 
                 scale: 3, 
                 useCORS: true, 
