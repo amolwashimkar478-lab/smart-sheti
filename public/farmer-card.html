@@ -51,15 +51,15 @@
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
         
-        /* व्हेरिफिकेशन सेक्शन स्टाईल */
-        #verifySection {
+        /* व्हेरिफिकेशन विभाग */
+        #afterPaySection {
             display: none;
             background: #e8f0fe;
             padding: 15px;
             border-radius: 12px;
             margin-top: 20px;
             text-align: center;
-            border: 2px dashed #1a73e8;
+            border: 2px solid #1a73e8;
             width: 100%;
             max-width: 350px;
         }
@@ -99,11 +99,9 @@
 
     <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पैसे भरा आणि कार्ड मिळवा (₹10)</a>
     
-    <div id="verifySection">
-        <p style="font-size: 14px; color: #1a73e8; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास स्क्रीनशॉट निवडा:</p>
-        <input type="file" id="payScreenshot" accept="image/*" style="margin-bottom: 10px;">
-        <button class="btn" style="background: #2e7d32; color: white;" onclick="finalVerifyAndDownload()">व्हेरिफाय करा आणि डाऊनलोड करा</button>
-        <p style="font-size: 10px; color: #666; margin-top: 5px;">* स्क्रीनशॉट अपलोड केल्याशिवाय कार्ड डाऊनलोड होणार नाही.</p>
+    <div id="afterPaySection">
+        <p style="font-size: 14px; color: #1a73e8; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास खालील बटणावर क्लिक करा:</p>
+        <button class="btn" style="background: #2e7d32; color: white;" onclick="verifyAndDownload()">पेमेंट पूर्ण झाले, कार्ड डाऊनलोड करा</button>
     </div>
 
     <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
@@ -146,7 +144,7 @@
             document.getElementById("farmerCard").style.display = "none";
             document.getElementById("payBtn").style.display = "none";
             document.getElementById("editBtn").style.display = "none";
-            document.getElementById("verifySection").style.display = "none";
+            document.getElementById("afterPaySection").style.display = "none";
             document.getElementById("inputForm").style.display = "block";
         }
 
@@ -156,28 +154,21 @@
             const name = "Smart Sheti";
             const note = "Shetkari Card Fee";
             
-            // Generic UPI link for all apps
             const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&mode=02`;
             
             window.location.href = upiUrl;
 
-            // पेमेंट अ‍ॅप उघडल्यानंतर 'पेमेंट' बटन लपवा आणि 'स्क्रीनशॉट' विभाग दाखवा
+            // पेमेंट अ‍ॅप उघडल्यानंतर 'पेमेंट' बटन लपवा आणि 'डाऊनलोड' विभाग दाखवा
             setTimeout(() => {
                 document.getElementById("payBtn").style.display = "none";
-                document.getElementById("verifySection").style.display = "block";
-            }, 3000);
+                document.getElementById("afterPaySection").style.display = "block";
+            }, 4000);
         }
 
-        function finalVerifyAndDownload() {
-            const screenshot = document.getElementById("payScreenshot").files[0];
-            if(!screenshot) {
-                alert("कृपया आधी पेमेंटचा स्क्रीनशॉट अपलोड करा!");
-                return;
+        function verifyAndDownload() {
+            if(confirm("तुम्ही १० रुपयांचे पेमेंट पूर्ण केले आहे का? खोटे बोलल्यास कार्ड मिळणार नाही.")) {
+                saveAndDownload();
             }
-            
-            // जर फोटो असेल तरच डाऊनलोड होईल
-            alert("व्हेरिफिकेशन यशस्वी! कार्ड डाऊनलोड होत आहे.");
-            saveAndDownload();
         }
 
         function saveAndDownload() {
