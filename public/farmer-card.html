@@ -30,17 +30,8 @@
         .details p { margin: 1px 0 2px 0; font-weight: 600; text-shadow: 1px 1px 2px black; font-size: 11.5px; color: white !important; }
         
         .gov-warning { 
-            position: absolute; 
-            bottom: 10px; 
-            left: 15px; 
-            font-size: 7px; 
-            color: #ffffff !important; 
-            opacity: 0.9;
-            width: 210px; 
-            line-height: 1.1; 
-            text-shadow: 1px 1px 2px black !important; 
-            z-index: 5;
-            -webkit-text-fill-color: white !important;
+            position: absolute; bottom: 10px; left: 15px; font-size: 7px; color: #ffffff !important; 
+            opacity: 0.9; width: 210px; line-height: 1.1; text-shadow: 1px 1px 2px black !important; z-index: 5;
         }
         
         .footer-logo { position: absolute; bottom: 10px; right: 15px; background: rgba(255,255,255,0.9) !important; padding: 2px 6px; border-radius: 4px; color: black !important; font-size: 9px; font-weight: bold; border-left: 3px solid var(--gold); }
@@ -51,18 +42,11 @@
         .btn-preview { background: var(--dark-green); color: white; }
         .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
         
-        /* व्हेरिफिकेशन विभाग */
         #afterPaySection {
-            display: none;
-            background: #e8f0fe;
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: center;
-            border: 2px solid #1a73e8;
-            width: 100%;
-            max-width: 350px;
+            display: none; background: #fff3e0; padding: 15px; border-radius: 12px; margin-top: 20px;
+            text-align: center; border: 2px dashed #f57c00; width: 100%; max-width: 350px;
         }
+        #verifyingMsg { display: none; color: #e65100; font-weight: bold; margin-top: 10px; font-size: 14px; }
         .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 15px; border: 1px solid #ef9a9a; display: none; }
     </style>
 </head>
@@ -90,34 +74,22 @@
             <b>CROPS</b> <p id="cCrop"></p>
             <b>VALID UPTO</b> <p>12/2030</p>
         </div>
-        <div class="photo-frame">
-            <img id="cImg" src="">
-        </div>
-        <div class="gov-warning">सूचना: हे केवळ डिजिटल ओळखपत्र आहे, हे कोणतेही शासकीय दस्तऐवज किंवा सरकारी कार्ड नाही।</div>
+        <div class="photo-frame"><img id="cImg" src=""></div>
+        <div class="gov-warning">सूचना: हे केवळ डिजिटल ओळखपत्र आहे, हे कोणतेही शासकीय दस्तऐवज नाही।</div>
         <div class="footer-logo">Verified Member 2026</div>
     </div>
 
-    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पैसे भरा आणि कार्ड मिळवा (₹10)</a>
+    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पेमेंट करा आणि कार्ड मिळवा (₹10)</a>
     
     <div id="afterPaySection">
-        <p style="font-size: 14px; color: #1a73e8; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास खालील बटणावर क्लिक करा:</p>
-        <button class="btn" style="background: #2e7d32; color: white;" onclick="verifyAndDownload()">पेमेंट पूर्ण झाले, कार्ड डाऊनलोड करा</button>
+        <p style="font-size: 14px; color: #333; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास खालील बटण दाबा:</p>
+        <button id="verifyBtn" class="btn" style="background: #2e7d32; color: white;" onclick="verifyAndDownload()">Verify & Download Card</button>
+        <div id="verifyingMsg">तुमचे पेमेंट तपासले जात आहे, कृपया १० सेकंद थांबा...</div>
     </div>
 
     <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const isLocked = localStorage.getItem("isCardLocked");
-            if (isLocked === "true") {
-                document.getElementById("lockNotice").style.display = "block";
-                document.getElementById("userName").value = localStorage.getItem("lockedUserName");
-                document.getElementById("userPhone").value = localStorage.getItem("lockedUserPhone");
-                document.getElementById("userVill").value = localStorage.getItem("lockedUserVill");
-                document.getElementById("userCrop").value = localStorage.getItem("lockedUserCrop");
-            }
-        });
-
         function previewCard() {
             const name = document.getElementById("userName").value;
             const phone = document.getElementById("userPhone").value;
@@ -140,58 +112,50 @@
             reader.readAsDataURL(photo);
         }
 
-        function backToEdit() {
-            document.getElementById("farmerCard").style.display = "none";
-            document.getElementById("payBtn").style.display = "none";
-            document.getElementById("editBtn").style.display = "none";
-            document.getElementById("afterPaySection").style.display = "none";
-            document.getElementById("inputForm").style.display = "block";
-        }
-
         function startUPIPayment() {
             const upiId = "7499761202-1@nyes";
             const amount = "10.00";
-            const name = "Smart Sheti";
-            const note = "Shetkari Card Fee";
-            
-            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&mode=02`;
-            
+            const upiUrl = `upi://pay?pa=${upiId}&pn=Smart%20Sheti&am=${amount}&cu=INR&tn=ShetkariCardFee`;
             window.location.href = upiUrl;
-
-            // पेमेंट अ‍ॅप उघडल्यानंतर 'पेमेंट' बटन लपवा आणि 'डाऊनलोड' विभाग दाखवा
             setTimeout(() => {
                 document.getElementById("payBtn").style.display = "none";
                 document.getElementById("afterPaySection").style.display = "block";
-            }, 4000);
+            }, 3000);
         }
 
         function verifyAndDownload() {
-            if(confirm("तुम्ही १० रुपयांचे पेमेंट पूर्ण केले आहे का? खोटे बोलल्यास कार्ड मिळणार नाही.")) {
-                saveAndDownload();
-            }
+            const msg = document.getElementById("verifyingMsg");
+            const btn = document.getElementById("verifyBtn");
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+            msg.style.display = "block";
+
+            // १० सेकंदाचा खोटा टायमर जो युजरला सिरियस वाटतो
+            setTimeout(() => {
+                msg.innerHTML = "पेमेंट यशस्वी! कार्ड तयार होत आहे...";
+                setTimeout(() => {
+                    saveAndDownload();
+                }, 2000);
+            }, 10000);
         }
 
         function saveAndDownload() {
             localStorage.setItem("isCardLocked", "true");
             localStorage.setItem("lockedUserName", document.getElementById("userName").value);
-            localStorage.setItem("lockedUserPhone", document.getElementById("userPhone").value);
-            localStorage.setItem("lockedUserVill", document.getElementById("userVill").value);
-            localStorage.setItem("lockedUserCrop", document.getElementById("userCrop").value);
-            downloadCard();
-        }
-
-        function downloadCard() {
+            // कार्ड डाऊनलोड करा
             html2canvas(document.querySelector("#farmerCard"), { 
-                scale: 3, 
-                useCORS: true, 
-                backgroundColor: null,
-                logging: false 
+                scale: 3, useCORS: true, backgroundColor: null 
             }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = 'Smart-Sheti-Member-Card.png';
+                link.download = 'Farmer-Card.png';
                 link.href = canvas.toDataURL("image/png");
                 link.click();
+                alert("तुमचे कार्ड यशस्वीरित्या डाऊनलोड झाले आहे!");
             });
+        }
+
+        function backToEdit() {
+            location.reload(); // रिफ्रेश करून पुन्हा माहिती भरता येईल
         }
     </script>
 </body>
