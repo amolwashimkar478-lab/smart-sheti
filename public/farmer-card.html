@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light only">
-    <title>प्रीमियम शेतकरी कार्ड - स्मार्ट शेती</title>
+    <title>फ्री शेतकरी कार्ड - स्मार्ट शेती</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
@@ -18,7 +18,7 @@
             background-size: cover; background-position: center;
             border-radius: 15px; position: relative; color: white !important;
             border: 3px solid var(--gold); box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            overflow: hidden; display: none;
+            overflow: hidden; display: none; margin-bottom: 20px;
         }
 
         .card-overlay { position: absolute; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.85) 45%, transparent); }
@@ -40,28 +40,22 @@
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; text-decoration: none; display: block; }
         .btn-preview { background: var(--dark-green); color: white; }
-        .btn-pay { background: #1a73e8; color: white; display: none; margin-top: 20px; }
-        
-        #afterPaySection {
-            display: none; background: #fff3e0; padding: 15px; border-radius: 12px; margin-top: 20px;
-            text-align: center; border: 2px dashed #f57c00; width: 100%; max-width: 350px;
-        }
-        #verifyingMsg { display: none; color: #e65100; font-weight: bold; margin-top: 10px; font-size: 14px; }
-        .lock-notice { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 15px; border: 1px solid #ef9a9a; display: none; }
+        .btn-download { background: #2e7d32; color: white; display: none; }
+        .btn-edit { background: #555; color: white; display: none; }
     </style>
 </head>
 <body>
 
     <div class="form-box" id="inputForm">
         <h2 style="color: var(--dark-green); text-align: center; margin-bottom: 10px;">स्मार्ट शेतकरी कार्ड</h2>
-        <div id="lockNotice" class="lock-notice">नोंदणी सापडली! बदल करण्यासाठी पुन्हा शुल्क लागेल.</div>
+        <p style="text-align: center; font-size: 12px; color: #666;">आपली माहिती भरा आणि फ्री कार्ड मिळवा</p>
         <input type="text" id="userName" placeholder="तुमचे पूर्ण नाव">
         <input type="number" id="userPhone" placeholder="मोबाईल नंबर">
         <input type="text" id="userVill" placeholder="गाव आणि जिल्हा">
         <input type="text" id="userCrop" placeholder="मुख्य पिके">
         <label style="font-size: 12px; font-weight: bold; margin-top: 10px; display: block;">फोटो अपलोड करा:</label>
         <input type="file" id="userPhoto" accept="image/*">
-        <button class="btn btn-preview" onclick="previewCard()">प्रिव्ह्यू पहा</button>
+        <button class="btn btn-preview" onclick="previewCard()">कार्ड तयार करा</button>
     </div>
 
     <div id="farmerCard">
@@ -79,22 +73,19 @@
         <div class="footer-logo">Verified Member 2026</div>
     </div>
 
-    <a href="javascript:void(0)" class="btn btn-pay" id="payBtn" onclick="startUPIPayment()">पेमेंट करा आणि कार्ड मिळवा (₹10)</a>
-    
-    <div id="afterPaySection">
-        <p style="font-size: 14px; color: #333; font-weight: bold;">पेमेंट यशस्वी झाले असल्यास खालील बटण दाबा:</p>
-        <button id="verifyBtn" class="btn" style="background: #2e7d32; color: white;" onclick="verifyAndDownload()">Verify & Download Card</button>
-        <div id="verifyingMsg">तुमचे पेमेंट तपासले जात आहे, कृपया १० सेकंद थांबा...</div>
-    </div>
-
-    <button class="btn btn-preview" style="display:none; background:#555;" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
+    <button class="btn btn-download" id="downloadBtn" onclick="saveAndDownload()">कार्ड डाऊनलोड करा (Free)</button>
+    <button class="btn btn-edit" id="editBtn" onclick="backToEdit()">माहिती दुरुस्त करा</button>
 
     <script>
         function previewCard() {
             const name = document.getElementById("userName").value;
             const phone = document.getElementById("userPhone").value;
             const photo = document.getElementById("userPhoto").files[0];
-            if(!name || !phone || !photo) { alert("नाव, मोबाईल आणि फोटो अनिवार्य आहे!"); return; }
+            
+            if(!name || !phone || !photo) { 
+                alert("कृपया नाव, मोबाईल आणि फोटो अपलोड करा!"); 
+                return; 
+            }
 
             document.getElementById("cName").innerText = name.toUpperCase();
             document.getElementById("cPhone").innerText = phone;
@@ -105,57 +96,39 @@
             reader.onload = (e) => {
                 document.getElementById("cImg").src = e.target.result;
                 document.getElementById("farmerCard").style.display = "block";
-                document.getElementById("payBtn").style.display = "block";
+                document.getElementById("downloadBtn").style.display = "block";
                 document.getElementById("editBtn").style.display = "block";
                 document.getElementById("inputForm").style.display = "none";
             };
             reader.readAsDataURL(photo);
         }
 
-        function startUPIPayment() {
-            const upiId = "7499761202-1@nyes";
-            const amount = "10.00";
-            const upiUrl = `upi://pay?pa=${upiId}&pn=Smart%20Sheti&am=${amount}&cu=INR&tn=ShetkariCardFee`;
-            window.location.href = upiUrl;
-            setTimeout(() => {
-                document.getElementById("payBtn").style.display = "none";
-                document.getElementById("afterPaySection").style.display = "block";
-            }, 3000);
-        }
-
-        function verifyAndDownload() {
-            const msg = document.getElementById("verifyingMsg");
-            const btn = document.getElementById("verifyBtn");
-            btn.disabled = true;
-            btn.style.opacity = "0.5";
-            msg.style.display = "block";
-
-            // १० सेकंदाचा खोटा टायमर जो युजरला सिरियस वाटतो
-            setTimeout(() => {
-                msg.innerHTML = "पेमेंट यशस्वी! कार्ड तयार होत आहे...";
-                setTimeout(() => {
-                    saveAndDownload();
-                }, 2000);
-            }, 10000);
-        }
-
         function saveAndDownload() {
-            localStorage.setItem("isCardLocked", "true");
-            localStorage.setItem("lockedUserName", document.getElementById("userName").value);
-            // कार्ड डाऊनलोड करा
+            const btn = document.getElementById("downloadBtn");
+            btn.innerText = "डाऊनलोड होत आहे...";
+            btn.disabled = true;
+
             html2canvas(document.querySelector("#farmerCard"), { 
-                scale: 3, useCORS: true, backgroundColor: null 
+                scale: 3, 
+                useCORS: true, 
+                backgroundColor: null 
             }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = 'Farmer-Card.png';
+                link.download = 'Smart-Sheti-Card.png';
                 link.href = canvas.toDataURL("image/png");
                 link.click();
-                alert("तुमचे कार्ड यशस्वीरित्या डाऊनलोड झाले आहे!");
+                
+                btn.innerText = "कार्ड डाऊनलोड करा (Free)";
+                btn.disabled = false;
+                alert("तुमचे कार्ड यशस्वीरित्या सेव्ह झाले आहे!");
             });
         }
 
         function backToEdit() {
-            location.reload(); // रिफ्रेश करून पुन्हा माहिती भरता येईल
+            document.getElementById("farmerCard").style.display = "none";
+            document.getElementById("downloadBtn").style.display = "none";
+            document.getElementById("editBtn").style.display = "none";
+            document.getElementById("inputForm").style.display = "block";
         }
     </script>
 </body>
