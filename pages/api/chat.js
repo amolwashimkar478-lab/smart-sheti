@@ -1,48 +1,44 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
-
   const { prompt, image } = req.body;
-  const apiKey = process.env.GROQ_API_KEY?.trim();
-
-  if (!apiKey) {
-    return res.status(200).json({ reply: "त्रुटी: Groq API Key सापडली नाही." });
-  }
 
   try {
-    const url = "https://api.groq.com/openai/v1/chat/completions";
-
-    let content = [{ type: "text", text: prompt || "याबद्दल मराठीत माहिती द्या." }];
-
-    // जर फोटो असेल तर व्हिजन मॉडेल वापरूया
+    // जर फोटो असेल तर फक्त PlantNet वापरा
     if (image) {
-      content.push({
-        type: "image_url",
-        image_url: { url: image }
-      });
+      const plantnetKey = process.env.PLANTNET_KEY; 
+      const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${plantnetKey}`;
+
+      let formData = new FormData();
+      const responseImg = await fetch(image);
+      const blob = await responseImg.blob();
+      formData.append("images", blob);
+
+      const plantRes = await fetch(url, { method: "POST", body: formData });
+      const data = await plantRes.json();
+
+      if (data.results && data.results.length > 0) {
+        const plantName = data.results[0].species.commonNames[0] || "पीक ओळखता आले नाही";
+        return res.status(200).json({ reply: `हे पीक ${plantName} असू शकते.` });
+      } else {
+        return res.status(200).json({ reply: "फोटो ओळखता आला नाही, कृपया स्पष्ट फोटो काढा." });
+      }
     }
 
-    const response = await fetch(url, {
+    // जर फक्त मजकूर असेल तर Groq वापरा (मॉडेल बदलले आहे)
+    const groqKey = process.env.GROQ_API_KEY;
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${groqKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        // नवीन सपोर्टेड मॉडेल खालीलप्रमाणे आहे
-        model: image ? "llama-3.2-11b-vision-instruct" : "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: content }],
-        max_tokens: 500
+        model: "llama-3.3-70b-versatile", // हे नाव कधीच चुकत नाही
+        messages: [{ role: "user", content: prompt || "नमस्कार" }]
       })
     });
 
-    const data = await response.json();
-    
-    if (data.error) {
-      return res.status(200).json({ reply: "AI एरर: " + data.error.message });
-    }
-
-    const reply = data.choices?.[0]?.message?.content || "उत्तर मिळाले नाही.";
-    res.status(200).json({ reply: reply });
+    const groqData = await groqRes.json();
+    res.status(200).json({ reply: groqData.choices[0].message.content });
 
   } catch (err) {
     res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
