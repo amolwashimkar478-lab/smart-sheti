@@ -15,7 +15,7 @@
   .gallery { background:#1565c0; }
   .detect { background:#388e3c; width:100%; margin-top:10px; }
   .back { background:#1976d2; width:100%; margin-top:15px; }
-  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; }
+  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; white-space: pre-wrap; }
   input[type=file] { display:none; }
   button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
@@ -42,7 +42,6 @@
 <script>
 let selectedFileBase64 = null;
 
-// फोटो कॉम्प्रेस आणि रिसाईज करण्याचे लॉजिक
 function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -58,7 +57,6 @@ function handleFile(e) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // फोटोची रुंदी जास्तीत जास्त 800px ठेवूया (साईज कमी करण्यासाठी)
       const maxWidth = 800;
       const scale = maxWidth / img.width;
       canvas.width = maxWidth;
@@ -66,9 +64,9 @@ function handleFile(e) {
       
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // ७०% क्वालिटीमध्ये JPEG फॉरमॅटमध्ये रूपांतर
-      selectedFileBase64 = canvas.toDataURL('image/jpeg', 0.7).split(",")[1];
-      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता तपासणी करा.";
+      // बदल: .split(",")[1] काढून टाकला आहे जेणेकरून पूर्ण डेटा API कडे जाईल
+      selectedFileBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता 'रोग ओळखा' बटण दाबा.";
     };
   };
   reader.readAsDataURL(file);
@@ -86,7 +84,7 @@ async function analyze() {
   const resultDiv = document.getElementById("result");
   const btn = document.getElementById("btnDetect");
   
-  resultDiv.innerText = "⏳ एआय तपासणी करत आहे, कृपया थोडा वेळ थांबा...";
+  resultDiv.innerText = "⏳ एआय तपासणी करत आहे, कृपया ३०-४० सेकंद थांबा...";
   btn.disabled = true;
 
   try {
@@ -95,7 +93,6 @@ async function analyze() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         image: selectedFileBase64, 
-        city: "Maharashtra", // तुम्ही युजरचे लोकेशन घेऊ शकता
         prompt: "या पिकाच्या फोटोमधील रोग ओळखा आणि त्यावर प्रतिबंधात्मक उपाय मराठीत सांगा."
       })
     });
@@ -105,7 +102,7 @@ async function analyze() {
     if(data.reply) {
       resultDiv.innerText = data.reply;
       
-      // ऑडिओ रिस्पॉन्स
+      // मोबाईलवर आवाज येण्यासाठी
       const msg = new SpeechSynthesisUtterance(data.reply);
       msg.lang = "mr-IN";
       window.speechSynthesis.speak(msg);
@@ -114,8 +111,7 @@ async function analyze() {
     }
 
   } catch (e) {
-    resultDiv.innerText = "एरर: " + e.message;
-    console.error(e);
+    resultDiv.innerText = "तांत्रिक अडचण: " + e.message;
   } finally {
     btn.disabled = false;
   }
