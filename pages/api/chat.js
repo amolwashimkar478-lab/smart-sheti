@@ -2,62 +2,48 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { prompt, image } = req.body;
+  const groqKey = process.env.GROQ_API_KEY;
 
   try {
-    // १. जर फोटो असेल तर (PlantNet + Groq)
-    if (image) {
-      const plantnetKey = process.env.PLANTNET_KEY; 
-      const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${plantnetKey}`;
-
-      // Base64 डेटाला सुरक्षितपणे फाईलमध्ये रूपांतरित करणे
-      const base64Image = image.split(",")[1]; // 'data:image/...' हा भाग काढून टाकला
-      const buffer = Buffer.from(base64Image, 'base64');
-      const blob = new Blob([buffer], { type: 'image/jpeg' });
-
-      let formData = new FormData();
-      formData.append("images", blob);
-
-      const plantRes = await fetch(url, { method: "POST", body: formData });
-      const plantData = await plantRes.json();
-
-      if (plantData.results && plantData.results.length > 0) {
-        const plantName = plantData.results[0].species.commonNames[0] || plantData.results[0].species.scientificNameWithoutAuthor;
-        
-        // पिकाचे नाव कळले, आता Groq ला त्याबद्दल माहिती विचारूया
-        const groqKey = process.env.GROQ_API_KEY;
-        const infoRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [{ role: "user", content: `हे पीक ${plantName} आहे. या पिकावर कोणते मुख्य रोग पडू शकतात आणि त्यावर १-२ साधे उपाय मराठीत सांगा.` }]
-          })
-        });
-        const infoData = await infoRes.json();
-        const aiInfo = infoData.choices[0].message.content;
-
-        return res.status(200).json({ reply: `🌱 पीक: ${plantName}\n\n📝 माहिती: ${aiInfo}` });
-      } else {
-        return res.status(200).json({ reply: "क्षमस्व, फोटोवरून पीक ओळखता आले नाही. कृपया स्पष्ट फोटो काढा." });
-      }
+    if (!image) {
+      return res.status(200).json({ reply: "कृपया पिकाचा फोटो पाठवा." });
     }
 
-    // २. जर फक्त चॅट असेल (Groq)
-    const groqKey = process.env.GROQ_API_KEY;
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // थेट Groq Vision ला फोटो पाठवणे
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${groqKey}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt || "नमस्कार" }]
+        model: "llama-3.2-11b-vision-preview", // हे मॉडेल फोटोसाठी खात्रीशीर आहे
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt || "या पिकाचा फोटो पहा आणि यावर कोणता रोग आहे ते मराठीत सांगा." },
+              {
+                type: "image_url",
+                image_url: { url: image } // Base64 फोटो थेट पाठवत आहोत
+              }
+            ]
+          }
+        ],
+        max_tokens: 500
       })
     });
 
-    const groqData = await groqRes.json();
-    res.status(200).json({ reply: groqData.choices[0].message.content });
+    const data = await response.json();
+
+    if (data.choices && data.choices[0]) {
+      res.status(200).json({ reply: data.choices[0].message.content });
+    } else {
+      // जर काही तांत्रिक एरर आली तर ती इथे दिसेल
+      res.status(200).json({ reply: "एआयला फोटो समजला नाही. कृपया पुन्हा प्रयत्न करा." });
+    }
 
   } catch (err) {
-    // एरर मेसेज अधिक स्पष्ट केला आहे
-    res.status(200).json({ reply: "क्षमस्व, तांत्रिक अडचण आली आहे. कृपया इंटरनेट तपासा." });
+    res.status(200).json({ reply: "कनेक्शन एरर: " + err.message });
   }
 }
