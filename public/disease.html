@@ -102,10 +102,6 @@ async function analyze() {
     if(data.reply) {
       resultDiv.innerText = data.reply;
       
-      // मोबाईलवर आवाज येण्यासाठी
-      const msg = new SpeechSynthesisUtterance(data.reply);
-      msg.lang = "mr-IN";
-      window.speechSynthesis.speak(msg);
     } else {
       resultDiv.innerText = "क्षमस्व, माहिती मिळू शकली नाही. कृपया पुन्हा प्रयत्न करा.";
     }
