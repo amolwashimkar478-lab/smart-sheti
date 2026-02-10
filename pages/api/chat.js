@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
-  const { image } = req.body;
+  const { prompt } = req.body; // चॅटमधून फक्त प्रश्न येईल
   const groqKey = process.env.GROQ_API_KEY;
 
   try {
@@ -12,36 +12,21 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview", // हे मॉडेल खूप वेगाने फोटो ओळखते
+        model: "llama3-8b-8192", // चॅटसाठी हे मॉडेल अतिशय जलद आहे
         messages: [
-          {
-            role: "user",
-            content: [
-              { 
-                type: "text", 
-                text: "या फोटोमध्ये कोणते पीक आहे आणि त्यावर कोणता रोग दिसतोय? जर फोटो अस्पष्ट असेल तरीही तुम्हाला जे वाटते ते मराठीत सांगा आणि त्यावर उपाय सुचवा." 
-              },
-              {
-                type: "image_url",
-                image_url: { url: image } // इमेज इथे पाठवली जाते
-              }
-            ]
-          }
-        ],
-        temperature: 0.5 // यामुळे AI जास्त अचूक उत्तर देईल
+          { role: "system", content: "तू एक भारतीय शेती तज्ञ आहेस. शेतकऱ्यांच्या प्रश्नांना मराठीत सोपी उत्तरे दे." },
+          { role: "user", content: prompt || "नमस्कार" }
+        ]
       })
     });
 
     const data = await response.json();
-    
-    // जर Groq कडून उत्तर आले तर ते दाखवा
     if (data.choices && data.choices[0]) {
       res.status(200).json({ reply: data.choices[0].message.content });
     } else {
-      res.status(200).json({ reply: "एआयला फोटो समजण्यात अडचण आली, कृपया थोड्या वेळाने प्रयत्न करा किंवा फोटो पुन्हा काढा." });
+      res.status(200).json({ reply: "क्षमस्व, मला सध्या उत्तर देता येत नाहीये." });
     }
-
   } catch (err) {
-    res.status(200).json({ reply: "तांत्रिक अडचण: सर्व्हर ओव्हरलोड झाला आहे." });
+    res.status(200).json({ reply: "Groq सर्व्हरमध्ये तांत्रिक अडचण आहे." });
   }
 }
