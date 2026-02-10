@@ -4,8 +4,6 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   const groqKey = process.env.GROQ_API_KEY?.trim();
 
-  if (!groqKey) return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
-
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -18,7 +16,7 @@ export default async function handler(req, res) {
         messages: [
           { 
             role: "system", 
-            content: "तू एक प्रगत भारतीय शेती तज्ञ आहेस. वापरकर्ता ज्या भाषेत प्रश्न विचारेल (मराठी, हिंदी किंवा इंग्रजी), त्याच भाषेत अतिशय सोप्या भाषेत उत्तर दे." 
+            content: "You are an expert Indian Agriculture Advisor. IMPORTANT: Always respond in the SAME LANGUAGE as the user's question. If the user asks in Marathi, answer in Marathi. If in Hindi, answer in Hindi. If in English, answer in English." 
           },
           { role: "user", content: prompt || "Hello" }
         ],
@@ -31,7 +29,7 @@ export default async function handler(req, res) {
     if (data.choices && data.choices[0]) {
       res.status(200).json({ reply: data.choices[0].message.content });
     } else {
-      res.status(200).json({ reply: "API Error: " + (data.error?.message || "Something went wrong") });
+      res.status(200).json({ reply: "Error: " + (data.error?.message || "Something went wrong") });
     }
   } catch (err) {
     res.status(200).json({ reply: "Server Error: " + err.message });
