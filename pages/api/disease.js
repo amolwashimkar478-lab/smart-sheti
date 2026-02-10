@@ -1,88 +1,32 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+
+  const { image } = req.body;
+  const PLANTIX_KEY = "2b10fMyNQ5CSq0lXszHZl6MhO"; 
 
   try {
-    const { image, city } = req.body;
-    const groqApiKey = process.env.GROQ_API_KEY?.trim();
+    // फोटो डेटा शुद्ध करणे (Header काढणे)
+    const pureBase64 = image.includes("base64,") ? image.split("base64,")[1] : image;
 
-    if (!groqApiKey) {
-      return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
-    }
-
-    if (!image) {
-      return res.status(200).json({ reply: "त्रुटी: फोटो मिळालेला नाही." });
-    }
-
-    // १. हवामान माहिती (Weather API)
-    let isRaining = false;
-    let weatherMessage = "";
-    
-    if (city) {
-      try {
-        const weatherRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
-        );
-        const weatherData = await weatherRes.json();
-        if (weatherData.weather) {
-          isRaining = weatherData.weather[0].main.toLowerCase().includes("rain");
-          if (isRaining) {
-            weatherMessage = "सूचना: सध्या तुमच्या भागात पाऊस सुरू आहे, त्यामुळे औषध फवारणी टाळा किंवा पावसाची उघडीप बघून करा.";
-          }
-        }
-      } catch (e) {
-        console.error("Weather Info Fetch Error");
-      }
-    }
-
-    // २. Groq AI (Vision Model) कॉल
-    // आपण ९० बिलियन पॅरामीटरचे शक्तिशाली मॉडेल वापरत आहोत जेणेकरून अचूकता वाढेल.
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.plantix.net/v2/image_analysis", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${groqApiKey}`,
+        "Authorization": `Bearer ${PLANTIX_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "llama-3.2-90b-vision-preview", 
-        messages: [
-          {
-            role: "user",
-            content: [
-              { 
-                type: "text", 
-                text: `तू एक तज्ञ भारतीय शेती डॉक्टर आहेस. फोटो पाहून पिकाचा रोग ओळखा. शेतकऱ्याला रोगाचे नाव, लक्षणे आणि त्यावर प्रभावी घरगुती किंवा रासायनिक उपाय मराठीत सांगा. ${weatherMessage}` 
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/jpeg;base64,${image}`
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1024,
-        temperature: 0.6
-      })
+      body: JSON.stringify({ "image": pureBase64 })
     });
 
     const data = await response.json();
 
-    if (data.error) {
-      // जर ९०बी मॉडेल नसेल तर ११बी व्हर्जन वापरून पाहूया (Fallback)
-      return res.status(200).json({ reply: "AI मॉडेल सध्या व्यस्त आहे किंवा उपलब्ध नाही. कृपया थोड्या वेळाने प्रयत्न करा. (Error: " + data.error.message + ")" });
+    if (data.predictions && data.predictions.length > 0) {
+      const d = data.predictions[0];
+      const reply = `पिकाचे नाव: ${d.provisional_name}\nरोग: ${d.name}\nविश्वासार्हता: ${Math.round(d.probability * 100)}%\n\nसूचना: अधिक माहितीसाठी कृषी तज्ञांचा सल्ला घ्या.`;
+      res.status(200).json({ reply });
+    } else {
+      res.status(200).json({ reply: "प्लांटिक्सला या फोटोत रोग ओळखता आला नाही. कृपया स्पष्ट फोटो काढा." });
     }
-
-    const aiReply = data.choices?.[0]?.message?.content || "क्षमस्व, फोटो स्पष्ट नसल्यामुळे रोगाची माहिती देता आली नाही.";
-
-    res.status(200).json({
-      reply: aiReply,
-      rain: isRaining
-    });
-
   } catch (error) {
-    res.status(200).json({ reply: "सर्व्हर एरर: " + error.message });
+    res.status(200).json({ reply: "प्लांटिक्स सर्व्हरशी संपर्क होऊ शकला नाही." });
   }
 }
