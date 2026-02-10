@@ -1,58 +1,88 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: "Method Not Allowed" });
-
-  const { image, prompt, city } = req.body; // prompt मध्ये चॅटचा मेसेज येईल
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
   try {
-    // १. हवामान माहिती (नेहमीप्रमाणे)
+    const { image, city } = req.body;
+    const groqApiKey = process.env.GROQ_API_KEY?.trim();
+
+    if (!groqApiKey) {
+      return res.status(200).json({ reply: "त्रुटी: Groq API Key सेट केलेली नाही." });
+    }
+
+    if (!image) {
+      return res.status(200).json({ reply: "त्रुटी: फोटो मिळालेला नाही." });
+    }
+
+    // १. हवामान माहिती (Weather API)
+    let isRaining = false;
     let weatherMessage = "";
-    if (city && WEATHER_API_KEY) {
+    
+    if (city) {
       try {
-        const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_API_KEY}&units=metric`);
+        const weatherRes = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
+        );
         const weatherData = await weatherRes.json();
-        if (weatherData.weather && weatherData.weather[0].main.toLowerCase().includes("rain")) {
-          weatherMessage = "\n(सूचना: तुमच्या भागात पाऊस सुरू आहे, फवारणी जपून करा.)";
+        if (weatherData.weather) {
+          isRaining = weatherData.weather[0].main.toLowerCase().includes("rain");
+          if (isRaining) {
+            weatherMessage = "सूचना: सध्या तुमच्या भागात पाऊस सुरू आहे, त्यामुळे औषध फवारणी टाळा किंवा पावसाची उघडीप बघून करा.";
+          }
         }
-      } catch (e) { console.error("Weather error"); }
+      } catch (e) {
+        console.error("Weather Info Fetch Error");
+      }
     }
 
-    // २. Gemini API साठी साहित्य तयार करणे
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    let parts = [];
-    
-    // जर फोटो असेल तर तो जोडा
-    if (image) {
-      const pureBase64 = image.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
-      parts.push({ inline_data: { mime_type: "image/jpeg", data: pureBase64 } });
-      parts.push({ text: prompt || "या पिकाचा रोग ओळखून उपाय सांगा." });
-    } else {
-      // जर फक्त चॅट असेल तर
-      parts.push({ text: prompt || "नमस्कार, मी तुम्हाला शेतीविषयक काय मदत करू शकतो?" });
-    }
-
-    // ३. Gemini ला विनंती पाठवणे
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    // २. Groq AI (Vision Model) कॉल
+    // आपण ९० बिलियन पॅरामीटरचे शक्तिशाली मॉडेल वापरत आहोत जेणेकरून अचूकता वाढेल.
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${groqApiKey}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        contents: [{ parts: parts }]
+        model: "llama-3.2-90b-vision-preview", 
+        messages: [
+          {
+            role: "user",
+            content: [
+              { 
+                type: "text", 
+                text: `तू एक तज्ञ भारतीय शेती डॉक्टर आहेस. फोटो पाहून पिकाचा रोग ओळखा. शेतकऱ्याला रोगाचे नाव, लक्षणे आणि त्यावर प्रभावी घरगुती किंवा रासायनिक उपाय मराठीत सांगा. ${weatherMessage}` 
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${image}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1024,
+        temperature: 0.6
       })
     });
 
     const data = await response.json();
 
-    if (data.candidates && data.candidates[0].content) {
-      let finalReply = data.candidates[0].content.parts[0].text;
-      res.status(200).json({ reply: finalReply + weatherMessage });
-    } else {
-      res.status(400).json({ reply: "क्षमस्व, मला तुमचे म्हणणे समजले नाही." });
+    if (data.error) {
+      // जर ९०बी मॉडेल नसेल तर ११बी व्हर्जन वापरून पाहूया (Fallback)
+      return res.status(200).json({ reply: "AI मॉडेल सध्या व्यस्त आहे किंवा उपलब्ध नाही. कृपया थोड्या वेळाने प्रयत्न करा. (Error: " + data.error.message + ")" });
     }
 
+    const aiReply = data.choices?.[0]?.message?.content || "क्षमस्व, फोटो स्पष्ट नसल्यामुळे रोगाची माहिती देता आली नाही.";
+
+    res.status(200).json({
+      reply: aiReply,
+      rain: isRaining
+    });
+
   } catch (error) {
-    res.status(500).json({ reply: "तांत्रिक अडचण आली आहे: " + error.message });
+    res.status(200).json({ reply: "सर्व्हर एरर: " + error.message });
   }
 }
-
