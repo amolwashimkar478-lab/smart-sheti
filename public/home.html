@@ -172,6 +172,33 @@ onAuthStateChanged(auth,u=>{
     });
   }
 </script>
+<script>
+let backPressedTime = 0;
+
+window.onpopstate = function () {
+
+    if (backPressedTime + 2000 > Date.now()) {
+
+        // Android WebView असेल तर app बंद
+        if (navigator.app) {
+            navigator.app.exitApp();
+        } else {
+            window.close();
+        }
+
+    } else {
+        alert("पुन्हा Back दाबा बाहेर जाण्यासाठी");
+    }
+
+    backPressedTime = Date.now();
+
+    // history परत push करतो म्हणजे page मागे जाणार नाही
+    history.pushState(null, null, location.href);
+};
+
+// सुरुवातीला history push करा
+history.pushState(null, null, location.href);
+</script>  
 
 </body>
 </html>
