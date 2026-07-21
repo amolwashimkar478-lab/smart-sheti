@@ -112,7 +112,7 @@ async function analyze() {
   btn.disabled = true;
 
   try {
-    const res = await fetch("/api/chat", {
+    const res = await fetch("/api/disease", {  // <--- इथे '/api/chat' ऐवजी '/api/disease' करायचं आहे
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -120,6 +120,7 @@ async function analyze() {
         prompt: "तुमच्यासमोर पिकाचा फोटो दिला आहे. कृपया फोटो तपासून त्यातील पिकाचे नाव, आलेला रोग/कीड, त्याची लक्षणे आणि त्यावर वापरायची योग्य औषधे व प्रतिबंधात्मक उपाय सोप्या मराठी भाषेत सविस्तर सांगा."
       })
     });
+    
 
     const data = await res.json();
     
