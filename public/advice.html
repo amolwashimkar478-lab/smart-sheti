@@ -3,29 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>पीक सल्ला</title>
+    <title>पीक व फवारणी सल्ला</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
-        .advice-card { background: white; border-radius: 20px; padding: 25px; max-width: 500px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
-        .day-tag { background: #00b894; color: white; padding: 6px 18px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 20px; }
-        .advice-content { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 20px; border-radius: 15px; color: #2e7d32; font-size: 18px; line-height: 1.6; text-align: left; }
-        .back-btn { margin-top: 25px; background: #2d3436; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
+        body { font-family: 'Outfit', sans-serif; background: #f8f9fa; margin: 0; padding: 15px; }
+        .advice-card { background: white; border-radius: 20px; padding: 20px; max-width: 480px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
+        .day-tag { background: #00b894; color: white; padding: 6px 18px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        
+        /* सल्ल्याचे बॉक्सेस */
+        .advice-content { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 15px; border-radius: 15px; color: #2e7d32; font-size: 16px; line-height: 1.5; text-align: left; margin-bottom: 15px; }
+        .weather-content { background: #e3f2fd; border: 1px solid #bbdefb; padding: 15px; border-radius: 15px; color: #1565c0; font-size: 16px; line-height: 1.5; text-align: left; }
+        
+        .box-title { font-weight: bold; font-size: 17px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .back-btn { margin-top: 20px; background: #2d3436; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="advice-card">
-    <h2 id="cropTitle" style="color:#2d3436;">लोड होत आहे...</h2>
-    <div class="day-tag" id="dayDisplay">दिवस मोजत आहे...</div>
-    <div class="advice-content">
-        <strong>📢 आजचा सल्ला:</strong><br>
-        <span id="adviceText">कृपया थोडा वेळ थांबा...</span>
+    <h2 id="cropTitle" style="color:#2d3436; margin-top: 5px;">🌾 पीक व फवारणी सल्ला</h2>
+    <div class="day-tag" id="dayDisplay">लोकेशन/माहिती तपासत आहे...</div>
+    
+    <!-- १. पिकाचा टप्पा सल्ला -->
+    <div class="advice-content" id="cropBox">
+        <div class="box-title">📢 पिकाच्या वयानुसार सल्ला:</div>
+        <span id="adviceText">पिकाची माहिती शोधत आहे...</span>
     </div>
-    <button class="back-btn" onclick="location.href='myfarm.html'">🔙 डॅशबोर्डवर परत जा</button>
+
+    <!-- २. हवामानानुसार फवारणी सल्ला -->
+    <div class="weather-content">
+        <div class="box-title">🌦️ आजचा फवारणी सल्ला (हवामान):</div>
+        <div id="weatherStatus" style="font-weight: bold; margin-bottom: 4px;">हवामान तपासत आहे...</div>
+        <span id="weatherMsg">कृपया लोकेशनची वाट पहा...</span>
+    </div>
+
+    <button class="back-btn" onclick="location.href='home.html'">🔙 मुख्य पानावर जा</button>
 </div>
 
 <script>
+    // १. पीक सल्ला लॉजिक (तुमचा मूळ कोड)
     const rules = {
         "कापूस": { 30: "🌱 खताचा पहिला हप्ता द्या.", 50: "⚠️ बोंडअळीसाठी कामगंध सापळे लावा.", 90: "🌸 पाते गळ रोखण्यासाठी फवारणी करा." },
         "सोयाबीन": { 20: "🌿 कोळपणी किंवा खुरपणी करून तण नियंत्रण करा.", 45: "🌸 फुलधारणा अवस्था: पाणी द्या.", 75: "🐛 शेंगा पोखरणारी अळी तपासा." },
@@ -34,7 +50,6 @@
         "कांदा": { 45: "🧅 खत द्या आणि खुरपणी करा.", 90: "🌿 मान पडू लागल्यावर पाणी बंद करा." },
         "हळद": { 90: "🚜 मोठी भरणी (माती चढवणे) करा.", 150: "⚠️ करपा रोगासाठी बुरशीनाशक वापरा." },
         "कलिंगड": { 30: "🍉 फळ फुगवणीसाठी खते द्या.", 65: "🍉 काढणीची तयारी करा." }
-        // अधिक पिकांचे सल्ले येथे याच पद्धतीने वाढवू शकता...
     };
 
     function loadAdvice() {
@@ -54,16 +69,74 @@
                 if(best) msg = rules[crop][best];
             }
             document.getElementById('adviceText').innerText = msg;
-
-            // महत्त्वाचा दिवस असल्यास नोटिफिकेशन (Browser Only)
-            if(rules[crop] && rules[crop][diff]) {
-                if(Notification.permission === "granted") {
-                    new Notification("शेती सल्ला", {body: crop + ": " + rules[crop][diff]});
-                }
-            }
+        } else {
+            // जर होम वरून थेट आले असतील तर हे दाखवा
+            document.getElementById('cropBox').style.display = 'none';
+            document.getElementById('dayDisplay').innerText = "आजची हवामान स्थिती";
         }
     }
-    window.onload = loadAdvice;
+
+    // २. हवामान आणि फवारणी सल्ला लॉजिक (OpenWeatherMap)
+    const apiKey = "b1b15e88fa797225412429c1c50c122a11"; 
+
+    function fetchWeather() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(getPosition, showError);
+        } else {
+            document.getElementById("weatherStatus").innerText = "लोकेशन सपोर्ट करत नाही";
+        }
+    }
+
+    function getPosition(position) {
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+        getWeatherAdvice(lat, lon);
+    }
+
+    function showError() {
+        document.getElementById("weatherStatus").innerText = "⚠️ लोकेशन बंद आहे";
+        document.getElementById("weatherMsg").innerText = "अचूक फवारणी सल्ल्यासाठी मोबाईलचे GPS / लोकेशन चालू करा.";
+    }
+
+    function getWeatherAdvice(lat, lon) {
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=mr`)
+          .then(res => res.json())
+          .then(data => {
+            let temp = data.main.temp;
+            let wind = data.wind.speed * 3.6; // km/h
+            let humidity = data.main.humidity;
+            let rain = data.rain ? true : false;
+            
+            let statusText = "";
+            let adviceText = "";
+
+            if (rain) {
+              statusText = "🌧️ आज फवारणी करू नका!";
+              adviceText = "तुमच्या भागात पाऊस सुरू आहे/शक्यता आहे. औषध धुऊन जाईल, फवारणी व खत देणे टाळा.";
+            } else if (wind > 18) {
+              statusText = "💨 फवारणी टाळा (वारा जास्त आहे)";
+              adviceText = `सध्या वाऱ्याचा वेग ${Math.round(wind)} km/h आहे. वारा जास्त असल्याने फवारणी योग्य होणार नाही.`;
+            } else if (humidity > 80) {
+              statusText = "🦠 बुरशीजन्य रोगाचा धोका!";
+              adviceText = "हवामानात दमटपणा जास्त आहे. पिकांवर करपा किंवा बुरशी येऊ शकते, योग्य बुरशीनाशक वापरा.";
+            } else {
+              statusText = "✅ फवारणीसाठी योग्य हवामान!";
+              adviceText = `तापमान ${Math.round(temp)}°C आहे. सकाळी किंवा संध्याकाळी फवारणी व खत नियोजन करू शकता.`;
+            }
+
+            document.getElementById("weatherStatus").innerText = statusText;
+            document.getElementById("weatherMsg").innerText = adviceText;
+          })
+          .catch(err => {
+            document.getElementById("weatherStatus").innerText = "माहिती मिळण्यास अडचण";
+            document.getElementById("weatherMsg").innerText = "इंटरनेट कनेक्शन तपासून पुन्हा प्रयत्न करा.";
+          });
+    }
+
+    window.onload = function() {
+        loadAdvice();
+        fetchWeather();
+    };
 </script>
 </body>
 </html>
