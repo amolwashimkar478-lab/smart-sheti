@@ -1,9 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Vercel Environment Variable किंवा थेट API Key
-const apiKey = process.env.GEMINI_API_KEY || "तुमचा_GEMINI_API_KEY_इथे_टाका"; 
-const genAI = new GoogleGenerativeAI(apiKey);
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
@@ -16,33 +10,51 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "त्रुटी: फोटो मिळाला नाही. कृपया स्पष्ट फोटो काढा." });
     }
 
-    // Base64 डेटा शुद्ध करणे
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ reply: "त्रुटी: GEMINI_API_KEY व्हर्सेलवर सेट केलेला नाही." });
+    }
+
+    // Base64 मधील फोटो डेटा शुद्ध करणे
     const pureBase64 = image.includes("base64,") ? image.split("base64,")[1] : image;
 
-    // Gemini 1.5 Flash मॉडेल वापरणे
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const imagePart = {
-      inlineData: {
-        data: pureBase64,
-        mimeType: "image/jpeg"
+    // Direct Gemini REST API Call (कोणत्याही npm पॅकेजची गरज नाही)
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt || "या पिकाच्या फोटोमधील रोग/कीड ओळखा आणि त्यावर वापरायची औषधे व उपाय मराठीत सांगा." },
+                {
+                  inlineData: {
+                    mimeType: "image/jpeg",
+                    data: pureBase64
+                  }
+                }
+              ]
+            }
+          ]
+        })
       }
-    };
+    );
 
-    const userPrompt = prompt || "या पिकाच्या फोटोमधील रोग/कीड ओळखा आणि त्यावर वापरायची औषधे व उपाय मराठीत सांगा.";
+    const data = await response.json();
 
-    // Gemini API ला पाठवणे
-    const result = await model.generateContent([userPrompt, imagePart]);
-    const response = await result.response;
-    const text = response.text();
-
-    return res.status(200).json({ reply: text });
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+      const text = data.candidates[0].content.parts[0].text;
+      return res.status(200).json({ reply: text });
+    } else {
+      console.error("Gemini Response Error:", data);
+      return res.status(200).json({ reply: "क्षमस्व, फोटोवरून अचूक रोग ओळखता आला नाही. कृपया दुसरा स्पष्ट फोटो टाका." });
+    }
 
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return res.status(200).json({ 
-      reply: "तांत्रिक अडचण आली आहे. फोटो प्रक्रिया होऊ शकली नाही: " + error.message 
-    });
+    console.error("API Error:", error);
+    return res.status(200).json({ reply: "तांत्रिक अडचण आली आहे: " + error.message });
   }
 }
 
