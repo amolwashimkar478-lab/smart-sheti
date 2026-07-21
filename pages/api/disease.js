@@ -7,18 +7,18 @@ export default async function handler(req, res) {
     const { image, prompt } = req.body;
 
     if (!image || image.length < 100) {
-      return res.status(200).json({ reply: "त्रुटी: फोटो मिळाला नाही. कृपया स्पष्ट फोटो काढा." });
+      return res.status(200).json({ reply: "त्रुटी: फोटो मिळाला नाही." });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(200).json({ reply: "त्रुटी: GEMINI_API_KEY व्हर्सेलवर सेट केलेला नाही." });
+    
+    // Base64 मधील सर्व नको असलेला डेटा साफ करणे
+    let pureBase64 = image;
+    if (image.includes(",")) {
+      pureBase64 = image.split(",")[1];
     }
 
-    // Base64 मधील फोटो डेटा शुद्ध करणे
-    const pureBase64 = image.includes("base64,") ? image.split("base64,")[1] : image;
-
-    // Direct Gemini REST API Call (कोणत्याही npm पॅकेजची गरज नाही)
+    // Gemini API Request
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
@@ -27,8 +27,11 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
-                { text: prompt || "या पिकाच्या फोटोमधील रोग/कीड ओळखा आणि त्यावर वापरायची औषधे व उपाय मराठीत सांगा." },
+                { 
+                  text: prompt || "फोटोत कोणते पीक/फळ दिसत आहे ते ओळखा आणि त्यावर आलेला रोग किंवा पडलेले छिद्र/कीड ओळखून मराठीत सविस्तर उपाय सांगा." 
+                },
                 {
                   inlineData: {
                     mimeType: "image/jpeg",
@@ -45,16 +48,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-      const text = data.candidates[0].content.parts[0].text;
-      return res.status(200).json({ reply: text });
+      return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
     } else {
-      console.error("Gemini Response Error:", data);
-      return res.status(200).json({ reply: "क्षमस्व, फोटोवरून अचूक रोग ओळखता आला नाही. कृपया दुसरा स्पष्ट फोटो टाका." });
+      console.error("Gemini Error:", data);
+      return res.status(200).json({ reply: "फोटो वाचता आला नाही, कृपया पुन्हा प्रयत्न करा." });
     }
 
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(200).json({ reply: "तांत्रिक अडचण आली आहे: " + error.message });
+    return res.status(200).json({ reply: "तांत्रिक त्रुटी: " + error.message });
   }
 }
 
