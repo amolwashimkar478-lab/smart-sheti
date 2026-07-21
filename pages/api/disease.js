@@ -1,9 +1,16 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Vercel Environment Variable किंवा थेट API Key
+const apiKey = process.env.GEMINI_API_KEY || "तुमचा_GEMINI_API_KEY_इथे_टाका"; 
+const genAI = new GoogleGenerativeAI(apiKey);
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
   try {
-    const { image } = req.body;
-    const PLANTIX_KEY = "2b10fMyNQ5CSq0lXszHZl6MhO"; // तुमची की
+    const { image, prompt } = req.body;
 
     if (!image || image.length < 100) {
       return res.status(200).json({ reply: "त्रुटी: फोटो मिळाला नाही. कृपया स्पष्ट फोटो काढा." });
@@ -12,27 +19,30 @@ export default async function handler(req, res) {
     // Base64 डेटा शुद्ध करणे
     const pureBase64 = image.includes("base64,") ? image.split("base64,")[1] : image;
 
-    const response = await fetch("https://api.plantix.net/v2/image_analysis", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${PLANTIX_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ "image": pureBase64 })
-    });
+    // Gemini 1.5 Flash मॉडेल वापरणे
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const data = await response.json();
+    const imagePart = {
+      inlineData: {
+        data: pureBase64,
+        mimeType: "image/jpeg"
+      }
+    };
 
-    if (data.predictions && data.predictions.length > 0) {
-      const d = data.predictions[0];
-      // मराठीत उत्तर तयार करणे
-      res.status(200).json({ 
-        reply: `🌿 **पिकाचे नाव:** ${d.provisional_name}\n🔍 **रोग:** ${d.name}\n✅ **नक्कीपणा:** ${Math.round(d.probability * 100)}%\n\n**सूचना:** कृपया औषध फवारणी करण्यापूर्वी स्थानिक कृषी तज्ञांचा सल्ला घ्या.` 
-      });
-    } else {
-      res.status(200).json({ reply: "क्षमस्व, फोटोत रोग ओळखता आला नाही. कृपया पिकाच्या पानाचा स्पष्ट फोटो काढा." });
-    }
+    const userPrompt = prompt || "या पिकाच्या फोटोमधील रोग/कीड ओळखा आणि त्यावर वापरायची औषधे व उपाय मराठीत सांगा.";
+
+    // Gemini API ला पाठवणे
+    const result = await model.generateContent([userPrompt, imagePart]);
+    const response = await result.response;
+    const text = response.text();
+
+    return res.status(200).json({ reply: text });
+
   } catch (error) {
-    res.status(200).json({ reply: "तांत्रिक अडचण आली आहे. कृपया थोड्या वेळाने प्रयत्न करा." });
+    console.error("Gemini API Error:", error);
+    return res.status(200).json({ 
+      reply: "तांत्रिक अडचण आली आहे. फोटो प्रक्रिया होऊ शकली नाही: " + error.message 
+    });
   }
 }
+
