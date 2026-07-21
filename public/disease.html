@@ -4,18 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌿 स्मार्ट शेती - रोग ओळख</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Arial, sans-serif; background:#e8f5e9; padding:20px; text-align:center; }
-  .container { max-width:420px; margin:auto; }
-  .card { background:#fff; padding:20px; border-radius:18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-  h2 { color:#2e7d32; }
-  .btn-row { display:flex; gap:10px; margin:15px 0; }
-  button { flex:1; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; font-weight:bold; }
-  .camera { background:#2e7d32; }
-  .gallery { background:#1565c0; }
-  .detect { background:#388e3c; width:100%; margin-top:10px; }
-  .back { background:#1976d2; width:100%; margin-top:15px; }
-  .result { margin-top:12px; background:#f1f8e9; padding:15px; border-radius:10px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; white-space: pre-wrap; }
+  :root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --bg: #e8f5e9;
+    --card: #ffffff;
+    --text: #2c3e50;
+  }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); padding:15px; margin:0; color: var(--text); }
+  .container { max-width:440px; margin:auto; }
+  .card { background: var(--card); padding:20px; border-radius:20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align:center; }
+  h2 { color: var(--primary); margin-top:0; font-size: 22px; }
+  .btn-row { display:flex; gap:12px; margin:15px 0; }
+  button { flex:1; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; font-weight:bold; font-family:inherit; transition:0.2s; }
+  button:active { transform: scale(0.96); }
+  .camera { background: var(--primary); }
+  .gallery { background: #1565c0; }
+  .detect { background: #388e3c; width:100%; margin-top:12px; }
+  .back { background: #0984e3; width:100%; margin-top:15px; }
+  
+  #previewContainer { margin: 15px 0; display: none; }
+  #previewImage { width: 100%; max-height: 250px; object-fit: cover; border-radius: 14px; border: 2px solid var(--primary); }
+
+  .result { margin-top:15px; background:#f1f8e9; padding:16px; border-radius:12px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; white-space: pre-wrap; word-wrap: break-word; }
   input[type=file] { display:none; }
   button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
@@ -23,8 +36,8 @@
 <body>
 
 <div class="container">
-  <h2>📸 पिकाचा फोटो टाका</h2>
   <div class="card">
+    <h2>📸 पिकाचा फोटो टाका</h2>
     <input type="file" id="cameraInput" accept="image/*" capture="environment">
     <input type="file" id="galleryInput" accept="image/*">
 
@@ -33,14 +46,18 @@
       <button class="gallery" onclick="document.getElementById('galleryInput').click()">🖼️ गॅलरी</button>
     </div>
 
+    <div id="previewContainer">
+      <img id="previewImage" src="" alt="निवडलेला फोटो">
+    </div>
+
     <button class="detect" id="btnDetect" onclick="analyze()">🔍 रोग ओळखा</button>
-    <div class="result" id="result">पिकाचा फोटो निवडा आणि 'रोग ओळखा' बटण दाबा.</div>
+    <div class="result" id="result">पिकाच्या बाधित पानाचा किंवा भागाचा फोटो निवडा आणि 'रोग ओळखा' वर क्लिक करा.</div>
   </div>
-  <button class="back" onclick="location.href='home.html'">⬅ मुख्य पेज</button>
+  <button class="back" onclick="location.href='home.html'">🔙 मुख्य पेजवर जा</button>
 </div>
 
 <script>
-let selectedFileBase64 = null;
+let cleanBase64Image = null;
 
 function handleFile(e) {
   const file = e.target.files[0];
@@ -64,9 +81,16 @@ function handleFile(e) {
       
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // बदल: .split(",")[1] काढून टाकला आहे जेणेकरून पूर्ण डेटा API कडे जाईल
-      selectedFileBase64 = canvas.toDataURL('image/jpeg', 0.7);
-      document.getElementById("result").innerText = "✅ फोटो तयार आहे. आता 'रोग ओळखा' बटण दाबा.";
+      const fullDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // फोटो प्रीव्ह्यू दाखवा
+      document.getElementById("previewImage").src = fullDataUrl;
+      document.getElementById("previewContainer").style.display = "block";
+
+      // Gemini API साठी फक्त शुद्ध Base64 (prefix काढून टाकणे)
+      cleanBase64Image = fullDataUrl.split(",")[1];
+      
+      document.getElementById("result").innerText = "✅ फोटो निवडला गेला आहे. आता 'रोग ओळखा' बटणावर क्लिक करा.";
     };
   };
   reader.readAsDataURL(file);
@@ -76,15 +100,15 @@ document.getElementById("cameraInput").onchange = handleFile;
 document.getElementById("galleryInput").onchange = handleFile;
 
 async function analyze() {
-  if(!selectedFileBase64) {
-    alert("कृपया आधी फोटो निवडा किंवा काढा.");
+  if(!cleanBase64Image) {
+    alert("कृपया आधी कॅमेरा किंवा गॅलरीमधून फोटो निवडा.");
     return;
   }
 
   const resultDiv = document.getElementById("result");
   const btn = document.getElementById("btnDetect");
   
-  resultDiv.innerText = "⏳ एआय तपासणी करत आहे, कृपया ३०-४० सेकंद थांबा...";
+  resultDiv.innerText = "⏳ AI पिकाची तपासणी करत आहे, कृपया १०-१५ सेकंद थांबा...";
   btn.disabled = true;
 
   try {
@@ -92,8 +116,8 @@ async function analyze() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        image: selectedFileBase64, 
-        prompt: "या पिकाच्या फोटोमधील रोग ओळखा आणि त्यावर प्रतिबंधात्मक उपाय मराठीत सांगा."
+        image: cleanBase64Image, 
+        prompt: "तुमच्यासमोर पिकाचा फोटो दिला आहे. कृपया फोटो तपासून त्यातील पिकाचे नाव, आलेला रोग/कीड, त्याची लक्षणे आणि त्यावर वापरायची योग्य औषधे व प्रतिबंधात्मक उपाय सोप्या मराठी भाषेत सविस्तर सांगा."
       })
     });
 
@@ -101,9 +125,8 @@ async function analyze() {
     
     if(data.reply) {
       resultDiv.innerText = data.reply;
-      
     } else {
-      resultDiv.innerText = "क्षमस्व, माहिती मिळू शकली नाही. कृपया पुन्हा प्रयत्न करा.";
+      resultDiv.innerText = "क्षमस्व, फोटो स्पष्ट नसल्याने किंवा तांत्रिक कारणास्तव माहिती मिळू शकली नाही. कृपया दुसरा स्पष्ट फोटो टाका.";
     }
 
   } catch (e) {
@@ -116,3 +139,4 @@ async function analyze() {
 
 </body>
 </html>
+
