@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "❌ Vercel वर GEMINI_API_KEY व्हॅल्यु सापडली नाही." });  
     }  
 
-    // २. Gemini REST API Call (सक्त सूचनांसह)
+    // २. Gemini REST API Call
     const response = await fetch(  
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,  
       {  
@@ -48,10 +48,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });  
     } else {  
       console.error("Gemini Error:", JSON.stringify(data));  
-      return res.status(200).json({ reply: "फोटोवरून अचूक निदान करता आले नाही. कृपया स्पष्ट फोटो टाका." });  
+      return res.status(200).json({ reply: "फोटोवरून अचूक निदान करता आले नाही. कृपया दुसरा स्पष्ट फोटो टाका." });  
     }
 
   } catch (error) {
     return res.status(200).json({ reply: "सर्व्हर त्रुटी: " + error.message });
   }
 }
+
