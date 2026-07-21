@@ -1,24 +1,20 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   try {
     const { image, prompt } = req.body;
 
-    if (!image || image.length < 100) {
-      return res.status(200).json({ reply: "त्रुटी: फोटो मिळाला नाही." });
+    // फोटो आलाच नाही तर अंदाजे उत्तर देऊ न देणे
+    if (!image || image.length < 500) {
+      return res.status(200).json({ reply: "❌ फोटोचा डेटा बॅकएंडला मिळाला नाही. कृपया पुन्हा फोटो अपलोड करा." });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    
-    // Base64 मधील सर्व नको असलेला डेटा साफ करणे
-    let pureBase64 = image;
-    if (image.includes(",")) {
-      pureBase64 = image.split(",")[1];
+    if (!apiKey) {
+      return res.status(200).json({ reply: "❌ Vercel वर GEMINI_API_KEY सापडला नाही." });
     }
 
-    // Gemini API Request
+    // Gemini REST API Call
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
@@ -29,13 +25,11 @@ export default async function handler(req, res) {
             {
               role: "user",
               parts: [
-                { 
-                  text: prompt || "फोटोत कोणते पीक/फळ दिसत आहे ते ओळखा आणि त्यावर आलेला रोग किंवा पडलेले छिद्र/कीड ओळखून मराठीत सविस्तर उपाय सांगा." 
-                },
+                { text: prompt || "फोटोतील फळ किंवा पीक ओळखून रोगाची माहिती द्या." },
                 {
                   inlineData: {
                     mimeType: "image/jpeg",
-                    data: pureBase64
+                    data: image
                   }
                 }
               ]
@@ -50,12 +44,11 @@ export default async function handler(req, res) {
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
       return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
     } else {
-      console.error("Gemini Error:", data);
-      return res.status(200).json({ reply: "फोटो वाचता आला नाही, कृपया पुन्हा प्रयत्न करा." });
+      console.error("Gemini Error:", JSON.stringify(data));
+      return res.status(200).json({ reply: "फोटोवरून ओळखता आले नाही. कृपया दुसरा फोटो ट्राय करा." });
     }
 
   } catch (error) {
-    return res.status(200).json({ reply: "तांत्रिक त्रुटी: " + error.message });
+    return res.status(200).json({ reply: "सर्व्हर त्रुटी: " + error.message });
   }
 }
-
