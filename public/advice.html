@@ -41,7 +41,7 @@
 </div>
 
 <script>
-    // १. पीक सल्ला लॉजिक (तुमचा मूळ कोड)
+    // १. पीक सल्ला लॉजिक
     const rules = {
         "कापूस": { 30: "🌱 खताचा पहिला हप्ता द्या.", 50: "⚠️ बोंडअळीसाठी कामगंध सापळे लावा.", 90: "🌸 पाते गळ रोखण्यासाठी फवारणी करा." },
         "सोयाबीन": { 20: "🌿 कोळपणी किंवा खुरपणी करून तण नियंत्रण करा.", 45: "🌸 फुलधारणा अवस्था: पाणी द्या.", 75: "🐛 शेंगा पोखरणारी अळी तपासा." },
@@ -76,9 +76,7 @@
         }
     }
 
-    // २. हवामान आणि फवारणी सल्ला लॉजिक (OpenWeatherMap)
-    const apiKey = "b1b15e88fa797225412429c1c50c122a11"; 
-
+    // २. हवामान आणि फवारणी सल्ला लॉजिक (Open-Meteo API - No Key Required)
     function fetchWeather() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(getPosition, showError);
@@ -99,13 +97,14 @@
     }
 
     function getWeatherAdvice(lat, lon) {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=mr`)
+        // विना-की थेट चालणारे ओपन API
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,rain,wind_speed_10m`)
           .then(res => res.json())
           .then(data => {
-            let temp = data.main.temp;
-            let wind = data.wind.speed * 3.6; // km/h
-            let humidity = data.main.humidity;
-            let rain = data.rain ? true : false;
+            let temp = data.current.temperature_2m;
+            let wind = data.current.wind_speed_10m; // km/h
+            let humidity = data.current.relative_humidity_2m;
+            let rain = data.current.rain > 0;
             
             let statusText = "";
             let adviceText = "";
@@ -140,3 +139,4 @@
 </script>
 </body>
 </html>
+
