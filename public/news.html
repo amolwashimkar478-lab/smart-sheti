@@ -100,38 +100,71 @@
       box-shadow: 0 6px 18px rgba(9, 132, 227, 0.3);
     }
 
-    /* ॲपच्या आतच बातमी उघडणारा स्क्रीन */
-    #readerScreen {
+    /* ॲपच्या आत बातमी दाखवणारे सुंदर पॉप-अप */
+    .news-modal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: white;
-      z-index: 9999;
+      background: rgba(0, 0, 0, 0.6);
       display: none;
-      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      z-index: 1000;
     }
-    .reader-header {
-      background: #27ae60;
-      color: white;
-      padding: 12px 15px;
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 550px;
+      max-height: 85vh;
+      border-radius: 24px 24px 0 0;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.25s ease-out;
     }
-    .reader-back-btn {
-      background: #ffffff;
-      color: #27ae60;
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-header {
+      padding: 15px 20px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h4 { margin: 0; font-size: 16px; color: #333; }
+    .close-btn {
+      background: #ff7675;
+      color: white;
       border: none;
       padding: 8px 16px;
-      border-radius: 8px;
+      border-radius: 20px;
       font-weight: bold;
-      font-size: 14px;
       cursor: pointer;
+      font-size: 13px;
     }
-    #newsIframe {
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .modal-body img {
       width: 100%;
-      height: 100%;
-      border: none;
-      flex: 1;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 15px;
+    }
+    .modal-body h2 {
+      font-size: 18px;
+      line-height: 1.5;
+      color: #2c3e50;
+      margin: 0 0 10px;
+    }
+    .modal-body p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #555;
     }
   </style>
 </head>
@@ -152,13 +185,17 @@
   <button class="home-btn" onclick="location.href='home.html'">🔙 मुख्य पानावर जा</button>
 </div>
 
-<!-- ॲपच्या आत बातमी उघडणारा व्ह्यूअर -->
-<div id="readerScreen">
-  <div class="reader-header">
-    <button class="reader-back-btn" onclick="closeReader()">🔙 मागे जा</button>
-    <span style="font-weight:bold; font-size:15px;">शेती बातमी</span>
+<!-- In-App News Modal -->
+<div id="newsModal" class="news-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4>📰 शेती बातमी</h4>
+      <button class="close-btn" onclick="closeNewsModal()">❌ बंद करा</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- बातमीची सविस्तर माहिती इथे दिसेल -->
+    </div>
   </div>
-  <iframe id="newsIframe" src=""></iframe>
 </div>
 
 <script>
@@ -174,15 +211,21 @@ async function fetchAgriNews() {
     
     allNews = data.items.map(item => {
       let img = defaultImg;
+      let cleanDesc = "";
+      
       if (item.enclosure && item.enclosure.link) {
         img = item.enclosure.link;
-      } else if (item.description) {
+      }
+      
+      if (item.description) {
         const div = document.createElement('div');
         div.innerHTML = item.description;
         const imgTag = div.querySelector('img');
         if (imgTag && imgTag.src) img = imgTag.src;
+        cleanDesc = div.textContent || div.innerText || "";
       }
-      return { ...item, thumbnail: img };
+      
+      return { ...item, thumbnail: img, cleanText: cleanDesc };
     });
     
     showLatest();
@@ -195,7 +238,7 @@ function renderNews(items) {
   const box = document.getElementById('newsBox');
   box.innerHTML = "";
   
-  items.forEach((news) => {
+  items.forEach((news, index) => {
     const isSaved = savedNews.some(s => s.link === news.link);
     const newsJson = JSON.stringify(news).replace(/"/g, '&quot;');
     
@@ -211,7 +254,7 @@ function renderNews(items) {
           <h3>${news.title}</h3>
           <div class="card-footer">
             <span class="news-date">📅 ${new Date(news.pubDate).toLocaleDateString('mr-IN')}</span>
-            <button class="read-more" onclick="openReader('${news.link}')">पूर्ण वाचा →</button>
+            <button class="read-more" onclick="openNewsModal(${index})">पूर्ण वाचा →</button>
           </div>
         </div>
       </div>
@@ -219,14 +262,24 @@ function renderNews(items) {
   });
 }
 
-function openReader(url) {
-  document.getElementById('newsIframe').src = url;
-  document.getElementById('readerScreen').style.display = 'flex';
+function openNewsModal(index) {
+  const isSavedTab = document.getElementById('savedTab').classList.contains('active-tab');
+  const news = isSavedTab ? savedNews[index] : allNews[index];
+  
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <img src="${news.thumbnail}" onerror="this.onerror=null; this.src='${defaultImg}';">
+    <h2>${news.title}</h2>
+    <p style="color:#7f8c8d; font-size:13px; margin-bottom:15px;">📅 ${new Date(news.pubDate).toLocaleDateString('mr-IN')}</p>
+    <hr style="border:none; border-top:1px solid #eee; margin-bottom:15px;">
+    <p>${news.cleanText || news.title}</p>
+  `;
+  
+  document.getElementById('newsModal').style.display = 'flex';
 }
 
-function closeReader() {
-  document.getElementById('readerScreen').style.display = 'none';
-  document.getElementById('newsIframe').src = '';
+function closeNewsModal() {
+  document.getElementById('newsModal').style.display = 'none';
 }
 
 function toggleSave(news) {
