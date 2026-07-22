@@ -29,7 +29,7 @@
   <div class="card">
     <h2>📊 आजचे लाईव्ह बाजारभाव</h2>
     <p style="text-align: center; font-size: 13px; color: #666; margin-top:-5px;">(महाराष्ट्रातील मुख्य बाजार समित्या)</p>
-    <div id="loading">⏳ ताज्या भावांची नोंद लोड होत आहे...</div>
+    <div id="loading" style="text-align:center; padding:10px;">⏳ ताज्या भावांची नोंद लोड होत आहे...</div>
     <div id="marketList"></div>
   </div>
 
@@ -41,25 +41,28 @@
     const listDiv = document.getElementById("marketList");
     const loadingDiv = document.getElementById("loading");
 
+    // Open Government Data Portal (Agmarknet Live Endpoint)
+    const apiUrl = "https://api.data.gov.in/resource/9ef7425e-0584-42fa-a25a-079999747a0a?api-key=579b464db66ec23bdd000001cdd3946328c54e3f380813adb6325b6d&format=json&limit=40&filters[state]=Maharashtra";
+
     try {
-      const res = await fetch("/api/market");
+      const res = await fetch(apiUrl);
       const data = await res.json();
 
       loadingDiv.style.display = "none";
 
-      if (data.records && data.records.length > 0) {
+      if (data && data.records && data.records.length > 0) {
         listDiv.innerHTML = "";
         data.records.forEach(item => {
           const div = document.createElement("div");
           div.className = "rate-card";
           div.innerHTML = `
             <div class="rate-title">
-              <span>🌾 ${item.commodity || item.commodity_name}</span>
-              <span style="font-size:12px; color:#666;">📍 ${item.market || item.market_center}</span>
+              <span>🌾 ${item.commodity}</span>
+              <span style="font-size:12px; color:#666;">📍 ${item.market || item.district}</span>
             </div>
             <div class="price-row">
-              <span>किमान: ₹${item.min_price}</span>
-              <span>कमाल: ₹${item.max_price}</span>
+              <span>किमान: ₹${item.min_price || item.modal_price}</span>
+              <span>कमाल: ₹${item.max_price || item.modal_price}</span>
             </div>
             <div class="price-row" style="margin-top:5px;">
               <span>सर्वसाधारण भाव:</span>
@@ -69,10 +72,11 @@
           listDiv.appendChild(div);
         });
       } else {
-        listDiv.innerHTML = "<p>आजचा डेटा उपलब्ध नाही.</p>";
+        throw new Error("No Records");
       }
     } catch (e) {
-      loadingDiv.innerText = "डेटा लोड करताना त्रुटी आली.";
+      loadingDiv.style.display = "none";
+      listDiv.innerHTML = "<p style='text-align:center; color:red;'>सध्या लाईव्ह सर्व्हरवरून डेटा मिळत नाहीये. कृपया थोड्या वेळाने प्रयत्न करा.</p>";
     }
   }
 
