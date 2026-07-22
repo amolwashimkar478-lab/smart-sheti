@@ -32,9 +32,13 @@ if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       notifyButton:{enable:false},
       allowLocalhostAsSecureOrigin:true
     });
+
+    // 👇 ही नवीन ओळ जोडली आहे (युझरला परवानगी मागण्यासाठी)
+    OneSignal.Notifications.requestPermission();
   });
 }
 </script>
+  
 
 <style>
 :root { 
