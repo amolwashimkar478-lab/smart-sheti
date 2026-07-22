@@ -89,9 +89,10 @@
       color: var(--primary-dark); 
       padding: 6px 14px; 
       border-radius: 8px; 
-      text-decoration: none; 
+      border: none;
       font-weight: 600; 
       font-size: 13px;
+      cursor: pointer;
       transition: 0.2s;
     }
     .read-more:hover { background: var(--primary); color: white; }
@@ -114,6 +115,71 @@
       transition: 0.2s;
     }
     .home-btn:active { background: #0069d9 !important; transform: scale(0.98); }
+
+    /* --- In-App Reader Modal (ॲपच्या आतच बातम्या उघडण्यासाठी) --- */
+    .news-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 550px;
+      height: 90vh;
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-header {
+      padding: 15px 20px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h4 { margin: 0; font-size: 16px; color: #333; }
+    .close-btn {
+      background: #f1f2f6;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #e74c3c;
+      cursor: pointer;
+    }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-body img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    .modal-body h2 {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #2c3e50;
+      margin-top: 0;
+    }
+    .modal-body div {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -131,6 +197,19 @@
 
 <div class="home-btn-container">
   <button class="home-btn" onclick="location.href='home.html'">🔙 मुख्य पानावर जा</button>
+</div>
+
+<!-- In-App Reader Modal Popup -->
+<div id="newsModal" class="news-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4>📰 संपूर्ण बातमी</h4>
+      <button class="close-btn" onclick="closeNewsModal()">❌ बंद करा</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- बातमीचा मजकूर इथे लोड होईल -->
+    </div>
+  </div>
 </div>
 
 <script>
@@ -167,7 +246,7 @@ function renderNews(items) {
   const box = document.getElementById('newsBox');
   box.innerHTML = "";
   
-  items.forEach((news) => {
+  items.forEach((news, index) => {
     const isSaved = savedNews.some(s => s.link === news.link);
     const newsJson = JSON.stringify(news).replace(/"/g, '&quot;');
     
@@ -183,12 +262,34 @@ function renderNews(items) {
           <h3>${news.title}</h3>
           <div class="card-footer">
             <span class="news-date">📅 ${new Date(news.pubDate).toLocaleDateString('mr-IN')}</span>
-            <a href="${news.link}" target="_blank" class="read-more">पूर्ण वाचा →</a>
+            <button class="read-more" onclick="openNewsModal(${index})">पूर्ण वाचा →</button>
           </div>
         </div>
       </div>
     `;
   });
+}
+
+/* ॲपच्या आतच बातमी दाखवणारे फंक्शन */
+function openNewsModal(index) {
+  const activeTab = document.getElementById('savedTab').classList.contains('active-tab');
+  const news = activeTab ? savedNews[index] : allNews[index];
+  
+  const modalBody = document.getElementById('modalBody');
+  
+  modalBody.innerHTML = `
+    <img src="${news.thumbnail}" onerror="this.onerror=null; this.src='${defaultImg}';">
+    <h2>${news.title}</h2>
+    <p style="color:#888; font-size:13px;">📅 ${new Date(news.pubDate).toLocaleDateString('mr-IN')}</p>
+    <hr style="border:none; border-top:1px solid #eee; margin: 15px 0;">
+    <div>${news.description || 'ही बातमी वाचण्यासाठी इंटरनेट कनेक्शन चालू ठेवा.'}</div>
+  `;
+  
+  document.getElementById('newsModal').style.display = 'flex';
+}
+
+function closeNewsModal() {
+  document.getElementById('newsModal').style.display = 'none';
 }
 
 function toggleSave(news) {
@@ -227,4 +328,3 @@ fetchAgriNews();
 </script>
 </body>
 </html>
-
