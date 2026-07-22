@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   try {
     const { image } = req.body;
 
-    // १. फोटो डेटा तपासणे
     if (!image || image.length < 500) {  
       return res.status(200).json({ reply: "❌ फोटोचा डेटा सर्व्हरपर्यंत पोहोचला नाही. कृपया पुन्हा फोटो अपलोड करा." });  
     }  
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "❌ Vercel वर PLANTNET_KEY सेट केलेली नाही." });  
     }  
 
-    // २. PlantNet API द्वारे फोटोवरून पिकाचे नाव शोधणे
+    // १. PlantNet द्वारे फोटोवरून पिकाचे नाव शोधणे
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, 'base64');
     
@@ -38,14 +37,16 @@ export default async function handler(req, res) {
     }
 
     const bestMatch = data.results[0];
-    const plantName = bestMatch.species.commonNames?.[0] || bestMatch.species.scientificNameWithoutAuthor;
+    const rawPlantName = bestMatch.species.commonNames?.[0] || bestMatch.species.scientificNameWithoutAuthor;
     const score = Math.round(bestMatch.score * 100);
 
-    // ३. Groq API द्वारे त्या पिकावर येणारे रोग आणि औषधांची माहिती मराठीत मिळवणे
+    // २. Groq द्वारे नाव मराठीत करणे आणि रोगाची माहिती मिळवणे
     let diseaseInfo = "";
     if (groqKey) {
       try {
-        const groqPrompt = `पिकाचे नाव: ${plantName}. या पिकावर सहसा पडणारे मुख्य रोग, त्यांची लक्षणे, त्यावर वापरायची योग्य औषधे आणि प्रतिबंधात्मक उपाय सोप्या व स्पष्ट मराठी भाषेत सविस्तर सांगा.`;
+        const groqPrompt = `वनस्पती/पिकाचे नाव इंग्रजीत: "${rawPlantName}".
+1. या पिकाला/झाडाला मराठीत काय म्हणतात ते सांगा (उदा. शेवंती, टोमॅटो, इत्यादी).
+2. या पिकावर सहसा पडणारे मुख्य रोग, त्यांची लक्षणे, त्यावर वापरायची योग्य औषधे आणि प्रतिबंधात्मक उपाय सोप्या मराठी भाषेत सविस्तर सांगा.`;
 
         const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
@@ -58,11 +59,11 @@ export default async function handler(req, res) {
             messages: [
               {
                 role: "system",
-                content: "You are an expert Indian Agricultural Scientist. Always give detailed and helpful crop advice in Marathi language."
+                content: "You are an expert Indian Agricultural Scientist. Always respond purely in clear, simple Marathi language."
               },
               { role: "user", content: groqPrompt }
             ],
-            temperature: 0.5
+            temperature: 0.3
           })
         });
 
@@ -75,14 +76,14 @@ export default async function handler(req, res) {
       }
     }
 
-    // ४. युझरला उत्तर पाठवणे
-    let replyText = `🌿 **ओळखलेले पीक:** ${plantName}\n`;
+    // ३. उत्तर तयार करणे
+    let replyText = `🌿 **शोधलेले पीक (English):** ${rawPlantName}\n`;
     replyText += `🎯 **अचूकता (Match Score):** ${score}%\n\n`;
     
     if (diseaseInfo) {
-      replyText += `📋 **रोग व उपाय माहिती (मराठीत):**\n${diseaseInfo}`;
+      replyText += `📋 **मराठी नाव, रोग व औषध माहिती:**\n\n${diseaseInfo}`;
     } else {
-      replyText += `💡 **सल्ला:** हे ${plantName} चे झाड/पीक आहे. रोगाच्या अधिक माहितीसाठी कृषी केंद्राचा सल्ला घ्या.`;
+      replyText += `💡 **सल्ला:** हे ${rawPlantName} चे झाड/पीक आहे. रोगाच्या अधिक माहितीसाठी कृषी केंद्राचा सल्ला घ्या.`;
     }
 
     return res.status(200).json({ reply: replyText });
@@ -91,3 +92,4 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply: "सर्व्हर त्रुटी: " + error.message });
   }
 }
+
