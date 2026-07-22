@@ -23,6 +23,7 @@
   .camera { background: var(--primary); }
   .gallery { background: #1565c0; }
   .detect { background: #388e3c; width:100%; margin-top:12px; }
+  .wa-share { background: #25D366; width:100%; margin-top:12px; display:none; }
   .back { background: #0984e3; width:100%; margin-top:15px; }
   
   #previewContainer { margin: 15px 0; display: none; }
@@ -31,6 +32,14 @@
   .result { margin-top:15px; background:#f1f8e9; padding:16px; border-radius:12px; text-align:left; line-height:1.6; min-height:60px; font-size:15px; border: 1px solid #c8e6c9; white-space: pre-wrap; word-wrap: break-word; }
   input[type=file] { display:none; }
   button:disabled { background: #ccc; cursor: not-allowed; }
+
+  /* History Styles */
+  .history-section { margin-top: 25px; text-align: left; }
+  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .history-card { background: var(--card); border: 1px solid #c8e6c9; padding: 12px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .history-content { display: flex; gap: 10px; align-items: center; margin-top: 5px; }
+  .history-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
+  .history-btn { background: #25D366; padding: 6px 10px; font-size: 12px; border-radius: 8px; margin-top: 8px; width: auto; }
 </style>
 </head>
 <body>
@@ -52,18 +61,32 @@
 
     <button class="detect" id="btnDetect" onclick="analyze()">🔍 रोग ओळखा</button>
     <div class="result" id="result">पिकाच्या बाधित पानाचा किंवा भागाचा फोटो निवडा आणि 'रोग ओळखा' वर क्लिक करा.</div>
+    <button class="wa-share" id="btnWA" onclick="shareWhatsApp()">📲 WhatsApp वर शेअर करा</button>
   </div>
+
+  <!-- History Section -->
+  <div class="history-section" id="historySection" style="display: none;">
+    <div class="history-header">
+      <h3 style="margin:0; color: var(--primary);">📜 जुना इतिहास</h3>
+      <button onclick="clearHistory()" style="background:none; color:red; font-size:13px; width:auto; padding:0;">इतिहास पुसा</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
   <button class="back" onclick="location.href='home.html'">🔙 मुख्य पेजवर जा</button>
 </div>
 
 <script>
 let cleanBase64Image = null;
+let fullDataUrlImage = null;
+let lastResultText = "";
 
 function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   document.getElementById("result").innerText = "⏳ फोटो प्रोसेस होत आहे...";
+  document.getElementById("btnWA").style.display = "none";
   
   const reader = new FileReader();
   reader.onload = function(event) {
@@ -81,16 +104,15 @@ function handleFile(e) {
       
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      const fullDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      fullDataUrlImage = canvas.toDataURL('image/jpeg', 0.8);
       
       // फोटो प्रीव्ह्यू दाखवा
-      document.getElementById("previewImage").src = fullDataUrl;
+      document.getElementById("previewImage").src = fullDataUrlImage;
       document.getElementById("previewContainer").style.display = "block";
 
-      // Gemini API साठी फक्त शुद्ध Base64 (prefix काढून टाकणे)
-      cleanBase64Image = fullDataUrl.split(",")[1];
+      cleanBase64Image = fullDataUrlImage;
       
-      document.getElementById("result").innerText = "✅ फोटो निवडला गेला आहे. आता 'रोग ओळखा' बटणावर क्लिक करा.";
+      document.getElementById("result").innerText = "✅ फोटो निवडला गेला आहे. आता 'रोग ओळखा' वर क्लिक करा.";
     };
   };
   reader.readAsDataURL(file);
@@ -107,27 +129,28 @@ async function analyze() {
 
   const resultDiv = document.getElementById("result");
   const btn = document.getElementById("btnDetect");
+  const btnWA = document.getElementById("btnWA");
   
   resultDiv.innerText = "⏳ AI पिकाची तपासणी करत आहे, कृपया १०-१५ सेकंद थांबा...";
   btn.disabled = true;
 
   try {
-    const res = await fetch("/api/disease", {  // <--- इथे '/api/chat' ऐवजी '/api/disease' करायचं आहे
+    const res = await fetch("/api/disease", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        image: cleanBase64Image, 
-        prompt: "तुमच्यासमोर पिकाचा फोटो दिला आहे. कृपया फोटो तपासून त्यातील पिकाचे नाव, आलेला रोग/कीड, त्याची लक्षणे आणि त्यावर वापरायची योग्य औषधे व प्रतिबंधात्मक उपाय सोप्या मराठी भाषेत सविस्तर सांगा."
-      })
+      body: JSON.stringify({ image: cleanBase64Image })
     });
-    
 
     const data = await res.json();
     
     if(data.reply) {
-      resultDiv.innerText = data.reply;
+      lastResultText = data.reply;
+      resultDiv.innerText = lastResultText;
+      btnWA.style.display = "block";
+
+      saveToHistory(fullDataUrlImage, lastResultText);
     } else {
-      resultDiv.innerText = "क्षमस्व, फोटो स्पष्ट नसल्याने किंवा तांत्रिक कारणास्तव माहिती मिळू शकली नाही. कृपया दुसरा स्पष्ट फोटो टाका.";
+      resultDiv.innerText = "क्षमस्व, फोटो स्पष्ट नसल्याने माहिती मिळू शकली नाही. कृपया दुसरा स्पष्ट फोटो टाका.";
     }
 
   } catch (e) {
@@ -136,6 +159,62 @@ async function analyze() {
     btn.disabled = false;
   }
 }
+
+function shareWhatsApp(text = lastResultText) {
+  const shareText = encodeURIComponent(`🌾 *शेती सल्ला व पिकांचे निदान* 🌾\n\n${text}`);
+  window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
+}
+
+function saveToHistory(imgData, reply) {
+  let history = JSON.parse(localStorage.getItem("crop_scan_history") || "[]");
+  const newEntry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString("mr-IN"),
+    image: imgData,
+    reply: reply
+  };
+  history.unshift(newEntry);
+  localStorage.setItem("crop_scan_history", JSON.stringify(history));
+  loadHistory();
+}
+
+function loadHistory() {
+  let history = JSON.parse(localStorage.getItem("crop_scan_history") || "[]");
+  const listDiv = document.getElementById('historyList');
+  const section = document.getElementById('historySection');
+
+  if (history.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  listDiv.innerHTML = "";
+
+  history.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-card';
+    div.innerHTML = `
+      <small style="color: #666;">📅 तारीख: ${item.date}</small>
+      <div class="history-content">
+        <img src="${item.image}" class="history-img">
+        <div style="flex: 1; max-height: 45px; overflow: hidden; font-size: 13px;">${item.reply.substring(0, 65)}...</div>
+      </div>
+      <button class="history-btn" onclick="shareWhatsApp(\`${item.reply.replace(/`/g, '')}\`)">📲 पुन्हा शेअर करा</button>
+    `;
+    listDiv.appendChild(div);
+  });
+}
+
+function clearHistory() {
+  if (confirm("सर्व जुना इतिहास पुसायचा आहे का?")) {
+    localStorage.removeItem("crop_scan_history");
+    loadHistory();
+  }
+}
+
+// पेज उघडल्यावर इतिहास लोड करणे
+loadHistory();
 </script>
 
 </body>
