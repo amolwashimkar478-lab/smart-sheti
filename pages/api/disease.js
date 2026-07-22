@@ -6,70 +6,63 @@ export default async function handler(req, res) {
   try {
     const { image, prompt } = req.body;
 
-    // १. फोटो डेटा तपासणे
     if (!image || image.length < 500) {  
       return res.status(200).json({ reply: "❌ फोटोचा डेटा सर्व्हरपर्यंत पोहोचला नाही. कृपया पुन्हा फोटो अपलोड करा." });  
     }  
 
-    const apiKey = process.env.GEMINI_API_KEY;  
+    const apiKey = process.env.GROQ_API_KEY;  
     if (!apiKey) {  
-      return res.status(200).json({ reply: "❌ Vercel वर GEMINI_API_KEY सेट केलेला नाही." });  
+      return res.status(200).json({ reply: "❌ Vercel वर GROQ_API_KEY सापडली नाही." });  
     }  
 
-    // २. प्रॉम्टला अधिक मजबूत बनवणे (फोटो स्पष्ट वाचण्यासाठी)
-    const strictPrompt = `तुम्ही एक उच्च दर्जाचे कृषी AI आहात. 
-दिलेल्या फोटोचे बारकाईने निरीक्षण करा आणि खालील मुद्द्यांनुसार उत्तर द्या:
+    const defaultPrompt = "तुमच्यासमोर पिकाचा फोटो दिला आहे. कृपया फोटो तपासून त्यातील पिकाचे नाव, आलेला रोग/कीड, त्याची लक्षणे आणि त्यावर वापरायची योग्य औषधे व प्रतिबंधात्मक उपाय सोप्या मराठी भाषेत सविस्तर सांगा.";
 
-१. पिकाचे/फळाचे नाव: (चित्रामधील वनस्पती किंवा फळ ओळखा, उदा. सफरचंद, भुईमूग, टोमॅटो इत्यादी)
-२. आढळलेला रोग/कीड/अडचण: 
-३. लक्षणे:
-४. फवारणी व उपाय (मराठीत):
+    // Groq API Call (Vision Model)
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.2-11b-vision-instruct",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { 
+                type: "text", 
+                text: prompt || defaultPrompt 
+              },
+              { 
+                type: "image_url", 
+                image_url: { 
+                  url: `data:image/jpeg;base64,${image}` 
+                } 
+              }
+            ]
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 1000
+      })
+    });
 
-युजरचा मूळ प्रश्न: ${prompt || "पिकाची माहिती द्या"}`;
+    const data = await response.json();
 
-    // ३. Gemini REST API Call (सुरक्षित आणि अचूक फॉरमॅट)
-    const response = await fetch(  
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${apiKey}`,  
-      {  
-        method: "POST",  
-        headers: { "Content-Type": "application/json" },  
-        body: JSON.stringify({  
-          contents: [  
-            {  
-              role: "user",  
-              parts: [  
-                { text: strictPrompt },  
-                {  
-                  inlineData: {  
-                    mimeType: "image/jpeg",  
-                    data: image  
-                  }  
-                }  
-              ]  
-            }  
-          ]  
-        })  
-      }  
-    );  
-
-    const data = await response.json();  
-
-    // ४. जर Gemini ने उत्तर दिले असेल तर:
-    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {  
-      return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });  
-    } 
-    
-    // ५. जर API कडून थेट काही एरर आला असेल तर तो दाखवणे:
-    if (data.error) {
-      console.error("Gemini API Error Detail:", data.error);
-      return res.status(200).json({ reply: `❌ API त्रुटी: ${data.error.message} (Code: ${data.error.code})` });
+    if (data.choices && data.choices[0]?.message?.content) {
+      return res.status(200).json({ reply: data.choices[0].message.content });
     }
 
-    console.error("Gemini Unknown Response:", JSON.stringify(data));
-    return res.status(200).json({ reply: "फोटोवरून अचूक ओळखता आले नाही. कृपया चित्रावर पुरेसा प्रकाश असलेला स्पष्ट फोटो टाका." });
+    if (data.error) {
+      console.error("Groq Error:", data.error);
+      return res.status(200).json({ reply: `❌ Groq API त्रुटी: ${data.error.message}` });
+    }
+
+    return res.status(200).json({ reply: "फोटोवरून ओळखता आले नाही. कृपया दुसरा स्पष्ट फोटो टाका." });
 
   } catch (error) {
-    console.error("Server Catch Error:", error);
     return res.status(200).json({ reply: "सर्व्हर त्रुटी: " + error.message });
   }
 }
+
