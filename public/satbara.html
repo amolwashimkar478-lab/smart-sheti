@@ -6,23 +6,103 @@
   <title>📄 ७/१२ व ८-अ उतारा - स्मार्ट शेती</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #2e7d32; --bg: #e8f5e9; --card: #ffffff; --text: #2c3e50; }
-    body { font-family: 'Outfit', sans-serif; background: var(--bg); padding:15px; margin:0; color: var(--text); }
-    .container { max-width:440px; margin:auto; }
-    .card { background: var(--card); padding:20px; border-radius:16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-    h2 { color: var(--primary); margin-top:0; font-size: 22px; }
-    p { font-size: 14px; color: #555; line-height: 1.5; }
-    .btn-portal { background: #27ae60; color: white; border: none; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 15px; display: block; text-decoration: none; box-shadow: 0 4px 10px rgba(39,174,96,0.3); }
-    .btn-portal:hover { background: #219150; }
-    .back { background: #0984e3; width:100%; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; font-weight:bold; }
-    .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 8px; text-align: left; font-size: 13px; color: #856404; margin-top: 15px; }
+    :root { 
+      --primary: #2e7d32; 
+      --bg: #f4f7f4; 
+      --card-bg: #ffffff; 
+      --text: #2c3e50; 
+    }
+    
+    * { box-sizing: border-box; }
+
+    body { 
+      font-family: 'Outfit', sans-serif; 
+      background: var(--bg); 
+      padding: 15px; 
+      margin: 0; 
+      color: var(--text); 
+    }
+    
+    .container { 
+      max-width: 440px; 
+      margin: auto; 
+    }
+
+    .card { 
+      background: var(--card-bg); 
+      padding: 20px 16px; 
+      border-radius: 20px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+      text-align: center; 
+      margin-bottom: 15px; 
+    }
+
+    h2 { 
+      color: var(--primary); 
+      margin-top: 0; 
+      font-size: 22px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    p { 
+      font-size: 14px; 
+      color: #666; 
+      line-height: 1.5; 
+      margin-bottom: 15px;
+    }
+
+    .info-box { 
+      background: #fff8e1; 
+      border-left: 4px solid #ffb300; 
+      padding: 12px; 
+      border-radius: 10px; 
+      text-align: left; 
+      font-size: 13px; 
+      color: #5d4037; 
+      margin-bottom: 20px; 
+      line-height: 1.4;
+    }
+
+    .btn-portal { 
+      background: var(--primary); 
+      color: white; 
+      width: 100%; 
+      padding: 14px 10px; 
+      font-size: 15px; 
+      font-weight: 600; 
+      border-radius: 12px; 
+      display: block; 
+      text-decoration: none; 
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.25);
+      transition: transform 0.2s;
+    }
+
+    .btn-portal:active {
+      transform: scale(0.97);
+    }
+
+    .back { 
+      background: #0984e3; 
+      width: 100%; 
+      padding: 14px; 
+      border: none; 
+      border-radius: 14px; 
+      font-size: 16px; 
+      color: white; 
+      cursor: pointer; 
+      font-weight: bold; 
+      box-shadow: 0 4px 10px rgba(9, 132, 227, 0.2);
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="card">
-    <h2>📄 digital ७/१२ आणि ८-अ उतारा</h2>
+    <h2>📄 Digital ७/१२ आणि ८-अ उतारा</h2>
     <p>महाराष्ट्रातील महाभूमिलेख अधिकृत पोर्टलवरून तुमचा ७/१२, ८-अ आणि फेरफार उतारा पहा.</p>
     
     <div class="info-box">
