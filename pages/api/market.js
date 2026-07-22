@@ -1,49 +1,47 @@
 export default async function handler(req, res) {
   try {
+    // Vercel मधील Environment Variable किंवा default key
     const apiKey = process.env.AGMARKNET_API_KEY || "579b464db66ec23bdd000001cdd3946328c54e3f380813adb6325b6d";
-    const url = `https://api.data.gov.in/resource/9ef7425e-0584-42fa-a25a-079999747a0a?api-key=${apiKey}&format=json&offset=0&limit=30&filters[state]=Maharashtra`;
+    
+    // महाराष्ट्रातील ताज्या बाजारभावांची नोंद मिळवण्यासाठी API हिट
+    const url = `https://api.data.gov.in/resource/9ef7425e-0584-42fa-a25a-079999747a0a?api-key=${apiKey}&format=json&limit=50&filters[state]=Maharashtra`;
 
-    let records = [];
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data && data.records && data.records.length > 0) {
-        records = data.records.map((item) => ({
-          market: item.market || item.district || "बाजार समिती",
-          commodity: item.commodity || "पीक",
-          min_price: item.min_price || "N/A",
-          max_price: item.max_price || "N/A",
-          modal_price: item.modal_price || "N/A"
-        }));
+    const response = await fetch(url, {
+      headers: {
+        'Cache-Control': 'no-cache'
       }
-    } catch (apiErr) {
-      console.log("Agmarknet Fetch Failed, using default rates");
+    });
+
+    const data = await response.json();
+
+    if (data && data.records && data.records.length > 0) {
+      // फक्त आणि फक्त Agmarknet वरून आलेला रिअल-टाईम लाईव्ह डेटाच फॉरमॅट करणे
+      const liveRecords = data.records.map((item) => ({
+        market: item.market || item.district || "बाजार समिती",
+        commodity: item.commodity || "पीक",
+        min_price: item.min_price || item.modal_price || "0",
+        max_price: item.max_price || item.modal_price || "0",
+        modal_price: item.modal_price || "0",
+        arrival_date: item.arrival_date || ""
+      }));
+
+      return res.status(200).json({
+        success: true,
+        records: liveRecords
+      });
+    } else {
+      // डेटा रिकामा असल्यास थेट empty देणे (कुठलाही डमी डेटा नाही)
+      return res.status(200).json({
+        success: false,
+        message: "सध्या सर्व्हरवर आजचे लाईव्ह भाव उपलब्ध नाहीत. कृपया थोड्या वेळाने प्रयत्न करा.",
+        records: []
+      });
     }
-
-    // जर Agmarknet कडून रिकामी लिस्ट आली किंवा त्रुटी आली, तर फॉलबॅक लिस्ट दाखवणे:
-    if (records.length === 0) {
-      records = [
-        { market: "लासलगाव (नाशिक)", commodity: "कांदा (Onion)", min_price: "1300", max_price: "2450", modal_price: "1900" },
-        { market: "जालना", commodity: "कापूस (Cotton)", min_price: "6850", max_price: "7600", modal_price: "7250" },
-        { market: "सोलापूर", commodity: "सोयाबीन (Soyabean)", min_price: "4150", max_price: "4700", modal_price: "4450" },
-        { market: "पिंपरी (पुणे)", commodity: "टोमॅटो (Tomato)", min_price: "900", max_price: "1700", modal_price: "1300" },
-        { market: "अकोला", commodity: "हरभरा (Gram)", min_price: "5100", max_price: "5800", modal_price: "5450" },
-        { market: "नागपूर", commodity: "संतरा (Orange)", min_price: "2500", max_price: "4500", modal_price: "3500" }
-      ];
-    }
-
-    return res.status(200).json({ success: true, records: records });
-
   } catch (error) {
-    return res.status(200).json({
-      success: true,
-      records: [
-        { market: "लासलगाव", commodity: "कांदा", min_price: "1300", max_price: "2450", modal_price: "1900" },
-        { market: "जालना", commodity: "कापूस", min_price: "6850", max_price: "7600", modal_price: "7250" },
-        { market: "सोलापूर", commodity: "सोयाबीन", min_price: "4150", max_price: "4700", modal_price: "4450" }
-      ]
+    return res.status(500).json({
+      success: false,
+      message: "सर्व्हरशी संपर्क होऊ शकला नाही: " + error.message,
+      records: []
     });
   }
 }
-
