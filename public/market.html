@@ -6,12 +6,7 @@
   <title>📊 थेट बाजारभाव - स्मार्ट शेती</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #2e7d32;
-      --bg: #e8f5e9;
-      --card: #ffffff;
-      --text: #2c3e50;
-    }
+    :root { --primary: #2e7d32; --bg: #e8f5e9; --card: #ffffff; --text: #2c3e50; }
     body { font-family: 'Outfit', sans-serif; background: var(--bg); padding:15px; margin:0; color: var(--text); }
     .container { max-width:440px; margin:auto; }
     .card { background: var(--card); padding:15px; border-radius:16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; }
@@ -41,42 +36,39 @@
     const listDiv = document.getElementById("marketList");
     const loadingDiv = document.getElementById("loading");
 
-    // Open Government Data Portal (Agmarknet Live Endpoint)
-    const apiUrl = "https://api.data.gov.in/resource/9ef7425e-0584-42fa-a25a-079999747a0a?api-key=579b464db66ec23bdd000001cdd3946328c54e3f380813adb6325b6d&format=json&limit=40&filters[state]=Maharashtra";
-
     try {
-      const res = await fetch(apiUrl);
+      const res = await fetch("/api/market");
       const data = await res.json();
 
       loadingDiv.style.display = "none";
 
-      if (data && data.records && data.records.length > 0) {
+      if (data && data.success && data.records && data.records.length > 0) {
         listDiv.innerHTML = "";
         data.records.forEach(item => {
           const div = document.createElement("div");
           div.className = "rate-card";
           div.innerHTML = `
             <div class="rate-title">
-              <span>🌾 ${item.commodity}</span>
-              <span style="font-size:12px; color:#666;">📍 ${item.market || item.district}</span>
+              <span>🌾 ${item.commodity || item.Commodity}</span>
+              <span style="font-size:12px; color:#666;">📍 ${item.market || item.Market || item.district}</span>
             </div>
             <div class="price-row">
-              <span>किमान: ₹${item.min_price || item.modal_price}</span>
-              <span>कमाल: ₹${item.max_price || item.modal_price}</span>
+              <span>किमान: ₹${item.min_price || item.Min_Price || item.modal_price}</span>
+              <span>कमाल: ₹${item.max_price || item.Max_Price || item.modal_price}</span>
             </div>
             <div class="price-row" style="margin-top:5px;">
               <span>सर्वसाधारण भाव:</span>
-              <span class="price-box">₹${item.modal_price} / क्विंटल</span>
+              <span class="price-box">₹${item.modal_price || item.Modal_Price} / क्विंटल</span>
             </div>
           `;
           listDiv.appendChild(div);
         });
       } else {
-        throw new Error("No Records");
+        listDiv.innerHTML = "<p style='text-align:center; color:#666;'>सध्या सरकारी डेटाबेसमध्ये आजच्या दरांची नोंद सुरु आहे, कृपया थोड्या वेळाने रिफ्रेश करा.</p>";
       }
     } catch (e) {
       loadingDiv.style.display = "none";
-      listDiv.innerHTML = "<p style='text-align:center; color:red;'>सध्या लाईव्ह सर्व्हरवरून डेटा मिळत नाहीये. कृपया थोड्या वेळाने प्रयत्न करा.</p>";
+      listDiv.innerHTML = "<p style='text-align:center; color:red;'>नेटवर्क एरर! कृपया इंटरनेट कनेक्शन तपासा.</p>";
     }
   }
 
