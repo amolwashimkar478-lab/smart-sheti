@@ -25,7 +25,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.2-90b-vision-instruct",
+        model: "qwen/qwen3.6-27b",
+        
         messages: [
           {
             role: "user",
