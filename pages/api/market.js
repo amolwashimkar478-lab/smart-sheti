@@ -1,32 +1,38 @@
 export default async function handler(req, res) {
-  const { district } = req.query;
-  
-  // Vercel Settings मध्ये MARKET_API_KEY या नावाने तुमची Key सेव्ह करा
-  const API_KEY = process.env.MARKET_API_KEY; 
-  const RESOURCE_ID = "9ef273fd-5341-47bc-8812-4a4604d7d130";
-
-  if (!API_KEY) {
-    return res.status(500).json({ success: false, message: "API Key Not Found in Environment" });
-  }
-
   try {
-    const url = `https://api.data.gov.in/resource/${RESOURCE_ID}?api-key=${API_KEY}&format=json&filters[state]=Maharashtra&filters[district]=${district}`;
+    // Agmarknet (Data.gov.in) API Key
+    const apiKey = process.env.AGMARKNET_API_KEY || "579b464db66ec23bdd000001cdd3946328c54e3f380813adb6325b6d";
+    
+    // महाराष्ट्रातील ताज्या ५० बाजारभावांची नोंद मिळवणे
+    const url = `https://api.data.gov.in/resource/9ef7425e-0584-42fa-a25a-079999747a0a?api-key=${apiKey}&format=json&offset=0&limit=50&filters[state]=Maharashtra`;
 
     const response = await fetch(url);
     const data = await response.json();
 
-    if (data.records && data.records.length > 0) {
-      const rates = data.records.map(record => ({
-        commodity: record.commodity,
-        min: record.min_price,
-        max: record.max_price,
-        mandi: record.market
+    if (data && data.records && data.records.length > 0) {
+      // Agmarknet कडून आलेला डेटा योग्य फॉरमॅटमध्ये मॅप करणे
+      const formattedRecords = data.records.map((item) => ({
+        market: item.market || item.district || "बाजार समिती",
+        commodity: item.commodity || "पिकाचे नाव",
+        variety: item.variety || "सर्वसाधारण",
+        min_price: item.min_price || "N/A",
+        max_price: item.max_price || "N/A",
+        modal_price: item.modal_price || "N/A",
+        arrival_date: item.arrival_date || "आज"
       }));
-      res.status(200).json({ success: true, rates });
+
+      return res.status(200).json({ success: true, records: formattedRecords });
     } else {
-      res.status(200).json({ success: false, rates: [] });
+      // API कडून काही प्रतिसाद न मिळाल्यास बॅकअप संदेश
+      return res.status(200).json({
+        success: false,
+        message: "Agmarknet सर्व्हरवरून सध्या नवीन डेटा उपलब्ध झाला नाही."
+      });
     }
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Server Error" });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      error: "Agmarknet डेटा मिळवताना त्रुटी: " + error.message 
+    });
   }
 }
