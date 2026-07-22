@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 थेट बाजारभाव - स्मार्ट शेती</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --bg: #e8f5e9;
+      --card: #ffffff;
+      --text: #2c3e50;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); padding:15px; margin:0; color: var(--text); }
+    .container { max-width:440px; margin:auto; }
+    .card { background: var(--card); padding:15px; border-radius:16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; }
+    h2 { color: var(--primary); text-align: center; margin-top:0; font-size: 22px; }
+    .rate-card { border-left: 5px solid var(--primary); background: #f9f9f9; padding: 12px; margin-top: 10px; border-radius: 8px; }
+    .rate-title { font-weight: bold; font-size: 16px; color: #1b5e20; display: flex; justify-content: space-between; }
+    .price-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; }
+    .price-box { background: #e8f5e9; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #2e7d32; }
+    .back { background: #0984e3; width:100%; padding:14px; border:none; border-radius:14px; font-size:16px; color:white; cursor:pointer; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h2>📊 आजचे लाईव्ह बाजारभाव</h2>
+    <p style="text-align: center; font-size: 13px; color: #666; margin-top:-5px;">(महाराष्ट्रातील मुख्य बाजार समित्या)</p>
+    <div id="loading">⏳ ताज्या भावांची नोंद लोड होत आहे...</div>
+    <div id="marketList"></div>
+  </div>
+
+  <button class="back" onclick="location.href='home.html'">🔙 मुख्य पेजवर जा</button>
+</div>
+
+<script>
+  async function fetchMarketRates() {
+    const listDiv = document.getElementById("marketList");
+    const loadingDiv = document.getElementById("loading");
+
+    try {
+      const res = await fetch("/api/market");
+      const data = await res.json();
+
+      loadingDiv.style.display = "none";
+
+      if (data.records && data.records.length > 0) {
+        listDiv.innerHTML = "";
+        data.records.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "rate-card";
+          div.innerHTML = `
+            <div class="rate-title">
+              <span>🌾 ${item.commodity || item.commodity_name}</span>
+              <span style="font-size:12px; color:#666;">📍 ${item.market || item.market_center}</span>
+            </div>
+            <div class="price-row">
+              <span>किमान: ₹${item.min_price}</span>
+              <span>कमाल: ₹${item.max_price}</span>
+            </div>
+            <div class="price-row" style="margin-top:5px;">
+              <span>सर्वसाधारण भाव:</span>
+              <span class="price-box">₹${item.modal_price} / क्विंटल</span>
+            </div>
+          `;
+          listDiv.appendChild(div);
+        });
+      } else {
+        listDiv.innerHTML = "<p>आजचा डेटा उपलब्ध नाही.</p>";
+      }
+    } catch (e) {
+      loadingDiv.innerText = "डेटा लोड करताना त्रुटी आली.";
+    }
+  }
+
+  fetchMarketRates();
+</script>
+
+</body>
+</html>
