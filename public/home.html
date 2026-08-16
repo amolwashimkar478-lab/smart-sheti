@@ -403,22 +403,27 @@ window.onpopstate = function () {
 history.pushState(null, null, location.href);
 </script> 
 
-<!-- AdSense Section -->
+<!-- AdMob Section -->
 <hr style="border:none; border-top:1px solid #ccc; margin: 25px 0 10px 0;"> 
 <p style="text-align:center; font-size:10px; color:#888; margin: 0 0 5px 0;">जाहिरात</p>
-<div style="text-align:center; margin-bottom:20px;">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=तुमचा-पब्लिशर-आयडी" crossorigin="anonymous"></script>
+<div style="text-align:center; margin-bottom:20px; display:flex; justify-content:center;">
   
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="pub-9044778435139386"
-       data-ad-slot="ca-app-pub-9044778435139386/1856172681"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-       
+  <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
   <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
+    window.googletag = window.googletag || {cmd: []};
+    googletag.cmd.push(function() {
+      googletag.defineSlot('/8832195992833438/4293537566', [[320, 50], [300, 50]], 'div-gpt-ad-smartsheti-home').addService(googletag.pubads());
+      googletag.pubads().enableSingleRequest();
+      googletag.enableServices();
+    });
   </script>
+
+  <div id="div-gpt-ad-smartsheti-home" style="min-width: 320px; min-height: 50px;">
+    <script>
+      googletag.cmd.push(function() { googletag.display('div-gpt-ad-smartsheti-home'); });
+    </script>
+  </div>
+
 </div>
 
 </body>
