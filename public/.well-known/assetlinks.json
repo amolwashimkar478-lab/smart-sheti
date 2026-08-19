@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "com.smart.sheti.app"
+        "package_name": "com.smart.sheti.app",
         "sha256_cert_fingerprints": ["B6:EB:E9:45:BE:D7:37:67:CE:D1:63:71:BD:B2:AA:C5:5C:1A:F0:39:F2:E4:B8:6A:02:95:16:7A:25:F8:6F:86"]
       }
     }]
