@@ -11,17 +11,20 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${groqKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-  model: "llama-3.1-8b-instant",
+     body: JSON.stringify({
+  model: "openai/gpt-oss-20b",
   messages: [
-    { 
-      role: "system", 
-      content: "You are an expert Indian Agriculture Advisor. IMPORTANT: Always respond in the SAME LANGUAGE as the user's question. If the user asks in Marathi, answer in Marathi. If in Hindi, answer in Hindi. If in English, answer in English." 
+    {
+      role: "system",
+      content: "You are an expert Indian Agriculture Advisor. IMPORTANT: Always respond in the SAME LANGUAGE as the user's question. If the user asks in Marathi, answer in Marathi. If in Hindi, answer in Hindi. If in English, answer in English."
     },
-    { role: "user", content: prompt || "Hello" }
+    {
+      role: "user",
+      content: prompt || "Hello"
+    }
   ],
   temperature: 0.7
-})
+}) 
     });
 
     const data = await response.json();
