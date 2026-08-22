@@ -8,13 +8,14 @@
     /* 1. Global Styles */
     * { box-sizing: border-box; }
     body {
-      margin: 0; 
-      background: #e8f5e9; 
-      font-family: 'Segoe UI', Arial, sans-serif;
-      height: 100dvh; /* मोबाईल ब्राउझरसाठी डायनॅमिक उंची */
-      display: flex; 
-      flex-direction: column; 
-      overflow: hidden;
+  margin: 0; 
+  background: #e8f5e9; 
+  font-family: 'Segoe UI', Arial, sans-serif;
+  height: 100dvh;
+  min-height: 0;
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden;
     }
 
     /* 2. Header */
@@ -48,14 +49,15 @@
     .history-item small { font-size: 11px; color: #888; }
 
     /* 4. Chat Area */
-    #chatBox { 
-      flex: 1; 
-      padding: 15px; 
-      overflow-y: auto; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px; 
-      background: #f1f8e9;
+    #chatBox {
+  flex: 1;
+  min-height: 0;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f1f8e9;
     }
     .user, .ai {
       max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5;
@@ -91,17 +93,16 @@
     /* 6. Input Bar (सुधारित भाग) */
     #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 90; }
     
-    #inputBar { 
-      display: flex; 
-      gap: 8px; 
-      padding: 10px; 
-      background: #fff; 
-      border-top: 1px solid #ddd; 
-      align-items: center;
-      position: relative;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* मोबाईल नॅव्हिगेशन बारसाठी जागा */
-      flex-shrink: 0;
-    }
+   #inputBar {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid #ddd;
+  align-items: center;
+  flex-shrink: 0;
+   }
     
     #userInput { 
       flex: 1; padding: 12px 16px; border-radius: 25px; 
@@ -360,5 +361,17 @@
     }
   }
 </script>
+  <script>
+  const input = document.getElementById("userInput");
+
+  input.addEventListener("focus", () => {
+    setTimeout(() => {
+      input.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }, 300);
+  });
+  </script>
 </body>
 </html>
