@@ -47,16 +47,17 @@
       appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91"
     });
 
-    // फक्त Browser Allow / Deny popup
+    // फक्त Browser Allow / Deny permission popup
     if (Notification.permission === "default") {
       setTimeout(async () => {
-        await Notification.requestPermission();
+        await OneSignal.Notifications.requestPermission();
       }, 1000);
     }
 
   });
 </script>
-  
+
+
   
 
 <style>
