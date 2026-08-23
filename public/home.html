@@ -37,22 +37,23 @@
 </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
+
   OneSignalDeferred.push(async function(OneSignal) {
+
     await OneSignal.init({
-      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-      slidedown: {
-        prompts: [
-          {
-            type: "push",
-            actionMessage: "शेतीविषयक महत्त्वाचे हवामान आणि बाजारभाव अपडेट्स मिळवण्यासाठी नोटिफिकेशन चालू करा.",
-            acceptButtonText: "चालू करा",
-            cancelButtonText: "नंतर"
-          }
-        ]
-      }
+      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91"
     });
+
+    // फक्त Browser Allow / Deny popup
+    if (Notification.permission === "default") {
+      setTimeout(async () => {
+        await Notification.requestPermission();
+      }, 1000);
+    }
+
   });
 </script>
   
