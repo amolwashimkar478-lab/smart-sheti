@@ -16,6 +16,24 @@
   if (window.history.replaceState) {
       window.history.replaceState(null, null, window.location.href);
   }
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Smart Sheti - Home</title>
+
+<script>
+  // लॉगिन चेक
+  if (!sessionStorage.getItem("isLoggedIn")) {
+      document.documentElement.style.display = 'none';
+      window.location.replace("index.html");
+  }
+
+  // इतिहासामध्ये लॉगिन पेज न ठेवता थेट होम पेजच ठेवणे
+  if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+  }
 </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -38,6 +56,396 @@
   });
 </script>
   
+  
+
+<style>
+:root { 
+  --bg: #f4f7f4; 
+  --head: #ffffff; 
+  --green: #2e7d32; 
+  --green-light: #e8f5e9;
+  --text-dark: #2c3e50;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  margin: 0;
+  padding: 15px;
+  padding-bottom: 30px;
+}
+
+/* Header UI */
+.header {
+  max-width: 500px;
+  margin: 0 auto 15px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--head);
+  padding: 12px 18px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--green-light);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.action-circle:active {
+  transform: scale(0.92);
+}
+
+/* Featured Hero Banner */
+.hero-card {
+  max-width: 500px;
+  margin: 0 auto 15px auto;
+  background: linear-gradient(135deg, #1b5e20, #388e3c);
+  color: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.hero-card:active {
+  transform: scale(0.98);
+}
+
+.hero-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.hero-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Grid Layout UI */
+.grid-container {
+  max-width: 500px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.card-btn {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 15px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card-icon {
+  font-size: 28px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+/* Custom Icon Backgrounds */
+.bg-blue { background: #e3f2fd; }
+.bg-teal { background: #e0f2f1; }
+.bg-green { background: #e8f5e9; }
+.bg-orange { background: #fff3e0; }
+.bg-yellow { background: #fffde7; }
+.bg-purple { background: #f3e5f5; }
+
+/* Full Width Special Cards */
+.full-width {
+  grid-column: span 2;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.full-width .card-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+}
+
+/* --- Update Popup Styles --- */
+#updatePopup {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; align-items: center;
+    justify-content: center; z-index: 30000;
+}
+.popup-content {
+    background: white; padding: 25px; border-radius: 20px;
+    width: 85%; max-width: 320px; text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    animation: popupAnim 0.3s ease-out;
+}
+@keyframes popupAnim {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.popup-btn {
+    background: var(--green); color: white; border: none; padding: 12px 25px;
+    border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- अपडेट पॉप-अप -->
+<div id="updatePopup">
+    <div class="popup-content">
+        <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+        <h3 style="color:var(--green); margin:0;">नवीन अपडेट!</h3>
+        <p style="color:#555; font-size:15px; margin:10px 0;">आम्ही ॲपमध्ये काही नवीन बदल केले आहेत. अधिक चांगल्या अनुभवासाठी आत्ताच तपासा.</p>
+        <button class="popup-btn" onclick="closeUpdatePopup()">आताच वापरून पहा</button>
+    </div>
+</div>
+
+<!-- हेडर -->
+<div class="header">
+  <div class="logo">🌾 Smart Sheti</div>
+  <div class="header-actions">
+    <div class="action-circle" onclick="location.href='kharch-diary.html'" title="हिशोब डायरी">💰</div>
+    <div class="action-circle" onclick="location.href='setting.html'" title="सेटिंग्ज">⚙️</div>
+  </div>
+</div>
+
+<!-- मुख्य वैशिष्ट्य (Hero Card) -->
+<div class="hero-card" onclick="location.href='myfarm.html'">
+  <div>
+    <div class="hero-title">🌾 माझं शेत</div>
+    <div class="hero-sub">स्मार्ट सल्ला आणि पीक मार्गदर्शन</div>
+  </div>
+  <div style="font-size: 30px;">🚀</div>
+</div>
+
+<!-- २-कॉलम ग्रिड लेआउट -->
+<div class="grid-container">
+
+  <div class="card-btn" onclick="location.href='weather.html'">
+    <div class="card-icon bg-blue">🌦️</div>
+    <div class="card-title">आजचं हवामान</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='advice.html'">
+    <div class="card-icon bg-teal">🚿</div>
+    <div class="card-title">फवारणी सल्ला</div>
+  </div>
+  
+  <div class="card-btn" onclick="location.href='ai.html'">
+    <div class="card-icon bg-green">🤖</div>
+    <div class="card-title">AI सल्ला</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='disease.html'">
+    <div class="card-icon bg-green">📸</div>
+    <div class="card-title">रोग ओळख</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='market.html'">
+    <div class="card-icon bg-orange">📈</div>
+    <div class="card-title">आजचे बाजारभाव</div>
+  </div>
+  
+  <div class="card-btn" onclick="location.href='news.html'">
+    <div class="card-icon bg-orange">📰</div>
+    <div class="card-title">शेती बातम्या</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='crop-calendar.html'">
+    <div class="card-icon bg-green">🌱</div>
+    <div class="card-title">पीक वेळापत्रक</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='spray-schedule.html'">
+    <div class="card-icon bg-orange">🚜</div>
+    <div class="card-title">फवारणी वेळापत्रक</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='calculator.html'">
+    <div class="card-icon bg-purple">🧪</div>
+    <div class="card-title">खत कॅल्क्युलेटर</div>
+  </div>
+
+  <div class="card-btn" onclick="location.href='community.html'">
+    <div class="card-icon bg-blue">🤝</div>
+    <div class="card-title">गाव चर्चा</div>
+  </div>
+  
+  <!-- 📄 ७/१२ उतारा (आता डिझाईननुसार योग्य बसवले आहे) -->
+  <div class="card-btn" onclick="location.href='satbara.html'">
+    <div class="card-icon bg-blue">📄</div>
+    <div class="card-title">७/१२ उतारा</div>
+  </div>
+
+  <!-- Full Width Card for Farmer Card -->
+  <div class="card-btn full-width" style="border: 1.5px solid #fbc02d; background: #fffde7;" onclick="location.href='farmer-card.html'">
+    <div class="card-icon bg-yellow">🪪</div>
+    <div>
+      <div class="card-title" style="font-size:15px; color:#f57f17;">शेतकरी कार्ड तयार करा</div>
+      <div style="font-size:11px; color:#795548;">तुमचे डिजिटल शेतकरी आयडी कार्ड बनवा</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase Logic -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const app=initializeApp({
+ apiKey:"AIzaSyA1M7dJ9KFVe1GAGWPPqLuAT7BEuIKsZkM",
+ authDomain:"smart-sheti-6512e.firebaseapp.com",
+ projectId:"smart-sheti-6512e",
+ storageBucket:"smart-sheti-6512e.firebasestorage.app",
+ messagingSenderId:"1086459599128",
+ appId:"1:1086459599128:web:03a34ed9ea2b95b1ebe66d"
+});
+
+const auth=getAuth(app);
+let checked=false;
+onAuthStateChanged(auth,u=>{
+ if(!checked){
+  checked=true;
+  if(!u) location.replace("index.html");
+ }
+});
+</script>
+
+<script>
+  // --- अपडेट पॉप-अप लॉजिक ---
+  const LATEST_VERSION = "1.0"; 
+
+  function checkAppUpdate() {
+      const savedVersion = localStorage.getItem("userAppVersion");
+      if (savedVersion !== LATEST_VERSION) {
+          document.getElementById("updatePopup").style.display = "flex";
+      }
+  }
+
+  function closeUpdatePopup() {
+      localStorage.setItem("userAppVersion", LATEST_VERSION);
+      document.getElementById("updatePopup").style.display = "none";
+  }
+
+  window.addEventListener('load', checkAppUpdate);
+
+  // --- Service Worker ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Home: Registered!'))
+        .catch(err => console.log('Home: Failed!', err));
+    });
+  }
+</script>
+
+<script>
+let backPressedTime = 0;
+
+window.onpopstate = function () {
+    if (backPressedTime + 2000 > Date.now()) {
+        if (navigator.app) {
+            navigator.app.exitApp();
+        } else {
+            window.close();
+        }
+    } else {
+        alert("पुन्हा Back दाबा बाहेर जाण्यासाठी");
+    }
+    backPressedTime = Date.now();
+    history.pushState(null, null, location.href);
+};
+
+history.pushState(null, null, location.href);
+</script> 
+
+<!-- AdMob Section -->
+<hr style="border:none; border-top:1px solid #ccc; margin: 25px 0 10px 0;"> 
+<p style="text-align:center; font-size:10px; color:#888; margin: 0 0 5px 0;">जाहिरात</p>
+<div style="text-align:center; margin-bottom:20px; display:flex; justify-content:center;">
+  
+  <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+  <script>
+    window.googletag = window.googletag || {cmd: []};
+    googletag.cmd.push(function() {
+      googletag.defineSlot('/8832195992833438/4293537566', [[320, 50], [300, 50]], 'div-gpt-ad-smartsheti-home').addService(googletag.pubads());
+      googletag.pubads().enableSingleRequest();
+      googletag.enableServices();
+    });
+  </script>
+
+  <div id="div-gpt-ad-smartsheti-home" style="min-width: 320px; min-height: 50px;">
+    <script>
+      googletag.cmd.push(function() { googletag.display('div-gpt-ad-smartsheti-home'); });
+    </script>
+  </div>
+
+</div>
+
+</body>
+</html>
   
 
 <style>
