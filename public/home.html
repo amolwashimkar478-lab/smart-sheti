@@ -17,25 +17,52 @@
   }
 </script>
 
-<!-- २. OneSignal Push Notification Script -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<!-- OneSignal Push Notification -->
+<script
+  src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+  defer>
+</script>
+
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
+
   OneSignalDeferred.push(async function(OneSignal) {
+
     await OneSignal.init({
-      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
-      safari_web_id: "",
-      notifyButton: {
-        enable: false, // ऑटोमॅटिक कस्टम पॉपअपसाठी
-      },
+      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91"
     });
 
-    // युझरला परवानगी विचारण्यासाठी ऑटो पॉप-अप
+    console.log("OneSignal initialized");
+
+    // Browser permission तपासा
+    console.log(
+      "Notification permission:",
+      Notification.permission
+    );
+
+    // Permission अजून मागितली नसेल तर popup दाखवा
     if (Notification.permission === "default") {
-      setTimeout(async () => {
-        await OneSignal.Notifications.requestPermission();
+
+      setTimeout(async function() {
+
+        try {
+          await OneSignal.Notifications.requestPermission();
+
+          console.log(
+            "Permission after request:",
+            Notification.permission
+          );
+
+        } catch (error) {
+          console.error(
+            "OneSignal permission error:",
+            error
+          );
+        }
+
       }, 1500);
     }
+
   });
 </script>
 
