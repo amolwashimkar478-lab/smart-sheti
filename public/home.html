@@ -29,16 +29,21 @@
   OneSignalDeferred.push(async function(OneSignal) {
 
     await OneSignal.init({
-      appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91"
-    });
+  appId: "fdb7e40a-dc5c-4620-85d7-d99e5db6eb91",
 
-    console.log("OneSignal initialized");
+  serviceWorkerPath: "sw.js",
 
-    // Browser permission तपासा
-    console.log(
-      "Notification permission:",
-      Notification.permission
-    );
+  serviceWorkerParam: {
+    scope: "/"
+  }
+});
+
+console.log("OneSignal initialized");
+
+console.log(
+  "Notification permission:",
+  Notification.permission
+);
 
     // Permission अजून मागितली नसेल तर popup दाखवा
     if (Notification.permission === "default") {
